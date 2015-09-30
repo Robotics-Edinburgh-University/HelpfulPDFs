@@ -1,0 +1,5 @@
+
+
+
+Our kinematic design is based on the following page:
+http://www.rakeshmondal.info/4-Wheel-Drive-Robot-Design
