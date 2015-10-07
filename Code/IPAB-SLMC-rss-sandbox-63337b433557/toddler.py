@@ -5,7 +5,18 @@ import time
 import numpy
 import cv2
 import datetime
+import os
+import sys
+import signal
+
+
+# Get path of to the toddler file... to use always relative paths
+CURRENT_PATH = os.getcwd() 
+
+# import sensing modules
+sys.path.insert(0, CURRENT_PATH + '/sensing')
 from ButtonSensor import ButtonSensor
+from LightSensors import LightSensors
 
 # Hardware test code
 class Toddler:
@@ -13,49 +24,22 @@ class Toddler:
         print 'I am a toddler playing in a sandbox'
         self.IO=IO
         self.inp=[0, 0, 0, 0, 0, 0, 0, 0]
-        self.buttonSensor = ButtonSensor()
-        self.counter = 0
-        self.goBack = False
         
-    def move(self, l,r):
-      if not l and not r:
-        return [0, 0]
-      if l and not r:
-        return [100, -100]
-      if not l and r:
-        return [-100, 100]
-      if l and r:
-        return [100, 100]    
-        
+        self.buttonSensor = ButtonSensor(self.IO)
+        self.lightSensor = LightSensors(self.IO)
+       
+       
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Control(self, OK):
-  
-        
-        if len(self.buttonSensor.collisionCheck()) == 0:
-            if self.goBack == False:
-                self.IO.setMotors(-100,100)
-                self.IO.setStatus('off')
-            else:
-                self.counter = self.counter +1
-                self.IO.setMotors(50,-50)
-                self.IO.setStatus('off')
-                if self.counter >= 100:
-                    self.goBack = False
-                    self.counter = 0
-        else:
-            self.goBack = True
-#            self.counter = 0
-            self.IO.setStatus('on')
-            self.IO.setMotors(50,-50)
-            
-        digital = self.IO.getInputs()
-        self.buttonSensor.setButtonStatus(digital)        
-#        collision = self.buttonSensor.collisionCheck()
-#        print collision
-#        time.sleep(1)
-
+	
+	# Move forward and backward in collision
+        # self.buttonSensor.move_back_due_collision()
+	while (1):	
+	    self.lightSensor.measure_values_on_axis()
+	
+	
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
@@ -99,4 +83,11 @@ class Toddler:
             time.sleep(0.05)
             
 
-        
+    def stop_motors_on_interupt(self):
+        print('You pressed Ctrl+C!')
+        time.sleep(1)
+        self.IO.setMotors(0,0)
+        time.sleep(1)
+        self.IO.setMotors(0,0)
+
+

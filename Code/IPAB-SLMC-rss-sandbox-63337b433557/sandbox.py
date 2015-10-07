@@ -94,9 +94,18 @@ class Workers:
 
 def sigterm_handler(_signo, _stack_frame):
     sys.exit(0)
+    
+    
+def signal_handler(signal, frame):
+     sb._toddler.stop_motors_on_interupt()
+     sys.exit(0)
 
 if __name__ == "__main__":
     signal.signal(signal.SIGTERM, sigterm_handler)
+
+    #Register handler for switching off the motors
+    signal.signal(signal.SIGINT, signal_handler)
+  
     try:
         onRobot=bool(sys.argv.count('-rss'))
         sys.stdout = Logger(onRobot)
