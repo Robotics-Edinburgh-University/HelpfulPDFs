@@ -5,6 +5,7 @@ import time
 import numpy
 import cv2
 import datetime
+from ButtonSensor import ButtonSensor
 
 # Hardware test code
 class Toddler:
@@ -12,7 +13,10 @@ class Toddler:
         print 'I am a toddler playing in a sandbox'
         self.IO=IO
         self.inp=[0, 0, 0, 0, 0, 0, 0, 0]
-
+        self.buttonSensor = ButtonSensor()
+        self.counter = 0
+        self.goBack = False
+        
     def move(self, l,r):
       if not l and not r:
         return [0, 0]
@@ -27,37 +31,30 @@ class Toddler:
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Control(self, OK):
-        mot=[False,False,False]
-        motPrev=[False,False,False]
-        pos=180
-        while OK():
-            time.sleep(0.05)
-            self.inp=self.IO.getInputs()
-            mot[0]=self.inp[1]
-            mot[1]=self.inp[2]
-            mot[2]=self.inp[3]
-            if mot[0]!=motPrev[0] or mot[1]!=motPrev[1]:
-                speed = self.move(mot[0],mot[1])
-                self.IO.setMotors(-speed[0],speed[1])
-                if mot[0]:
-                    self.IO.setStatus('on')
-                else:
-                    self.IO.setStatus('off')
-                if mot[1]:
-                    self.IO.setError('on')
-                else:
-                    self.IO.setError('off')
-                
-                    
-            if mot[2]:
-                self.IO.servoEngage()
-                pos=(pos+3)%360
-                self.IO.servoSet(abs(pos-180))
-            if mot[2]!=motPrev[2] and not mot[2]:
-               self.IO.servoDisengage()
-            motPrev[0]=mot[0]
-            motPrev[1]=mot[1]
-            motPrev[2]=mot[2]
+  
+        
+        if len(self.buttonSensor.collisionCheck()) == 0:
+            if self.goBack == False:
+                self.IO.setMotors(-100,100)
+                self.IO.setStatus('off')
+            else:
+                self.counter = self.counter +1
+                self.IO.setMotors(50,-50)
+                self.IO.setStatus('off')
+                if self.counter >= 100:
+                    self.goBack = False
+                    self.counter = 0
+        else:
+            self.goBack = True
+#            self.counter = 0
+            self.IO.setStatus('on')
+            self.IO.setMotors(50,-50)
+            
+        digital = self.IO.getInputs()
+        self.buttonSensor.setButtonStatus(digital)        
+#        collision = self.buttonSensor.collisionCheck()
+#        print collision
+#        time.sleep(1)
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
