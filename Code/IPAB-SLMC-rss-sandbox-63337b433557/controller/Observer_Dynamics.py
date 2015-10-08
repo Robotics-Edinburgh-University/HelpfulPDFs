@@ -6,41 +6,42 @@ import numpy
 class Observer_Dynamics:
     
     # This class is made in order to provide the pose of the robot 
-    def __init__(self,dt):
+    def __init__(self,dt ,gear_ratio,max_angular_vel_motor,wheel_radius, wheels_base_lenght):
         
-        self.ang_velocity_motors = [0.0, 0.0] 
-        self.Gear_ratio = 3.0/25.0
-        self.dt = self.dt	
-	self.max_angular_vel_motor = 375.0*2*math.pi/60.0 
-	#original 375 RPM, converted in radian/s by multiply by 2pi and divided by 60  
-	self.wheel_radius = 4.3				#unit:cm   
-	self.rWheel_vel = 0.0
-	self.lWhell_vel = 0.0
-
-    def Compute_wheel_vel(self,rMotor_spped,lMotor_speed):	#Motor_speed, in percent format, 100%,20%...
+        self.Gear_ratio = gear_ratio
+        self.dt = dt	
+	self.max_angular_vel_motor = max_angular_vel_motor 
+	self.wheel_radius = wheel_radius 				#unit:cm   
+	self.wheels_base_lenght = wheels_base_lenght
+	
+    def Compute_wheel_vel(self,Motor_speeds):	#Motor_speed, in percent format, 100%,20%...
 	
 	#V=w*R=max_angular_velocity*Motor_speed*wheel_radius
-	self.rWheel_vel = self.max_angular_vel_motor * rMotor_spped * self.wheel_radius
-	self.lWhell_vel = self.max_angular_vel_motor * lMotor_speed * self.wheel_radius
-    
-    #Compute the estimated robot pose
-    def Compute_new_robot_pose(self,time_step,rMotor_speed,lMotor_speed):
+	self.lWhell_vel = self.max_angular_vel_motor * Motor_speeds[0]/100 * self.wheel_radius
+	self.rWheel_vel = self.max_angular_vel_motor * Motor_speeds[1]/100 * self.wheel_radius
 	
-	Compute_wheel_vel(rMotor_speed,lMotor_speed)	#compute current velocity of wheels
+    #Compute the estimated robot pose
+    def Compute_new_robot_pose(self,robot_pose ,Motor_speeds):
+	
+	x = robot_pose[0]
+	y = robot_pose[1]
+	theta = robot_pose[2]
+	
+	self.Compute_wheel_vel(Motor_speeds)	#compute current velocity of wheels
 	#Calculate disances travelled by both wheels	
-	dr = self.rWheel_vel * time_step			
-	dl = self.lWheel_vel * time_step        
-
-	theta_dt = (dr-dl)/L
-	theta_mid = theta + theta_dt/2
-	dst = (dr+dl)/2
-	x_dt = dst*cos(theta_mid)
-	y_dt = dst*sin(theta_mid)
+	dl = self.lWhell_vel * self.dt        
+	dr = self.rWheel_vel * self.dt			
+	
+	theta_dt = (dr-dl)/self.wheels_base_lenght
+	theta_mid = theta + theta_dt/2.0
+	dst = (dr+dl)/2.0
+	x_dt = dst*math.cos(theta_mid)
+	y_dt = dst*math.sin(theta_mid)
 
 	theta_new = theta + theta_dt
 	x_new = x + x_dt
 	y_new = y + y_dt
-        return Pose(x_new,y_new, (theta_new + pi)%(2*pi)-pi)
+        return [x_new,y_new, (theta_new + math.pi)%(2*math.pi)-math.pi]
         
         
       
