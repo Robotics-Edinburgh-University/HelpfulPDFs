@@ -6,10 +6,11 @@ import numpy
 class Controller:
   
     # Go_to_goal_point commands the motors of the robot to reach a predefined position in the world
-    def __init__(self,l):
+    def __init__(self,l,robot):
       
 	self.l = l   
-
+        self.robot = robot
+        
     # In case we would like some parameters on the go
     def set_parameters(self,l):
         
@@ -24,10 +25,10 @@ class Controller:
         #return --> unicycle model  [velocity, omega]
         
         # The goal:
-        x_g, y_g = Robot.Goal_pose
+        x_g, y_g = self.robot.Goal_pose
         
         # The robot:
-        x_r, y_r, theta = Robot.Current_Pose
+        x_r, y_r, theta = self.robot.Current_Pose
  
         
         pos = numpy.array([x_r,y_r])

@@ -10,7 +10,7 @@ class Observer_Dynamics:
         
         self.ang_velocity_motors = [0.0, 0.0] 
         self.Gear_ratio = 3.0/25.0
-        self.dt = 0.0	
+        self.dt = self.dt	
 	self.max_angular_vel_motor = 375.0*2*math.pi/60.0 
 	#original 375 RPM, converted in radian/s by multiply by 2pi and divided by 60  
 	self.wheel_radius = 4.3				#unit:cm   
