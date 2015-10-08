@@ -8,6 +8,7 @@ import datetime
 import os
 import sys
 import signal
+import math
 
 
 # Get path of to the toddler file... to use always relative paths
@@ -37,7 +38,9 @@ class Toddler:
 	# Move forward and backward in collision
         # self.buttonSensor.move_back_due_collision()
 	while (1):	
-	    self.lightSensor.measure_values_on_axis()
+	    #self.lightSensor.measure_values_on_axis()
+	    self.lightSensor.calculate_light_sensor_difference()
+	    time.sleep(1)
 	
 	
     # This is a callback that will be called repeatedly.
