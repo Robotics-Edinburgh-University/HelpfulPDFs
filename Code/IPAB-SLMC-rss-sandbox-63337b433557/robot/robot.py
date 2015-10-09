@@ -26,7 +26,7 @@ class Robot:
         self.wheels_radius = 4.3          # wheels radius #unit:cm 
         self.wheels_base_lenght = 21.5    # wheel_base_length    
         self.gear_ratio = 3.0/25.0        # gear_ratio
-        self.max_RPM_motor =  37.50        # maximum RPM of the robot motors
+        self.max_RPM_motor =  375.0        # maximum RPM of the robot motors
       	#original 375 RPM, converted in radian/s by multiply by 2pi and divided by 60  
         self.max_angular_vel_motor = self.max_RPM_motor*2*math.pi/60.0   # maximum angular velocity of the motors
         
@@ -41,9 +41,9 @@ class Robot:
         self.Current_Pose = [0.0, 0.0, 0.0]
         
         # The current frame of the robot
-        #self.Current_Frame = numpy.array( [[math.cos(self.Current_Pose[2]), -1*math.sin(self.Current_Pose[2]) , self.Current_Pose[0]], 
-	#				   [math.sin(self.Current_Pose[2]), math.cos(self.Current_Pose[2]) , self.Current_Pose[1]],
-	#				   [0.0 , 0.0 , 1.0]])
+        self.Current_Frame = numpy.array( [[math.cos(self.Current_Pose[2]), -1*math.sin(self.Current_Pose[2]) , self.Current_Pose[0]], 
+					   [math.sin(self.Current_Pose[2]), math.cos(self.Current_Pose[2]) , self.Current_Pose[1]],
+					   [0.0 , 0.0 , 1.0]])
         
         
         # The goal position of the robot
@@ -68,11 +68,10 @@ class Robot:
         # update the current robot position 
         self.Current_Pose = self.observer.Compute_new_robot_pose(self.Current_Pose,self.trace_motor_speeds.pop())
         
-        # new frame according to the new cuurent pose
-        #new_frame 
-        #self.Current_Frame = numpy.array( [[math.cos(self.Current_Pose[2]), -1*math.sin(self.Current_Pose[2]) , self.Current_Pose[0]], 
-	#				   [math.sin(self.Current_Pose[2]), math.cos(self.Current_Pose[2]) , self.Current_Pose[1]],
-	#				   [0.0 , 0.0 , 1.0]])
+        # new frame according to the new current pose
+        self.Current_Frame = numpy.array( [[math.cos(self.Current_Pose[2]), -1*math.sin(self.Current_Pose[2]) , self.Current_Pose[0]], 
+					   [math.sin(self.Current_Pose[2]), math.cos(self.Current_Pose[2]) , self.Current_Pose[1]],
+					   [0.0 , 0.0 , 1.0]])
         
         #self.update_current_frame()
         
@@ -122,19 +121,19 @@ class Robot:
         
         if abs(Motor_speed[0]) > 100:
 	   Motor_speed[0] = numpy.sign(Motor_speed[0]) * 100
-	   print "Motor_speed " , Motor_speed
+	   #print "Motor_speed " , Motor_speed
      
         if abs(Motor_speed[1]) > 100:
 	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 100
-	   print "Motor_speed " , Motor_speed
+	   #print "Motor_speed " , Motor_speed
 	
 	if abs(Motor_speed[0]) < 50:
 	   Motor_speed[0] = numpy.sign(Motor_speed[0]) * 50
-	   print "Motor_speed " , Motor_speed
+	   #print "Motor_speed " , Motor_speed
      
         if abs(Motor_speed[1]) < 50:
 	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 50
-	   print "Motor_speed " , Motor_speed
+	   #print "Motor_speed " , Motor_speed
 	
         return Motor_speed
 	

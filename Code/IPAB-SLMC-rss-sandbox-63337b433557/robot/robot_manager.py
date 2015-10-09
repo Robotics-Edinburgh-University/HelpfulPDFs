@@ -40,13 +40,18 @@ class Robot_manager:
          
          goal_reached_flag = False
 	 
-	 distance_vec = numpy.array(goal) - numpy.array(self.robot.Current_Pose)
 	 
-         #goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
+         goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
          
-         print " goal_reached ", distance_vec ,"  ", goal ," ",self.robot.Current_Pose 
-         #if goal_reached < 0.05:
-         if (abs(distance_vec[0]) < 0.05 and abs(distance_vec[1]) < 0.05 and abs( (distance_vec[2] + math.pi) %2*math.pi/2*math.pi) ):  
+         current_robot_orientation = numpy.dot( numpy.array(self.robot.Current_Frame[0:2,0:2]) , numpy.array([1,0]) )
+         angular_error_nom = numpy.dot( numpy.array(goal), current_robot_orientation) 
+	 angular_error_denom = numpy.linalg.norm(  (numpy.array(goal) * numpy.linalg.norm(current_robot_orientation))  ) 
+	 angular_error = angular_error_nom/angular_error_denom
+	 
+         print " angular_error ", angular_error , "Theta " , self.robot.Current_Pose[2] , "Theta Initial " , self.robot.trace[0][2]
+         print " goal_reached ", goal_reached ,"  ", goal ," ",self.robot.Current_Pose , 
+         
+         if goal_reached < 0.05 and 0.95 < angular_error < 1.05 : 
             goal_reached_flag = True
             print " goal_reached "
          return goal_reached_flag
@@ -66,15 +71,15 @@ class Robot_manager:
 	        #[50, 32], [50, 34], [50, 36], [50, 38], [50, 40], 
 		#[50, 42], [50, 44], [50, 46], [50, 48]] 
 	
-	traj = [[1,0],[1,1] ]#,[4,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1]]
+	traj = [[0,0.1]] #[2,1] ]# ,[1,1]] #,[1,1] ]#,[4,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1]]
 	
-	traj_theta = []
-	for every_p in traj:
-	    traj_theta.append( [every_p[0],every_p[1], math.atan2(every_p[1] - 0 , every_p[0]-1)] ) 
+	#traj_theta = []
+	#for every_p in traj:
+	    #traj_theta.append( [every_p[0],every_p[1], math.atan2(every_p[1] - 0 , every_p[0]-1)] ) 
 	
 	#traj = numpy.array(traj)#/10.0
 
-	self.robot.set_desired_trajectory(traj_theta)
+	self.robot.set_desired_trajectory(traj)
 	
 	
 	
@@ -86,8 +91,8 @@ class Robot_manager:
 	    count = 0 
 	    distance_to_goal = self.Goal_reached(subpoint) 
 	    while (distance_to_goal == False):
-	        local_goal_pt = (subpoint[0], subpoint[1])
-	        v_w = self.controller.execute(self.robot.Current_Pose,local_goal_pt)
+	        #local_goal_pt = (subpoint[0], subpoint[1])
+	        v_w = self.controller.execute(self.robot.Current_Pose,subpoint)
                 u_wheels = self.robot.unicicle2differential_drive(v_w)
                 ul,ur = u_wheels
                 motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
