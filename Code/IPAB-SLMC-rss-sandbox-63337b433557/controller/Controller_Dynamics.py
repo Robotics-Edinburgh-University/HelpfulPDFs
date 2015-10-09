@@ -33,7 +33,7 @@ class Controller:
         
         pos = numpy.array([x_r,y_r])
         goal_pose = numpy.array([x_g,y_g])
-        u = (goal_pose - pos)#/self.dt
+        u = (goal_pose - pos)/self.dt
         
         R = numpy.array([[numpy.cos(-theta),-1*numpy.sin(-theta)],[numpy.sin(-theta),numpy.cos(-theta)]])
         

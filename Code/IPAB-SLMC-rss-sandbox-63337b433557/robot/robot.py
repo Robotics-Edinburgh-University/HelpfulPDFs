@@ -22,7 +22,7 @@ class Robot:
         ###
         # Intrisic parameters
         ###
-        self.l = 0.01                     # parameter in order to control the robot analytically
+        self.l = 0.00001                     # parameter in order to control the robot analytically
         self.wheels_radius = 4.3          # wheels radius #unit:cm 
         self.wheels_base_lenght = 21.5    # wheel_base_length    
         self.gear_ratio = 3.0/25.0        # gear_ratio
@@ -127,12 +127,12 @@ class Robot:
 	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 100
 	   #print "Motor_speed " , Motor_speed
 	
-	if abs(Motor_speed[0]) < 50:
-	   Motor_speed[0] = numpy.sign(Motor_speed[0]) * 50
+	if abs(Motor_speed[0]) < 80:
+	   Motor_speed[0] = numpy.sign(Motor_speed[0]) * 80
 	   #print "Motor_speed " , Motor_speed
      
-        if abs(Motor_speed[1]) < 50:
-	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 50
+        if abs(Motor_speed[1]) < 80:
+	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 80
 	   #print "Motor_speed " , Motor_speed
 	
         return Motor_speed
