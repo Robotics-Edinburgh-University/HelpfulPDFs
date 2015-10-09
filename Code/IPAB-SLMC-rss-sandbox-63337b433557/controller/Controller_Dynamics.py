@@ -6,9 +6,10 @@ import numpy
 class Controller:
   
     # Go_to_goal_point commands the motors of the robot to reach a predefined position in the world
-    def __init__(self,l):
+    def __init__(self,l,dt):
       
-	self.l = l   
+	self.l = l 
+	self.dt = dt
         
     # In case we would like some parameters on the go
     def set_parameters(self,l):
@@ -32,7 +33,7 @@ class Controller:
         
         pos = numpy.array([x_r,y_r])
         goal_pose = numpy.array([x_g,y_g])
-        u = goal_pose - pos
+        u = (goal_pose - pos)#/self.dt
         
         R = numpy.array([[numpy.cos(-theta),-1*numpy.sin(-theta)],[numpy.sin(-theta),numpy.cos(-theta)]])
         

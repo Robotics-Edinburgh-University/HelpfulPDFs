@@ -4,6 +4,8 @@ import numpy
 import numpy.linalg
 import sys
 import os
+import time
+import math
 
 # Get path of to the toddler file... to use always relative paths
 CURRENT_PATH = os.getcwd() 
@@ -24,11 +26,11 @@ class Robot_manager:
     def __init__(self,io):
        
        
-       self.dt = 0.01
+       self.dt = 0.001
        self.robot = Robot(self.dt)
 
        # Controller module
-       self.controller = Controller(self.robot.l)
+       self.controller = Controller(self.robot.l,self.dt)
        
        # IO
        self.IO = io
@@ -37,11 +39,14 @@ class Robot_manager:
     def Goal_reached(self,goal):
          
          goal_reached_flag = False
-
-         goal_reached = numpy.linalg.norm(numpy.array(goal) - numpy.array(self.robot.Current_Pose[0:2]))  
-         print " goal_reached ", goal_reached ,"  ", goal ," ",self.robot.Current_Pose[0:2]
+	 
+	 distance_vec = numpy.array(goal) - numpy.array(self.robot.Current_Pose)
+	 
+         #goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
          
-         if goal_reached < 0.01:
+         print " goal_reached ", distance_vec ,"  ", goal ," ",self.robot.Current_Pose 
+         #if goal_reached < 0.05:
+         if (abs(distance_vec[0]) < 0.05 and abs(distance_vec[1]) < 0.05 and abs( (distance_vec[2] + math.pi) %2*math.pi/2*math.pi) ):  
             goal_reached_flag = True
             print " goal_reached "
          return goal_reached_flag
@@ -61,10 +66,15 @@ class Robot_manager:
 	        #[50, 32], [50, 34], [50, 36], [50, 38], [50, 40], 
 		#[50, 42], [50, 44], [50, 46], [50, 48]] 
 	
-	traj = [[0,3]]
+	traj = [[1,0],[1,1] ]#,[4,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1]]
+	
+	traj_theta = []
+	for every_p in traj:
+	    traj_theta.append( [every_p[0],every_p[1], math.atan2(every_p[1] - 0 , every_p[0]-1)] ) 
+	
 	#traj = numpy.array(traj)#/10.0
 
-	self.robot.set_desired_trajectory(traj)
+	self.robot.set_desired_trajectory(traj_theta)
 	
 	
 	
@@ -76,12 +86,14 @@ class Robot_manager:
 	    count = 0 
 	    distance_to_goal = self.Goal_reached(subpoint) 
 	    while (distance_to_goal == False):
-	        v_w = self.controller.execute(self.robot.Current_Pose,subpoint)
+	        local_goal_pt = (subpoint[0], subpoint[1])
+	        v_w = self.controller.execute(self.robot.Current_Pose,local_goal_pt)
                 u_wheels = self.robot.unicicle2differential_drive(v_w)
                 ul,ur = u_wheels
                 motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
 	        self.robot.update_current_motor_speed(motor_speed)
 	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
+	        #time.sleep(self.dt)
 	        self.robot.update_current_state()
 	        distance_to_goal = self.Goal_reached(subpoint)
 	        count += 1
