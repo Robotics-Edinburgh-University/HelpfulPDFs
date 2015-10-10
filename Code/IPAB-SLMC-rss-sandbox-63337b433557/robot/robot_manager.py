@@ -59,9 +59,9 @@ class Robot_manager:
 	 #local_goal_point = numpy.dot(numpy.linalg.inv(self.robot.Current_Frame),numpy.array(goal_vec))
 	 #print "sssddd " ,local_goal_point,"  ", goal_vec
          goal_vec = general_vec_orient/ numpy.linalg.norm(general_vec_orient)
-         print "dddd " , goal_vec
+         #print "dddd " , goal_vec
 	 goal_theta = math.atan2(goal_vec[1],(goal_vec[0])) 
-	 print goal_theta ," sdsdsds  " , self.robot.Current_Pose[2]
+	 #print goal_theta ," sdsdsds  " , self.robot.Current_Pose[2]
          
          angular_error = goal_theta - self.robot.Current_Pose[2]  #   the error .... /2
          print " angular_error ", angular_error , "Theta " , self.robot.Current_Pose[2] , "Theta Initial " , self.robot.trace[0][2]
@@ -84,7 +84,11 @@ class Robot_manager:
 	#traj = [[0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
 	#	[0,-1,1],[1,0,1],[1,0,1],[1,0,1]]
 	
-	traj = [[0,20,1], [0,-20,1],[0,-20,1],[0,-20,1] ]
+	#traj = [[0,20,1], [0,-20,1],[0,-20,1],[0,-20,1] ]
+	
+	traj = [[10,10,1]] 
+	
+	#traj = [[20,-15,1],[20,0,1],[25,-25,1]] 
 	
 	#traj = [[0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
 	#        [0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
@@ -113,6 +117,7 @@ class Robot_manager:
 	    local_goal_pt = (local_goal_point[0], local_goal_point[1])
 	    distance_to_goal = self.Goal_reached(local_goal_pt,current_sum_orient_vec) 
 	    while (distance_to_goal == False):
+	        start = time.time()
 	        v_w = self.controller.execute(self.robot.Current_Pose,local_goal_pt)
                 u_wheels = self.robot.unicicle2differential_drive(v_w)
                 ul,ur = u_wheels
@@ -122,6 +127,8 @@ class Robot_manager:
 	        self.robot.update_current_state()
 	        distance_to_goal = self.Goal_reached(local_goal_pt,current_sum_orient_vec)
 	        count += 1
+	        end = time.time()
+                print "Time !!!!! -------- " , start-end  
 	    print " number of interation ", count
 		
 	self.IO.setStatus('flash')

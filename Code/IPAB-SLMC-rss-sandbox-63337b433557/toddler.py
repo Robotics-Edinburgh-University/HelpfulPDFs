@@ -18,6 +18,7 @@ CURRENT_PATH = os.getcwd()
 sys.path.insert(0, CURRENT_PATH + '/sensing')
 from ButtonSensor import ButtonSensor
 from LightSensors import LightSensors
+from Sensors import Sensors
 
 # import robot status modules
 sys.path.insert(0, CURRENT_PATH + '/robot')
@@ -35,7 +36,7 @@ class Toddler:
         self.lightSensor = LightSensors(self.IO)
         
         self.robot_manager = Robot_manager(self.IO)
-       
+        self.sensors = Sensors(self.IO)
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
@@ -46,13 +47,18 @@ class Toddler:
 	
 	# test the light sensors
 	#while (1):	
-	    #self.lightSensor.calculate_light_sensor_difference()
-	    #time.sleep(1)
+	 #   self.lightSensor.measure_values_on_axis()#calculate_light_sensor_difference()
+	 #   time.sleep(0.1)
 	
 	while (1):
-	    self.robot_manager.move_robot_to_goal()
-            self.IO.setMotors(0,0)
-	    time.sleep(5)
+	  self.sensors.update_analog_sensors_meas()
+	  print self.sensors.analogs_sensors
+	  time.sleep(0.1)
+	  
+	#while (1):
+	    #self.robot_manager.move_robot_to_goal()
+            #self.IO.setMotors(0,0)
+	    #time.sleep(5)
 	
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.

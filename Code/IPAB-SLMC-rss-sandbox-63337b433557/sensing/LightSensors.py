@@ -26,14 +26,16 @@ class LightSensors(Sensors):
 	
         self.measure_values_on_axis()					#obtain the light sensor readings
 	self.X_difference=self.current_light_sensors_readings[0]-self.current_light_sensors_readings[1]	#Calculating X axis
-	self.Y_difference=self.current_light_sensors_readings[2]-self.current_light_sensors_readings[3]	#Calculating Y axis
+	#self.Y_difference=self.current_light_sensors_readings[2]-self.current_light_sensors_readings[3]	#Calculating Y axis
 	
-	self.X_diff_normalised = self.X_difference/math.sqrt(math.pow(self.X_difference,2)+math.pow(self.Y_difference,2))
-	self.Y_diff_normalised = self.Y_difference/math.sqrt(math.pow(self.X_difference,2)+math.pow(self.Y_difference,2))      
+	#self.X_diff_normalised = self.X_difference/math.sqrt(math.pow(self.X_difference,2)+math.pow(self.Y_difference,2))
+	#self.X_diff_normalised = self.X_difference/math.sqrt(math.pow(self.X_difference,2)) #+math.pow(self.Y_difference,2))
 	
-	print "Normalised X difference ", self.X_diff_normalised
- 	print "Normalised Y difference ", self.Y_diff_normalised
-	#print "X axis difference ", self.X_difference
+	#self.Y_diff_normalised = self.Y_difference/math.sqrt(math.pow(self.X_difference,2)+math.pow(self.Y_difference,2))      
+	
+	#print "Normalised X difference ", self.X_diff_normalised
+ 	#print "Normalised Y difference ", self.Y_diff_normalised
+	print "X axis difference ", self.X_difference
 	#print "Y axis difference ", self.Y_difference
 	
 	

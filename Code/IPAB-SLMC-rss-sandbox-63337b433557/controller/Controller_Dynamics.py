@@ -35,13 +35,18 @@ class Controller:
         goal_pose = numpy.array([x_g,y_g])
         u = (goal_pose - pos)/self.dt
         
+        #max_velocity_of_robot = 4.5
+        #new_u = (max_velocity_of_robot*u)/numpy.linalg.norm(u)
+        
         R = numpy.array([[numpy.cos(-theta),-1*numpy.sin(-theta)],[numpy.sin(-theta),numpy.cos(-theta)]])
         
         L = numpy.array([[1,0],[0,1/self.l]])
         
-        
-        vw = numpy.dot( L , numpy.dot( R ,u)  )
+        #new_u
+        #vw = numpy.dot( L , numpy.dot( R ,new_u)  )
 
+        vw = numpy.dot( L , numpy.dot( R ,u)  )
+        
         return (vw[0], vw[1])
         
       
