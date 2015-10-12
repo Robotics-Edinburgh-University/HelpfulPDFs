@@ -19,7 +19,11 @@ from Controller_Dynamics import Controller
 sys.path.insert(0, CURRENT_PATH + '/robot')
 from robot import Robot
 
-
+# import sensing modules
+sys.path.insert(0, CURRENT_PATH + '/sensing')
+from ButtonSensor import ButtonSensor
+from LightSensors import LightSensors
+from Distance_sensors import Distance_sensors
 
 class Robot_manager:
      
@@ -34,106 +38,103 @@ class Robot_manager:
        
        # IO
        self.IO = io
+       
+       # Various Sensor classes
+       self.buttonSensor = ButtonSensor(self.IO)
+       self.lightSensor = LightSensors(self.IO)
+       self.distance_Sensors = Distance_sensors(self.IO)  
      
-    # Is the robot at the goal
-    def Goal_reached(self,goal,general_vec_orient):
-         
-         goal_reached_flag = False
-	 
-	 #goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
-         
-         #current_robot_orientation = numpy.dot( numpy.array(self.robot.Current_Frame[0:2,0:2]) , numpy.array([1,0]) )
-         #angular_error_nom = numpy.dot( numpy.array(goal), current_robot_orientation) 
-	 #angular_error_denom = numpy.linalg.norm(  (numpy.array(goal) * numpy.linalg.norm(current_robot_orientation))  ) 
-	 #if (angular_error_denom != 0.0):
-	     #angular_error = angular_error_nom/angular_error_denom
-	 #else:
-	     #angular_error = 1.0
-         
-      	 goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
-         
-         
-         #rot_vec = numpy.dot(numpy.array(goal[0:2]) , numpy.array([1,0]))
-	 #print rot_vec 
-	 #goal_vec = list(goal) + [1]
-	 #local_goal_point = numpy.dot(numpy.linalg.inv(self.robot.Current_Frame),numpy.array(goal_vec))
-	 #print "sssddd " ,local_goal_point,"  ", goal_vec
-         goal_vec = general_vec_orient/ numpy.linalg.norm(general_vec_orient)
-         #print "dddd " , goal_vec
-	 goal_theta = math.atan2(goal_vec[1],(goal_vec[0])) 
-	 #print goal_theta ," sdsdsds  " , self.robot.Current_Pose[2]
-         
-         angular_error = goal_theta - self.robot.Current_Pose[2]  #   the error .... /2
-         print " angular_error ", angular_error , "Theta " , self.robot.Current_Pose[2] , "Theta Initial " , self.robot.trace[0][2]
-         print " goal_reached ", goal_reached ,"  ", goal ," ",self.robot.Current_Pose 
-         
-         if goal_reached < 0.5 and  abs(angular_error) < 0.1: 
-            goal_reached_flag = True
-            print " goal_reached "
-         return goal_reached_flag
-       
-       
     # Set the desired trajectory towards the goal
     def set_the_desired_trajectory(self): 
 	
+	# working!!!!
+	#traj = [[0,5,1],[15,0,1],[0,-5,1],[15,0,1],[0,-5,1],[15,0,1],
+		#[0,5,1],[15,0,1],[0,-5,1],[15,0,1],[0,-5,1],[15,0,1],
+		#[0,5,1],[15,0,1],[0,-5,1],[15,0,1],[0,-5,1],[15,0,1],
+		#[0,5,1],[15,0,1],[0,-5,1],[15,0,1],[0,-5,1],[15,0,1]] 
 	
+	#traj = [[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1]]
 	
-	#traj = [[1,0],[2,0],[3,0],[4,0],[5,0],[5,0],[6,0],[7,0],[8,0],[9,0],[10,0],[11,0],[12,0],[13,0],[14,0],[15,0],[16,0],[17,0],[18,0],[19,0],[20,0] ,[21,0],[22,0],[23,0],[24,0],[25,0],[26,0],[27,0],[28,0],[29,0],[30,0]] 
+	traj = [[0,5,1]]
 	
+	#traj = [[5,-5,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,-5,1],[15,0,1]]
 	
-	#traj = [[0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
-	#	[0,-1,1],[1,0,1],[1,0,1],[1,0,1]]
-	
-	#traj = [[0,20,1], [0,-20,1],[0,-20,1],[0,-20,1] ]
-	
-	traj = [[10,10,1]] 
-	
-	#traj = [[20,-15,1],[20,0,1],[25,-25,1]] 
-	
-	#traj = [[0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
-	#        [0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
-	#        [0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],
-	#        [0,1,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1],[1,0,1]] 
-	
-	#traj_theta = []
-	#for every_p in traj:
-	    #traj_theta.append( [every_p[0],every_p[1], math.atan2(every_p[1] - 0 , every_p[0]-1)] ) 
-	
-	#traj = numpy.array(traj)#/10.0
-
 	self.robot.set_desired_trajectory(traj)
 	
-	
-	
+    
     # make it go to where we want
-    def move_robot_to_goal(self):
+    def move_robot_to_goal1(self):
         
         self.set_the_desired_trajectory()
-        current_sum_orient_vec = numpy.array([0,0,0])
+        
         for subpoint in self.robot.goal_trajectory:
-	    count = 0 
-	    current_sum_orient_vec += numpy.array(subpoint)
-	    local_goal_point = numpy.dot(self.robot.Current_Frame,subpoint)
-	    local_goal_pt = (local_goal_point[0], local_goal_point[1])
-	    distance_to_goal = self.Goal_reached(local_goal_pt,current_sum_orient_vec) 
+	    self.robot.reset_current_state()
+            count = 0 
+
+	    # compute error in distance
+	    distance_to_goal = self.Goal_reached1(subpoint) 
 	    while (distance_to_goal == False):
-	        start = time.time()
-	        v_w = self.controller.execute(self.robot.Current_Pose,local_goal_pt)
+	      
+	        #self.check_for_sensor_input()
+	      
+	        # dynamics 
+	        v_w = self.controller.execute(self.robot.Current_Pose,subpoint[0:2])
+	        
+                # from uni2diff
                 u_wheels = self.robot.unicicle2differential_drive(v_w)
                 ul,ur = u_wheels
+                
+                # from lin vel of wheels 2 motor command
                 motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
 	        self.robot.update_current_motor_speed(motor_speed)
 	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
+	        
+	        # position update
 	        self.robot.update_current_state()
-	        distance_to_goal = self.Goal_reached(local_goal_pt,current_sum_orient_vec)
+	        
+	        # error computation
+	        distance_to_goal = self.Goal_reached1(subpoint)
+	        
 	        count += 1
-	        end = time.time()
-                print "Time !!!!! -------- " , start-end  
+	        
 	    print " number of interation ", count
 		
 	self.IO.setStatus('flash')
+     
+    # Is the robot at the goal
+    def Goal_reached1(self,goal): #,general_vec_orient):
+               
+         goal_reached_flag = False
+         
+         # vector orientantion of the robot 
+         current_robot_orientation = numpy.dot( numpy.array(self.robot.Current_Frame[0:2,0:2]) , numpy.array([1,0]) )
+         
+         angular_error_nom = numpy.dot( numpy.array(goal[0:2]), current_robot_orientation) 
+	 angular_error_denom = numpy.linalg.norm(  (numpy.array(goal) * numpy.linalg.norm(current_robot_orientation))  ) 
+	 if (angular_error_denom != 0.0):
+	     angular_error = angular_error_nom/angular_error_denom
+	 else:
+	     angular_error = 1.0
+        
+	 # distance to goal 
+         goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
 
          
-         
+         if goal_reached < 0.5 and  0.9 < abs(angular_error) < 1.1: 
+            goal_reached_flag = True
+            print " goal_reached "
+         return goal_reached_flag         
        
-           
+       
+    #def check_for_sensor_input(self):
+        
+        #return self.distance_Sensors.return_direction_IR_Sonar()
+      
+    
+    
+    
