@@ -3,12 +3,11 @@
 from Sensors import Sensors
 
 # calss for all the distance sensors
-class Distance_sensors(object):
+class Distance_sensors(Sensors):
     
     def __init__(self, io ):
       
 	Sensors.__init__(self, io )
-	
 	
 	#Collision to the left IR                                         
 	self.LeftIRcollision = (0,0)

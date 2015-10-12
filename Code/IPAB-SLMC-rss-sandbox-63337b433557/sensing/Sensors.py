@@ -20,11 +20,4 @@ class Sensors(object):
     # Function for retrieving the analog sensor values
     def update_analog_sensors_meas(self):
 	self.analogs_sensors = self.IO.getSensors() 
-    
-    def overall_sensors_direction:
-
-        sensors_IR = self.distance_sensors.return_direction_IR_Sonar_Sensors()
-	sensors_Button = self.button_sensors.return_direction_Button_Sensors()            
-        tuple(map(sum,zip(sensors_IR,sensors_Button)))
-	
-	
+  

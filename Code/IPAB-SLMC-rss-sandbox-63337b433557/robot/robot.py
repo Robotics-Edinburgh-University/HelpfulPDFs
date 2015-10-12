@@ -23,8 +23,8 @@ class Robot:
         # Intrisic parameters
         ###
         self.l = 0.001 #0.00001               # parameter in order to control the robot analytically
-        self.wheels_radius =  8.3 #4.3 * 2          # wheels radius #unit:cm 
-        self.wheels_base_lenght = 22.5 #21.5     # wheel_base_length    
+        self.wheels_radius =  4.3 * 2          # wheels radius #unit:cm 
+        self.wheels_base_lenght = 21.5 #21.5     # wheel_base_length    
         self.gear_ratio = 3.0/25.0        # gear_ratio
         self.max_RPM_motor =  375.0        # maximum RPM of the robot motors
       	#original 375 RPM, converted in radian/s by multiply by 2pi and divided by 60 , Unit rad/s 

@@ -39,10 +39,10 @@ class Robot_manager:
        # IO
        self.IO = io
        
-       # Various Sensor classes
-       self.buttonSensor = ButtonSensor(self.IO)
+       # Various Sensor classes 
+       self.button_sensors = ButtonSensor(self.IO)
        self.lightSensor = LightSensors(self.IO)
-       #self.distance_Sensors = Distance_sensors(self.IO)  
+       self.distance_sensors = Distance_sensors(self.IO)  
      
     # Set the desired trajectory towards the goal
     def set_the_desired_trajectory(self): 
@@ -55,7 +55,7 @@ class Robot_manager:
 	
 	#traj = [[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1]]
 	
-	traj = [[0,5,1]]
+        traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
 	
 	#traj = [[5,-5,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
 		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
@@ -79,11 +79,15 @@ class Robot_manager:
 	    # compute error in distance
 	    distance_to_goal = self.Goal_reached1(subpoint) 
 	    while (distance_to_goal == False):
-	      
-	        #self.check_for_sensor_input()
-	      
+	        
+	        sensors_interuption = self.overall_sensors_direction()
+	        if (0,0) !=  sensors_interuption :
+		   step_point = [sensors_interuption[0] * 10 + subpoint[0],sensors_interuption[1] * 10 + subpoint[1], 1] 
+		else:
+		   step_point = subpoint[0:2]
+		    
 	        # dynamics 
-	        v_w = self.controller.execute(self.robot.Current_Pose,subpoint[0:2])
+	        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
 	        
                 # from uni2diff
                 u_wheels = self.robot.unicicle2differential_drive(v_w)
@@ -134,10 +138,12 @@ class Robot_manager:
          return goal_reached_flag         
        
        
-    #def check_for_sensor_input(self):
-        
-        #return self.distance_Sensors.return_direction_IR_Sonar()
-      
-    
-    
+    # Interrupt commands from the sensors    
+    def overall_sensors_direction(self):
+
+        sensors_IR = self.distance_sensors.return_direction_IR_Sonar_Sensors()
+	sensors_Button = self.button_sensors.return_direction_Button_Sensors()            
+        return tuple(map(sum,zip(sensors_IR,sensors_Button)))
+	
+	
     
