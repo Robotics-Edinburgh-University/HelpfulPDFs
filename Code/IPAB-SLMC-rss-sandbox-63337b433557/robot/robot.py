@@ -23,8 +23,8 @@ class Robot:
         # Intrisic parameters
         ###
         self.l = 0.001 #0.00001               # parameter in order to control the robot analytically
-        self.wheels_radius = 4.3 * 2          # wheels radius #unit:cm 
-        self.wheels_base_lenght = 21.5 #19.5     # wheel_base_length    
+        self.wheels_radius =  8.3 #4.3 * 2          # wheels radius #unit:cm 
+        self.wheels_base_lenght = 22.5 #21.5     # wheel_base_length    
         self.gear_ratio = 3.0/25.0        # gear_ratio
         self.max_RPM_motor =  375.0        # maximum RPM of the robot motors
       	#original 375 RPM, converted in radian/s by multiply by 2pi and divided by 60 , Unit rad/s 
@@ -116,7 +116,7 @@ class Robot:
         # command the motors of the robot
 	ul = vm - wm
 	ur = vm + wm
-	print "linear_vel " , ul ,"   ",ur
+	#print "linear_vel " , ul ,"   ",ur
 	return  (ul,ur)
       
     # Convert the linear velocity on the wheels to the percentage input on the motors...  
@@ -135,19 +135,19 @@ class Robot:
         Motor_speed = (Motor_RPM/self.max_RPM_motor) * 100
         
         if abs(Motor_speed[0]) > 100:
-	   print "Motor_speed left high" , Motor_speed
+	   #print "Motor_speed left high" , Motor_speed
 	   Motor_speed[0] = numpy.sign(Motor_speed[0]) * 100
 	    
         if abs(Motor_speed[1]) > 100:
-	   print "Motor_speed right high" , Motor_speed
+	   #print "Motor_speed right high" , Motor_speed
 	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 100
 	
 	if abs(Motor_speed[0]) < 80:
-	   print "Motor_speed left low " , Motor_speed
+	   #print "Motor_speed left low " , Motor_speed
 	   Motor_speed[0] = numpy.sign(Motor_speed[0]) * 80
 	    
         if abs(Motor_speed[1]) < 80:
-	   print "Motor_speed right low " , Motor_speed
+	   #print "Motor_speed right low " , Motor_speed
 	   Motor_speed[1] = numpy.sign(Motor_speed[1]) * 80
 	   
         return Motor_speed

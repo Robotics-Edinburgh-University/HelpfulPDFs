@@ -17,8 +17,8 @@ class Observer_Dynamics:
     def Compute_wheel_vel(self,Motor_speeds):	#Motor_speed, in percent format, 100%,20%...
 	
 	#V=w*R=max_angular_velocity*Motor_speed*wheel_radius   * self.Gear_ratio 
-	self.lWhell_vel = self.max_angular_vel_motor * Motor_speeds[0]/100 * self.wheel_radius
-	self.rWheel_vel = self.max_angular_vel_motor * Motor_speeds[1]/100 * self.wheel_radius
+	self.lWhell_vel = self.max_angular_vel_motor * (Motor_speeds[0]/100) * self.wheel_radius
+	self.rWheel_vel = self.max_angular_vel_motor * (Motor_speeds[1]/100) * self.wheel_radius
 	
     #Compute the estimated robot pose
     def Compute_new_robot_pose(self,robot_pose ,Motor_speeds):
