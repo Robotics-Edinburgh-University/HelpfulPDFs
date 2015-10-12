@@ -33,24 +33,23 @@ class Distance_sensors(object):
       
       
     # set the limits of the sensors and the directions    
-    def define_limits_of_sensors_2_directions(self):  
+    def update_direction(self):  
         
-        self.from_IR_readings_2_distance()
+        #self.from_IR_readings_2_distance()
         
         self.LeftIRcollision = (0,-1) if self.analogs_sensors[0] >= self.left_IR_limit else (0,0)
         self.RightIRcollision = (0,1) if self.analogs_sensors[7] >= self.right_IR_limit else (0,0)
         self.SonarCollision = (-1,0) if self.analogs_sensors[6] <= self.sonar_limit else (0,0)
 	                        
     # provide the overall direction out of the distance sensor	
-    def return_direction_IR_Sonar(self):
+    def return_direction_IR_Sonar_Sensors(self):
         
         self.update_analog_sensors_meas()
         
-        self.define_limits_of_sensors_2_directions()
+        self.update_direction()
         
 	#Adding coordinates 
 	#(1,2) + (10,10) + (20,20) = (31,32)
-	# vectors orientation, magnitude is always 1
         return tuple(map(sum,zip(self.LeftIRcollision,self.RightIRcollision,self.SonarCollision)))
     
     
