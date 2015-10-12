@@ -42,7 +42,7 @@ class Robot_manager:
        # Various Sensor classes
        self.buttonSensor = ButtonSensor(self.IO)
        self.lightSensor = LightSensors(self.IO)
-       self.distance_Sensors = Distance_sensors(self.IO)  
+       #self.distance_Sensors = Distance_sensors(self.IO)  
      
     # Set the desired trajectory towards the goal
     def set_the_desired_trajectory(self): 
@@ -124,6 +124,9 @@ class Robot_manager:
 	 # distance to goal 
          goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
 
+         print "goal_reached " , goal_reached , " goal " ,numpy.array(goal[0:2])  , " Current pose " ,self.robot.Current_Pose[0:2]
+         print "angular_error ", angular_error
+         
          
          if goal_reached < 0.5 and  0.9 < abs(angular_error) < 1.1: 
             goal_reached_flag = True
