@@ -31,7 +31,7 @@ class Toddler:
         self.IO=IO
         self.inp=[0, 0, 0, 0, 0, 0, 0, 0]
         self.robot_manager = Robot_manager(self.IO)
-        self.RobotVision = robot_vision(self,IO)
+        self.RobotVision = robot_vision(self.IO)
 
 
     # This is a callback that will be called repeatedly.
@@ -66,7 +66,8 @@ class Toddler:
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
-
+            self.RobotVision.ColorFilter()
+            time.sleep(5)
 
         """
         self.IO.cameraSetResolution('low')

@@ -1,5 +1,6 @@
 import numpy
 import numpy.linalg
+import cv2
 import sys
 import os
 import time
@@ -38,7 +39,14 @@ class robot_vision:
         self.res = 0
         self.sw = False
         self.swPrew = False
-        self.img
+
+        #read an image and creat the array stores images
+        self.IO.cameraGrab()
+        self.img = self.IO.cameraRead()
+
+        #setting color filter ranges
+        self.lower_orange = numpy.array([9,50,50])
+        self.upper_orange = numpy.array([29,255,255])
 
     def Set_Resolution(self):
         self.IO.cameraSetResolution(self.cameraResolution)
@@ -49,10 +57,20 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         for i in range(0,5):
             self.IO.cameraGrab()
-        self.img = self.IO.cameraRead()
+            self.img = self.IO.cameraRead()
 
-        self.IO.imshow('window',self.img)
-        time.sleep(0.05)
+        #self.IO.imshow('window',self.img)
+        #time.sleep(1)
+
+    def ColorFilter(self):
+
+        hsv_image = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv_image, self.lower_orange, self.upper_orange)
+        res = cv2.bitwise_and(self.img,self.img,mask=mask)
+
+        self.IO.imshow('filter',res)
+
+
 
 
 
