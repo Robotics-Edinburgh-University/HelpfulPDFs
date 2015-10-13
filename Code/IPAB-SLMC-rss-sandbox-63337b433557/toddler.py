@@ -19,6 +19,10 @@ CURRENT_PATH = os.getcwd()
 sys.path.insert(0, CURRENT_PATH + '/robot')
 from robot_manager import Robot_manager
 
+# import vision status modules
+sys.path.insert(0, CURRENT_PATH + '/vision')
+from vision import robot_vision
+
 
 # Hardware test code
 class Toddler:
@@ -27,6 +31,7 @@ class Toddler:
         self.IO=IO
         self.inp=[0, 0, 0, 0, 0, 0, 0, 0]
         self.robot_manager = Robot_manager(self.IO)
+        self.RobotVision = robot_vision(self,IO)
 
 
     # This is a callback that will be called repeatedly.
@@ -57,6 +62,13 @@ class Toddler:
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
+
+        while(OK):
+            self.RobotVision.Set_Resolution()
+            self.RobotVision.ImgObtain()
+
+
+        """
         self.IO.cameraSetResolution('low')
         hasImage=False
         res=0
@@ -95,7 +107,7 @@ class Toddler:
             swPrev=sw
             
             time.sleep(0.05)
-            
+        """
 
     def stop_motors_on_interupt(self):
         print('You pressed Ctrl+C!')
