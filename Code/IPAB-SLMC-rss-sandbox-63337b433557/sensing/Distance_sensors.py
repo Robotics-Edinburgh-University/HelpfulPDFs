@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 from Sensors import Sensors
-
+from random import randint
 # calss for all the distance sensors
 class Distance_sensors(Sensors):
     
@@ -19,8 +19,8 @@ class Distance_sensors(Sensors):
 	self.SonarCollison = (0,0)
 	
 	# Thresholds of its sensor
-	self.left_IR_limit = 15 #480
-	self.right_IR_limit = 15 #480
+	self.left_IR_limit = 480 #15 #480
+	self.right_IR_limit = 480
 	self.sonar_limit = 20
 	
     # Transform IR measurements to distance
@@ -35,17 +35,24 @@ class Distance_sensors(Sensors):
     # set the limits of the sensors and the directions    
     def update_direction(self):
       
-        left_distance = 100
-        right_distance = 100
+        #left_distance = 100
+        #right_distance = 100
         
-        left_distance = self.from_IR_readings_2_distance(self.analogs_sensors[0])
-        right_distance = self.from_IR_readings_2_distance(self.analogs_sensors[7])
+        #left_distance = self.from_IR_readings_2_distance(self.analogs_sensors[0])
+        #right_distance = self.from_IR_readings_2_distance(self.analogs_sensors[7])
         
-        self.LeftIRcollision = (0,-1) if left_distance <= self.left_IR_limit else (0,0)
-        self.RightIRcollision = (0,1) if right_distance <= self.right_IR_limit else (0,0)
-        self.SonarCollision = (-1,0) if self.analogs_sensors[6] <= self.sonar_limit else (0,0)
+        #self.LeftIRcollision = (0,-1) if left_distance <= self.left_IR_limit else (0,0)
+        #self.RightIRcollision = (0,1) if right_distance <= self.right_IR_limit else (0,0)
+        #self.SonarCollision = (-1,0) if self.analogs_sensors[6] <= self.sonar_limit else (0,0)
 	
-	
+	self.LeftIRcollision = (0,-1) if self.analogs_sensors[0] >= self.left_IR_limit else (0,0)
+        self.RightIRcollision = (0,1) if self.analogs_sensors[7] >= self.right_IR_limit else (0,0)
+        random = randint(0,10)
+        if random >= 5:
+	    self.SonarCollision = (-1,1) if self.analogs_sensors[6] <= self.sonar_limit else (0,0)
+	else:
+	    self.SonarCollision = (-1,-1) if self.analogs_sensors[6] <= self.sonar_limit else (0,0)
+
     # provide the overall direction out of the distance sensor	
     def return_direction_IR_Sonar_Sensors(self):
         

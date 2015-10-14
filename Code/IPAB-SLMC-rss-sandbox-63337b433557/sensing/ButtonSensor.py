@@ -32,6 +32,8 @@ class ButtonSensor(Sensors):
     def return_direction_Button_Sensors(self):
 
         self.setButtonStatus()  
+        self.BR = (0,0)
+        self.BL = (0,0)
         if self.button_1_pressed == True:
             self.BR = (1,1)
         if self.button_2_pressed == True:

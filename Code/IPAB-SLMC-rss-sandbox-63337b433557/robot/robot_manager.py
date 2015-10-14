@@ -60,19 +60,50 @@ class Robot_manager:
         
         #traj = [[0,-0.001,1]]
         
-        traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
-	        [5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
-		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
-		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1]]
+        #traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+	        #[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+	        #[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+	        #[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+	        #[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1],
+		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,0.001,1]]
+                
+        
         
         #traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
 	
-	#traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-	#	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-	#       [5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-	#	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-        #	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-        #	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
+	traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+	        [5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
 	
 	self.robot.set_desired_trajectory(traj)
 	
@@ -127,19 +158,127 @@ class Robot_manager:
 	    print " number of interation ", count
 	    
 	self.IO.setStatus('flash')
-     
+	
+	
+	
+	##############################################
+    def move_robot_to_goal_aris(self):
+        
+        self.set_the_desired_trajectory()
+        self.sensors_interuption =  (0,0) 	#Initialization
+	break_flag = False
+	
+        for subpoint in self.robot.goal_trajectory:
+	    self.robot.reset_current_state()
+            count = 0 
+	    
+   	    print "steps " , count
+
+	    # compute error in distance
+	    distance_to_goal = self.Goal_reached1(subpoint) 
+	    while (distance_to_goal == False):
+	        
+	        
+                self.sensors_interuption = self.overall_sensors_direction()
+                print " Outer ",  self.sensors_interuption
+	        if (0,0) !=  self.sensors_interuption :
+		    break_flag = True
+		    print "COLLISION!"
+		    break
+		else:
+		    step_point = subpoint[0:2]
+		    
+	        # dynamics 
+	        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
+	        
+                # from uni2diff
+                u_wheels = self.robot.unicicle2differential_drive(v_w)
+                ul,ur = u_wheels
+                
+                # from lin vel of wheels 2 motor command
+                motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
+	        self.robot.update_current_motor_speed(motor_speed)
+	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
+	        
+	        # position update
+	        self.robot.update_current_state()
+	        
+	        # error computation
+	        distance_to_goal = self.Goal_reached1(subpoint)
+	        count += 1
+	    
+	    if break_flag:
+	        temp_robot_manager = Robot_manager(self.IO)
+	        temp_robot_manager.move_robot_to_goal_aris_collision(self.sensors_interuption)
+	        break_flag = False
+	    
+	    #print " number of interation ", count
+	    
+	self.IO.setStatus('flash')   
+	
+	
+    def move_robot_to_goal_aris_collision(self,sensors_interuption):
+        
+	break_flag = False
+	
+	x = sensors_interuption[0]
+	y = sensors_interuption[1]
+	
+	custom_traj = [[x * 8 ,0,1],[0, y * 0.001,1]]
+    	    
+    	for subpoint in custom_traj:
+	    self.robot.reset_current_state()
+            count = 0 
+            print " In collision" , custom_traj
+	    # compute error in distance
+	    distance_to_goal = self.Goal_reached1(subpoint) 
+	    while (distance_to_goal == False):
+	        
+	        print "In the while of collision"
+                #self.sensors_interuption = self.overall_sensors_direction()
+	        step_point = subpoint[0:2]
+		    
+	        # dynamics 
+	        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
+	        
+                # from uni2diff
+                u_wheels = self.robot.unicicle2differential_drive(v_w)
+                ul,ur = u_wheels
+                
+                # from lin vel of wheels 2 motor command
+                motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
+	        self.robot.update_current_motor_speed(motor_speed)
+	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
+	        
+	        # position update
+	        self.robot.update_current_state()
+	        
+	        # error computation
+	        distance_to_goal = self.Goal_reached1(subpoint)
+	        count += 1
+	    
+	    if break_flag:
+	        #temp_robot_manager = Robot_manager(self.IO)
+	        #temp_robot_manager.move_robot_to_goal_aris_collision(self.sensors_interuption)
+		break_flag = False
+	    print " number of interation ", count
+	    
+	self.IO.setStatus('flash')
+	
+	
     # Is the robot at the goal
     def Goal_reached1(self,goal): #,general_vec_orient):
                
          goal_reached_flag = False
-         
-         normalised_goal = numpy.array(goal[0:2])/ numpy.linalg.norm(numpy.array(goal[0:2]))
-         
+                  
          # vector orientantion of the robot 
          current_robot_orientation = numpy.dot( numpy.array(self.robot.Current_Frame[0:2,0:2]) , numpy.array([1,0]) )
          
-         
-         
+         if (numpy.linalg.norm(numpy.array(goal[0:2])) != 0.0):
+             normalised_goal = numpy.array(goal[0:2])/ numpy.linalg.norm(numpy.array(goal[0:2]))
+         else:
+	     normalised_goal = 0.0
+	     
          angular_error_nom = numpy.dot( normalised_goal, current_robot_orientation) 
 	 angular_error_denom = numpy.linalg.norm(  (numpy.array(normalised_goal) * numpy.linalg.norm(current_robot_orientation))  ) 
 	 if (angular_error_denom != 0.0):
@@ -156,9 +295,9 @@ class Robot_manager:
          #print "angular_error ", angular_error
          
          
-         if goal_reached < 0.5 and  0.9 < abs(angular_error) < 1.1: 
+         if goal_reached < 0.5 and  0.95 < abs(angular_error) < 1.05: 
             goal_reached_flag = True
-            print " goal_reached "
+            #print " goal_reached "
          return goal_reached_flag         
        
        

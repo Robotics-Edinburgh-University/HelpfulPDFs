@@ -38,7 +38,7 @@ class Observer_Dynamics:
 	x_dt = dst*math.cos(theta_mid)
 	y_dt = dst*math.sin(theta_mid)
 
-	theta_new = theta + theta_dt/1.8   ### !!!!! tuning parameter of the observer !!! to rotate the amount we want..empirical value
+	theta_new = theta + theta_dt/2.2   ### !!!!! tuning parameter of the observer !!! to rotate the amount we want..empirical value
 	x_new = x + x_dt
 	y_new = y + y_dt
         return [x_new,y_new, (theta_new + math.pi)%(2*math.pi)-math.pi]
