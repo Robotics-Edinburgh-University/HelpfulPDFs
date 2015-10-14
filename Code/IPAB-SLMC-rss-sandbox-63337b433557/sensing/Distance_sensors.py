@@ -19,27 +19,33 @@ class Distance_sensors(Sensors):
 	self.SonarCollison = (0,0)
 	
 	# Thresholds of its sensor
-	self.left_IR_limit = 480
-	self.right_IR_limit = 480
+	self.left_IR_limit = 15 #480
+	self.right_IR_limit = 15 #480
 	self.sonar_limit = 20
 	
-    
-    def from_IR_readings_2_distance(self):
-        print "DEVELOPMENT OF THIS FUNCION IS MISSING!!!!!! " 
-        print "develope the function which transform IR measurements to distance!!!"  
-        distance = 0 
+    # Transform IR measurements to distance
+    def from_IR_readings_2_distance(self,SensorValue):  
+        if  SensorValue == 20.0:
+	    distance = 0.0
+	else:    
+            distance = 4800.0/(SensorValue - 20.0)
         return distance 
       
       
     # set the limits of the sensors and the directions    
-    def update_direction(self):  
+    def update_direction(self):
+      
+        left_distance = 100
+        right_distance = 100
         
-        #self.from_IR_readings_2_distance()
+        left_distance = self.from_IR_readings_2_distance(self.analogs_sensors[0])
+        right_distance = self.from_IR_readings_2_distance(self.analogs_sensors[7])
         
-        self.LeftIRcollision = (0,-1) if self.analogs_sensors[0] >= self.left_IR_limit else (0,0)
-        self.RightIRcollision = (0,1) if self.analogs_sensors[7] >= self.right_IR_limit else (0,0)
+        self.LeftIRcollision = (0,-1) if left_distance <= self.left_IR_limit else (0,0)
+        self.RightIRcollision = (0,1) if right_distance <= self.right_IR_limit else (0,0)
         self.SonarCollision = (-1,0) if self.analogs_sensors[6] <= self.sonar_limit else (0,0)
-	                        
+	
+	
     # provide the overall direction out of the distance sensor	
     def return_direction_IR_Sonar_Sensors(self):
         

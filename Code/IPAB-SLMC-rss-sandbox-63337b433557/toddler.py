@@ -63,11 +63,11 @@ class Toddler:
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
 
-        while(OK):
-            self.RobotVision.Set_Resolution()
-            self.RobotVision.ImgObtain()
-            self.RobotVision.ColorFilter()
-            time.sleep(5)
+        #while(OK):
+            #self.RobotVision.Set_Resolution()
+            #self.RobotVision.ImgObtain()
+            #self.RobotVision.ColorFilter()
+            #time.sleep(5)
 
         """
         self.IO.cameraSetResolution('low')

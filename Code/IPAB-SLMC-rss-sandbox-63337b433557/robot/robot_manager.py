@@ -55,14 +55,24 @@ class Robot_manager:
 	
 	#traj = [[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1],[0,-5,1]]
 	
-        traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
+	# a 90 degrees turn with combination of to steps
+	#traj = [[5,-5,1],[0,-5,1]]
+        
+        #traj = [[0,-0.001,1]]
+        
+        traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+	        [5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
+		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1]]
+        
+        #traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
 	
-	#traj = [[5,-5,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-		#[5,0,1],[5,0,1],[5,0,1],[5,-5,1],[15,0,1]]
+	#traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+	#	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+	#       [5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+	#	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        #	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+        #	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1]]
 	
 	self.robot.set_desired_trajectory(traj)
 	
@@ -75,14 +85,19 @@ class Robot_manager:
         for subpoint in self.robot.goal_trajectory:
 	    self.robot.reset_current_state()
             count = 0 
+	    break_flag = False
 
 	    # compute error in distance
 	    distance_to_goal = self.Goal_reached1(subpoint) 
 	    while (distance_to_goal == False):
 	        
-	        sensors_interuption = self.overall_sensors_direction()
+	        #sensors_interuption = self.overall_sensors_direction()
+	        sensors_interuption =  (0,0) 
 	        if (0,0) !=  sensors_interuption :
-		   step_point = [sensors_interuption[0] * 10 + subpoint[0],sensors_interuption[1] * 10 + subpoint[1], 1] 
+		   #step_point = [sensors_interuption[0] * 10 + subpoint[0],sensors_interuption[1] * 10 + subpoint[1], 1] 
+  		   step_point = [sensors_interuption[0],sensors_interuption[1], 1] 
+  		   print "interrupt "
+		   break_flag = True
 		else:
 		   step_point = subpoint[0:2]
 		    
@@ -103,11 +118,14 @@ class Robot_manager:
 	        
 	        # error computation
 	        distance_to_goal = self.Goal_reached1(subpoint)
-	        
+	        if break_flag:
+		  self.robot.reset_current_state()
+		  break_flag = False
+		  continue
 	        count += 1
 	        
 	    print " number of interation ", count
-		
+	    
 	self.IO.setStatus('flash')
      
     # Is the robot at the goal
@@ -115,12 +133,18 @@ class Robot_manager:
                
          goal_reached_flag = False
          
+         normalised_goal = numpy.array(goal[0:2])/ numpy.linalg.norm(numpy.array(goal[0:2]))
+         
          # vector orientantion of the robot 
          current_robot_orientation = numpy.dot( numpy.array(self.robot.Current_Frame[0:2,0:2]) , numpy.array([1,0]) )
          
-         angular_error_nom = numpy.dot( numpy.array(goal[0:2]), current_robot_orientation) 
-	 angular_error_denom = numpy.linalg.norm(  (numpy.array(goal) * numpy.linalg.norm(current_robot_orientation))  ) 
+         
+         
+         angular_error_nom = numpy.dot( normalised_goal, current_robot_orientation) 
+	 angular_error_denom = numpy.linalg.norm(  (numpy.array(normalised_goal) * numpy.linalg.norm(current_robot_orientation))  ) 
 	 if (angular_error_denom != 0.0):
+	     #print "angular_error_nom " , angular_error_nom
+	     #print "angular_error_denom " , angular_error_denom
 	     angular_error = angular_error_nom/angular_error_denom
 	 else:
 	     angular_error = 1.0
@@ -128,8 +152,8 @@ class Robot_manager:
 	 # distance to goal 
          goal_reached = numpy.linalg.norm(numpy.array(goal[0:2]) - numpy.array(self.robot.Current_Pose[0:2]))  
 
-         print "goal_reached " , goal_reached , " goal " ,numpy.array(goal[0:2])  , " Current pose " ,self.robot.Current_Pose[0:2]
-         print "angular_error ", angular_error
+         #print "goal_reached " , goal_reached , " goal " ,numpy.array(goal[0:2])  , " Current pose " ,self.robot.Current_Pose
+         #print "angular_error ", angular_error
          
          
          if goal_reached < 0.5 and  0.9 < abs(angular_error) < 1.1: 
