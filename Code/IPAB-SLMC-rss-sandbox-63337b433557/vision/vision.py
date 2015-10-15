@@ -45,8 +45,8 @@ class robot_vision:
         self.img = self.IO.cameraRead()
 
         #setting color filter ranges
-        self.lower_orange = numpy.array([9,50,50])
-        self.upper_orange = numpy.array([29,255,255])
+        self.lower_yellow = numpy.array([0,100,100])
+        self.upper_yellow = numpy.array([5,255,255])
 
     def Set_Resolution(self):
         self.IO.cameraSetResolution(self.cameraResolution)
@@ -55,7 +55,6 @@ class robot_vision:
 
         #read the buffer 5 times by cameraGrab and obtain it by cameraRead
         #for cleaning the buffer in case of resolution changes
-        for i in range(0,5):
             self.IO.cameraGrab()
             self.img = self.IO.cameraRead()
 
@@ -65,7 +64,7 @@ class robot_vision:
     def ColorFilter(self):
 
         hsv_image = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
-        mask = cv2.inRange(hsv_image, self.lower_orange, self.upper_orange)
+        mask = cv2.inRange(hsv_image, self.lower_yellow, self.upper_yellow)
         res = cv2.bitwise_and(self.img,self.img,mask=mask)
 
         self.IO.imshow('filter',res)
