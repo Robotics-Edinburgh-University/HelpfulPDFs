@@ -72,7 +72,7 @@ class Toddler:
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
-            self.RobotVision.ColorFilter()
+            self.RobotVision.find_objects()
             #time.sleep(0.5)
 
         """
@@ -114,7 +114,7 @@ class Toddler:
             swPrev=sw
             
             time.sleep(0.05)
-        """
+            """
 
     def stop_motors_on_interupt(self):
         print('You pressed Ctrl+C!')
