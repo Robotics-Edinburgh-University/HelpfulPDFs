@@ -1,5 +1,10 @@
 #!/usr/bin/env python
 
+import numpy
+import copy
+
+import graph
+
 class MapRoom:
 
     def __init__(self):
@@ -9,7 +14,7 @@ class MapRoom:
        	self.b = [0, 536]
        	self.c = [323, 536]
        	self.d = [323, 0]
-       	self.list_room_edges = [self.a, self.b , self.c, self.d,self.a]
+       	self.list_room_verteces = [self.a, self.b , self.c, self.d,self.a]
        	self.roomA = RoomA()		
        	self.roomB = RoomB()
        	self.roomC = RoomC()
@@ -25,8 +30,209 @@ class MapRoom:
         self.square_d = [180,250]
        	self.obstacle = Obstacle(self.square_a,self.square_b,self.square_c,self.square_d)
        	
+       	# represnt the map walls as lines 
+       	self.wall_line_list = self.build_wall_as_line_segments()
+       	
+       	# compute the waypoints 
+       	self.waypoints = self.waypoint_computation()
+       	
+       	# graph representation of the waypoints
+       	self.waypoints_as_graph = graph.Graph()
+       	
+       	# add the nodes(waypoints) to the graph of the waypoints
+	for i in self.waypoints:
+            self.waypoints_as_graph.add_vertex(i['name'],i['coord'])
+    
+	# add the edges to the graph of the waypoints
+	for i in self.waypoints:
+	   for j in self.waypoints:
+	       self.waypoints_as_graph.filter_edge_addition(i['name'], j['name'], self.wall_line_list)  
+	  
+	  
+    # represent the map walls as lines 
+    def build_wall_as_line_segments(self):
+	wall_line_list = []
+	for room in self.room_list:
+	    temp_list = room.list_room_verteces
+	    wall_line_list += self.pair_wise_list(temp_list)
+
+	    if ( room.obstacle != None ): 
+	       temp_list = room.obstacle.list_obstacle_verteces
+	       wall_line_list += self.pair_wise_list(temp_list)
+	    
+	temp_list = self.obstacle.list_obstacle_verteces   
+        wall_line_list += self.pair_wise_list(temp_list)
 	
 	
+	return  wall_line_list 
+
+    # make pairs out of a list --> denoting all connections
+    # [1,2,3,4,5,6] --> [1,2],[2,3],[3,4],....
+    def pair_wise_list(self,seq):
+        return zip(seq, seq[1:])
+    
+    
+    # buliding up all the import waypoints in the map
+    def waypoint_computation(self):
+        
+        waypoint_list = []
+        
+        #waypoint_info = {'coord': ,
+			 #'room': ,
+			 #'name': ,
+			   #'id': }
+        
+        # Room A 
+        roomA = self.room_list[0]
+	waypoint_roomA_exit = (numpy.array(roomA.a) + numpy.array(roomA.e))/2.
+	waypoint_roomA_middle = waypoint_roomA_exit/2.
+	
+	waypoint_info = {'coord': waypoint_roomA_exit,
+			 'room': "A",
+			 'name': "A",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	waypoint_info = {'coord': waypoint_roomA_middle,
+			 'room': "A",
+			 'name': "B",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	
+	
+	# Room B 
+        roomB = self.room_list[1]
+	waypoint_roomB_exit = (numpy.array(roomB.a) + numpy.array(roomB.g))/2.
+	waypoint_roomB_middle_1 = copy.deepcopy(waypoint_roomB_exit)
+	waypoint_roomB_middle_1[0]  = waypoint_roomB_middle_1[0] + 88
+	waypoint_roomB_middle_2 = copy.deepcopy(waypoint_roomB_exit)
+	waypoint_roomB_middle_2[1]  = waypoint_roomB_middle_1[1] - 115
+	
+	waypoint_info = {'coord': waypoint_roomB_exit,
+			 'room': "B",
+			 'name': "C",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	waypoint_info = {'coord': waypoint_roomB_middle_1,
+			 'room': "B",
+			 'name': "D",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	waypoint_info = {'coord': waypoint_roomB_middle_2,
+			 'room': "B",
+			 'name': "E",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	
+	# Room C 
+        roomC = self.room_list[2]
+	waypoint_roomC_exit = (numpy.array(roomC.a) + numpy.array(roomC.d))/2.
+	
+	waypoint_info = {'coord': waypoint_roomC_exit,
+			 'room': "C",
+			 'name': "F",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	
+
+	# Room D 
+        roomD = self.room_list[3]
+	waypoint_roomD_exit = (numpy.array(roomD.a) + numpy.array(roomD.d))/2.
+	
+	waypoint_info = {'coord': waypoint_roomD_exit,
+			 'room': "D",
+			 'name': "G",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	
+	# Room E 
+        roomE = self.room_list[4]
+	waypoint_roomE_exit = (numpy.array(roomE.a) + numpy.array(roomE.g))/2.
+	waypoint_roomE_middle_1 = copy.deepcopy(waypoint_roomE_exit)
+	waypoint_roomE_middle_1[0]  = waypoint_roomE_middle_1[0] - 88
+	waypoint_roomE_middle_2 = copy.deepcopy(waypoint_roomE_exit)
+	waypoint_roomE_middle_2[1]  = waypoint_roomE_middle_1[1] + 115
+	
+	waypoint_info = {'coord': waypoint_roomE_exit,
+			 'room': "E",
+			 'name': "H",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	waypoint_info = {'coord': waypoint_roomE_middle_1,
+			 'room': "E",
+			 'name': "I",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	waypoint_info = {'coord': waypoint_roomE_middle_2,
+			 'room': "E",
+			 'name': "J",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	
+	# Room F 
+        roomF = self.room_list[5]
+	waypoint_roomF_exit = (numpy.array(roomF.a) + numpy.array(roomF.e))/2.
+	waypoint_roomF_middle = (self.c - waypoint_roomF_exit)/2. + waypoint_roomF_exit
+	
+	
+	waypoint_info = {'coord': waypoint_roomF_exit,
+			 'room': "F",
+			 'name': "K",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	waypoint_info = {'coord': waypoint_roomF_middle,
+			 'room': "F",
+			 'name': "L",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	
+	# Map waypoints 
+	p_interest = filter( lambda waypoint: waypoint['name']=='C' or waypoint['name']=='F', waypoint_list )
+	waypoint_middle_south = ((p_interest[0])['coord'] + (p_interest[1])['coord'])/2
+	waypoint_info = {'coord': waypoint_middle_south,
+			 'room': "S",
+			 'name': "M",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)  
+	
+	p_interest = filter( lambda waypoint: waypoint['name']=='H' or waypoint['name']=='G', waypoint_list )
+	waypoint_middle_south = ((p_interest[0])['coord'] + (p_interest[1])['coord'])/2
+	waypoint_info = {'coord': waypoint_middle_south,
+			 'room': "N",
+			 'name': "N",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)  
+	
+	
+	waypoint_column_right = (self.obstacle.d + numpy.array(roomB.g))/2
+	waypoint_info = {'coord': waypoint_column_right,
+			 'room': "C",
+			 'name': "Y",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)  
+	
+	waypoint_column_right = (self.obstacle.b + numpy.array(roomE.g))/2
+	waypoint_info = {'coord': waypoint_column_right,
+			 'room': "C",
+			 'name': "Z",
+			   'id': len(waypoint_list)}
+	waypoint_list.append(waypoint_info)
+	
+	#print waypoint_list
+	return waypoint_list
+    
+   
 class RoomA:
 
     def __init__(self):
@@ -41,7 +247,7 @@ class RoomA:
        	self.c = [0,0]
        	self.d = [145,0]
        	self.e = [145,94]
-       	self.list_room_edges = [self.a, self.b , self.c, self.d, self.e]
+       	self.list_room_verteces = [self.a, self.b , self.c, self.d, self.e]
        	
        	# base patch
        	self.patch_a = [40,60]
@@ -72,7 +278,7 @@ class RoomB:
        	self.f = [229,250]
        	self.g = [229,199]
        	self.h = [195,199]
-	self.list_room_edges = [self.a, self.b , self.c, self.d, self.e,self.f,self.g,self.h]
+	self.list_room_verteces = [self.a, self.b , self.c, self.d, self.e,self.f,self.g,self.h]
 
        	# obstacle obecjt in the room 
         self.square_a = [232,95]
@@ -104,7 +310,7 @@ class RoomC:
         self.c = [0,133]
        	self.d =  [75,133]
        	
-        self.list_room_edges = [self.a, self.b , self.c, self.d]
+        self.list_room_verteces = [self.a, self.b , self.c, self.d]
        	
        	self.numberOfObjects = 3
        	self.object1 = MyObject("Lego Tower","GREEN",3,[20,145],"COW")
@@ -130,7 +336,7 @@ class RoomD:
         self.c = [323,394]
        	self.d =  [248,394]
        	
-        self.list_room_edges = [self.a, self.b , self.c, self.d]
+        self.list_room_verteces = [self.a, self.b , self.c, self.d]
        	
        	self.numberOfObjects = 3
        	self.object1 = MyObject("Lego Tower","YELLOW",3,[20,145],"COW")
@@ -157,7 +363,7 @@ class RoomE:
        	self.f = [93,296]
        	self.g = [93,343]
        	self.h = [127,343]
-	self.list_room_edges = [self.a, self.b , self.c, self.d, self.e,self.f,self.g,self.h]
+	self.list_room_verteces = [self.a, self.b , self.c, self.d, self.e,self.f,self.g,self.h]
 
        	# obstacle obecjt in the room 
         self.square_a = [68,441]
@@ -189,7 +395,7 @@ class RoomF:
        	self.c = [323,536]
        	self.d = [174,536]
        	self.e = [174,443]
-       	self.list_room_edges = [self.a, self.b , self.c, self.d, self.e]
+       	self.list_room_verteces = [self.a, self.b , self.c, self.d, self.e]
        	self.numberOfObjects = 1
        	self.object1 = MyObject("Lego Tower, Glass Lego on Top","BLUE",4,[15,120],"GLASS LEGO") 
 	self.obstacle = None
@@ -214,7 +420,7 @@ class Obstacle:
         self.b = b
         self.c = c
         self.d = d
-	self.list_obstacle_edges = [self.a,self.b,self.c,self.d,self.a]
+	self.list_obstacle_verteces = [self.a,self.b,self.c,self.d,self.a]
 
 
 # Class for patch definition (start and end)
@@ -225,5 +431,5 @@ class Patch:
         self.b = b
         self.c = c
         self.d = d
-	self.list_patch_edges = [self.a,self.b,self.c,self.d,self.a]
+	self.list_patch_verteces = [self.a,self.b,self.c,self.d,self.a]
 
