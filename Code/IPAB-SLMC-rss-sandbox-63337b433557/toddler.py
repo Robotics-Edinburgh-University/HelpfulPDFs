@@ -50,7 +50,7 @@ class Toddler:
 	  #self.sensors.update_analog_sensors_meas()
 	  #print self.sensors.analogs_sensors
 	  #time.sleep(0.1)
-	  
+	"""
 	while (1):
 	    start = time.time()
 	    self.robot_manager.move_robot_to_goal_aris()
@@ -61,7 +61,7 @@ class Toddler:
 	    print "time per steps" , (end-start)/16 
 	    print " over \n"
 	    time.sleep(5)
-	
+	"""
 	
 	
 	
@@ -69,11 +69,24 @@ class Toddler:
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
 
+        color_list = ['red','geen','blue']
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
-            self.RobotVision.ColorFilter()
-            #time.sleep(0.5)
+            detection = self.RobotVision.find_objects()
+            counter = 0
+            #print detection
+            print "length of object list"
+            print len(detection)
+            for element in detection:
+
+                #print 'area'
+                #if len(element)>0:
+                print 'color is ', color_list[counter]
+                print element
+                counter = counter + 1
+
+            time.sleep(0.5)
 
         """
         self.IO.cameraSetResolution('low')
@@ -114,7 +127,7 @@ class Toddler:
             swPrev=sw
             
             time.sleep(0.05)
-        """
+            """
 
     def stop_motors_on_interupt(self):
         print('You pressed Ctrl+C!')
