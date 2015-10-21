@@ -52,7 +52,7 @@ class robot_vision:
         #self.boundry_white = [self.lower_white,self.upper_white]
 
         #green filter, hsv_green = [[[79,255,126]]]
-        self.lower_green = numpy.array([50,50,50])
+        self.lower_green = numpy.array([35,100,100])
         self.upper_green = numpy.array([80,255,255])
         self.boundry_green = [self.lower_green,self.upper_green]
 
@@ -60,8 +60,20 @@ class robot_vision:
         self.upper_yellow = numpy.array([40,255,255])
         self.boundry_yellow = [self.lower_yellow,self.upper_yellow]
 
+        #red, hue 0-5
+        self.lower_red = numpy.array([0,10,10])
+        self.upper_red = numpy.array([10,255,255])
+        self.boundry_red = [self.lower_red,self.upper_red]
+
+        #blue hue: light blue: 97, normal blue:85
+        self.lower_blue = numpy.array([80,100,100])
+        self.upper_blue = numpy.array([130,255,200])
+        self.boundry_blue = [self.lower_blue,self.upper_blue]
+
         #self.boundry_list = [self.boundry_yellow]
-        self.boundry_list = [self.boundry_green]
+        #self.boundry_list = [self.boundry_green]
+        #self.boundry_list = [self.boundry_red]
+        self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue]
         #self.boundry_list = [self.boundry_white]
 
     def Set_Resolution(self):
@@ -73,39 +85,67 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         self.img = self.IO.cameraRead()
-        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',self.img)
-        time.sleep(1)
+        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',self.img)
+        #time.sleep(1)
         #grey = cv2.cvtColor(self.img,cv2.COLOR_BGR2GRAY)
         #self.IO.imshow('grey',grey)
         #time.sleep(1)
 
     def ColorFilter(self,boundry):
 
+        interested_contours = []
         hsv_image = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv_image, boundry[0], boundry[1])
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-        max_contour = contours[0]
+        #max_contour = contours[0]
 
+        """
         for contour in contours:
             if cv2.contourArea(contour) > cv2.contourArea(max_contour):
                 max_contour = contour
+        """
 
-        cv2.drawContours(self.img, contours, -1, (127,0,0),1)
+        #print 'contours sizes'
+        for contour in contours:
+            if cv2.contourArea(contour)>100.0:
+                interested_contours.append(cv2.contourArea(contour))
+
+        if len(interested_contours)>0:
+            #print "find objects"
+
+            for contour in interested_contours:
+                x,y,w,h = cv2.boundingRect(contour)
+                cv2.rectangle(self.img,(x,y),(x+w,y+h),(0,255,0),2)
+
+
+        #print 'interested contour size'
+        #for contour in interested_contours:
+        #    print cv2.contourArea(contour)
+
+        #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
 
         self.IO.imshow('image',self.img)
-        return max_contour
+        #return max_contour
+
+        return interested_contours
 
 
     def find_objects(self):
 
-        object_list = []
+        objects = []
         for boundry in self.boundry_list:
-            object_list.append(self.ColorFilter(boundry))
+            object_list = self.ColorFilter(boundry)
+            if len(object_list) == 0:
+                objects.append([0])
+            else:
+                objects.append(object_list)
 
-        print object_list
+        return objects
 
-        return object_list
+        #print 'object list', object_list
+
+        #return object_list
 
 
 
