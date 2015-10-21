@@ -93,6 +93,7 @@ class robot_vision:
 
     def ColorFilter(self,boundry):
 
+        interested_contour_areas = []
         interested_contours = []
         hsv_image = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
         mask = cv2.inRange(hsv_image, boundry[0], boundry[1])
@@ -108,11 +109,12 @@ class robot_vision:
         #print 'contours sizes'
         for contour in contours:
             if cv2.contourArea(contour)>100.0:
-                interested_contours.append(cv2.contourArea(contour))
+                interested_contour_areas.append(cv2.contourArea(contour))
+                interested_contours.append(contour)
 
+        
         if len(interested_contours)>0:
             #print "find objects"
-
             for contour in interested_contours:
                 x,y,w,h = cv2.boundingRect(contour)
                 cv2.rectangle(self.img,(x,y),(x+w,y+h),(0,255,0),2)
@@ -128,7 +130,7 @@ class robot_vision:
         self.IO.imshow('image',self.img)
         #return max_contour
 
-        return interested_contours
+        return interested_contour_areas
 
 
     def find_objects(self):
