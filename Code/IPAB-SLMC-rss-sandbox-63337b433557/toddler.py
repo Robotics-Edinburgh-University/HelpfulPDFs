@@ -50,10 +50,10 @@ class Toddler:
 	  #self.sensors.update_analog_sensors_meas()
 	  #print self.sensors.analogs_sensors
 	  #time.sleep(0.1)
-	"""
+
 	while (1):
 	    start = time.time()
-	    self.robot_manager.move_robot_to_goal_aris()
+	    self.robot_manager.move_the_fucking_robot_to_goal()
 	    #print self.robot_manager.overall_sensors_direction()
             self.IO.setMotors(0,0)
 	    end = time.time()
@@ -61,7 +61,7 @@ class Toddler:
 	    print "time per steps" , (end-start)/16 
 	    print " over \n"
 	    time.sleep(5)
-	"""
+
 	
 	
 	
@@ -71,6 +71,7 @@ class Toddler:
 
         #color_list = ['red','green','blue']
         #Object_detected_list = [False, False, False]
+        """
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
@@ -94,6 +95,7 @@ class Toddler:
                # counter = counter + 1
 
             time.sleep(0.5)
+        """
 
         """
         self.IO.cameraSetResolution('low')

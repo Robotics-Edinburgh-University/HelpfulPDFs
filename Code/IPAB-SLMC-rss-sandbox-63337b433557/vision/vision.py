@@ -45,8 +45,12 @@ class robot_vision:
         self.IO.cameraGrab()
         self.img = self.IO.cameraRead()
 
+        #control vision functionalities
+        self.detect_object = False
+
+
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
-        self.object_detected_list = [False,False,False,False,False]
+        self.object_detected_list = [0,0,0,0,0]
         #setting color filter ranges
         #white filter, hsv_white = [[[30,2,255]]]
         #self.lower_white = numpy.array([0,0,50])
@@ -130,9 +134,9 @@ class robot_vision:
 
 
         if len(interested_contours)>0:
-            print "------------------------"
-            print color, 'object detected'
-            print "------------------------"
+            #print "------------------------"
+            #print color, 'object detected'
+            #print "------------------------"
             #print "find objects"
             for contour in interested_contours:
 
@@ -156,13 +160,13 @@ class robot_vision:
                 #print ratio_distances_volumn
                 if ratio_distances_volumn < 0.0015:
                     final_contours.append(contour)
-                    print '========================================='
-                    print "Total distance of the hull of the object"
-                    print total_distance
-                    print "Corresponding distances/Volumn"
-                    print ratio_distances_volumn
-            print '=================================================='
-            print 'number of ', color, 'objects', len(final_contours)
+                    #print '========================================='
+                    #print "Total distance of the hull of the object"
+                    #print total_distance
+                    #print "Corresponding distances/Volumn"
+                    #print ratio_distances_volumn
+            #print '=================================================='
+            #print 'number of ', color, 'objects', len(final_contours)
 
 
                     #start = tuple(contour[s][0])
@@ -285,17 +289,19 @@ class robot_vision:
 
     def find_objects(self):
 
-        objects_num_list = []
-        for color in self.color_list:
-            object_num = self.ColorFilter(color)
-            if object_num == 0:
-                objects_num_list.append(0)
-            else:
-                objects_num_list.append(object_num)
+        # if controller commands to detect objects detect
+        if self.detect_object:
+            objects_num_list = []
+            for color in self.color_list:
+                object_num = self.ColorFilter(color)
+                if object_num == 0:
+                    objects_num_list.append(0)
+                else:
+                    objects_num_list.append(object_num)
 
-        #@self.Black_filter()
-
-        return objects_num_list
+            #@self.Black_filter()
+            self.object_detected_list = objects_num_list
+            self.detect_object = False
 
         #print 'object list', object_list
 

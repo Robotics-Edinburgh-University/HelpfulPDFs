@@ -88,7 +88,7 @@ class Robot_manager:
 		[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
         	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
         	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
-        	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
+	       	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
         	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
         	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
         	[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
@@ -189,7 +189,7 @@ class Robot_manager:
 			   # collision_loop.append(1)			#if we have collision append
 		            x = sensors_interuption[0]
 		            y = sensors_interuption[1]
-
+			    print x
                             #if x != 0:
 			        #collision_loop.append(1)
 		                #self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
@@ -209,7 +209,7 @@ class Robot_manager:
 			    #collision_loop.append(1)			#if we have collision append
 		            x = sensors_interuption[0]
 		            y = sensors_interuption[1]
-
+			    print x
                            # if x != 0:
   			    #    collision_loop.append(1)
 		             #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
@@ -235,7 +235,7 @@ class Robot_manager:
 		        #collision_loop.append(1)			#if we have collision append
 		        x = sensors_interuption[0]
 		        y = sensors_interuption[1]
-
+			print x
                         #if x != 0:
 			#    collision_loop.append(1)
 		        #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])

@@ -13,7 +13,7 @@ class ButtonSensor(Sensors):
         self.BL = (0,0)
         self.button_1_pressed = False
         self.button_2_pressed = False
-#        self.button_3_pressed = False
+        self.button_3_pressed = False
 #        self.button_4_pressed = False
         
        
