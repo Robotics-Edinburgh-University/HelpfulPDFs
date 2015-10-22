@@ -193,7 +193,7 @@ class robot_vision:
         self.IO.imshow('image',self.img)
         #return max_contour
 
-        return color, len(final_contours)
+        return len(final_contours)
 
     def Black_filter(self):
 
@@ -281,21 +281,21 @@ class robot_vision:
         cv2.drawContours(self.img, final_contours, -1, (0,255,0), 2)
         cv2.drawContours(self.img, interested_contours, -1, (0,255,0), 2)
         self.IO.imshow('image',self.img)
-        return final_contours
+        return len(final_contours)
 
     def find_objects(self):
 
-        objects = []
+        objects_num_list = []
         for color in self.color_list:
-            object_list = self.ColorFilter(color)
-            if len(object_list) == 0:
-                objects.append([0])
+            object_num = self.ColorFilter(color)
+            if object_num == 0:
+                objects_num_list.append(0)
             else:
-                objects.append(object_list)
+                objects_num_list.append(object_num)
 
         #@self.Black_filter()
 
-        return objects
+        return objects_num_list
 
         #print 'object list', object_list
 

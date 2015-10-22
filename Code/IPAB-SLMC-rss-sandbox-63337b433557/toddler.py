@@ -74,7 +74,10 @@ class Toddler:
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
-            detection = self.RobotVision.find_objects()
+            objects_num_list = self.RobotVision.find_objects()
+            print "=====final result for a turn==========="
+            print objects_num_list
+            print "===================================="
             #counter = 0
             #print detection
             #print "length of object list"
