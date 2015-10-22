@@ -252,24 +252,8 @@ class Robot_manager:
 			break					# break the loop and continue	      
 		    else:
 		        step_point = subpoint[0:2]		      
-		    
-	        # dynamics 
-		v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
-		 
-		# from uni2diff
-		u_wheels = self.robot.unicicle2differential_drive(v_w)
-		ul,ur = u_wheels
-		  
-		# from lin vel of wheels 2 motor command
-		motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
-		self.robot.update_current_motor_speed(motor_speed)
-		self.IO.setMotors(-motor_speed[0],motor_speed[1])
-		  
-		# position update
-		self.robot.update_current_state()
-		 
-		# error computation
-		distance_to_goal = self.Goal_reached1(subpoint)
+		     
+		distance_to_goal = self.dynamics_control_motors(step_point,subpoint) 
 		steps += 1                        
 	    
 	    if self.retrieve_image():
@@ -294,6 +278,31 @@ class Robot_manager:
 	    #print " number of interation ", count
 	    
 	self.IO.setStatus('flash') 	
+    
+    
+    # handle dynamics, control and motors
+    def dynamics_control_motors(self,step_point,subpoint):
+      
+        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
+		 
+	# from uni2diff
+	u_wheels = self.robot.unicicle2differential_drive(v_w)
+	ul,ur = u_wheels
+	  
+	# from lin vel of wheels 2 motor command
+	motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
+	self.robot.update_current_motor_speed(motor_speed)
+	self.IO.setMotors(-motor_speed[0],motor_speed[1])
+	  
+	# position update
+	self.robot.update_current_state()
+	  
+	# error computation
+	distance_to_goal = self.Goal_reached1(subpoint)
+	
+	return distance_to_goal
+      
+      
 	
 	##############################################
     def move_robot_to_goal_aris(self):
@@ -406,7 +415,7 @@ class Robot_manager:
         vision_break_flag = False
         self.vision.detect_object = True	
 	while self.vision.detect_object:
-	     s = 1 
+	     time.sleep(0.2)
 	     #print "wait for vision"
 	    
 	temp_obj_list_colors = self.vision.object_detected_list
