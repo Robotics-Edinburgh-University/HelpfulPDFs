@@ -27,7 +27,7 @@ from Distance_sensors import Distance_sensors
 
 class Robot_manager:
      
-    def __init__(self,io):
+    def __init__(self,io,vision):
        
        
        self.dt = 0.001
@@ -43,7 +43,11 @@ class Robot_manager:
        self.button_sensors = ButtonSensor(self.IO)
        self.lightSensor = LightSensors(self.IO)
        self.distance_sensors = Distance_sensors(self.IO)  
-     
+       
+       #Have the instance of the vision class
+       self.vision = vision
+
+
     # Set the desired trajectory towards the goal
     def set_the_desired_trajectory(self): 
 	
@@ -268,6 +272,10 @@ class Robot_manager:
 		distance_to_goal = self.Goal_reached1(subpoint)
 		steps += 1                        
 	    
+	    if self.retrieve_image():
+	        print "in the shit"
+	        break
+		   
 	    #if break_flag:	      	
                 #x = sensors_interuption[0]
                 #y = sensors_interuption[1]
@@ -382,7 +390,8 @@ class Robot_manager:
 	        # error computation
 	        distance_to_goal = self.Goal_reached1(subpoint)
 	        count += 1
-	    
+				        	
+
 	    if break_flag:
 	        #temp_robot_manager = Robot_manager(self.IO)
 	        #temp_robot_manager.move_robot_to_goal_aris_collision(self.sensors_interuption)
@@ -390,8 +399,28 @@ class Robot_manager:
 	    print " number of interation ", count
 	    
 	self.IO.setStatus('flash')
-	
-	
+	 
+
+    def retrieve_image(self):
+        
+        vision_break_flag = False
+        self.vision.detect_object = True	
+	while self.vision.detect_object:
+	     s = 1 
+	     #print "wait for vision"
+	    
+	temp_obj_list_colors = self.vision.object_detected_list
+	#print " object list ", temp_obj_list_colors    
+	if temp_obj_list_colors[1] > 0: 
+           self.IO.setMotors(0.0,0.0)	 		
+	   print "Targets found " , temp_obj_list_colors[1]
+	   time.sleep(5)
+	   vision_break_flag = True 
+        
+        print vision_break_flag
+	return vision_break_flag
+
+
     # Is the robot at the goal
     def Goal_reached1(self,goal): #,general_vec_orient):
                

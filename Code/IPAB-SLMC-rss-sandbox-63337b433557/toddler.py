@@ -30,8 +30,8 @@ class Toddler:
         print 'I am a toddler playing in a sandbox'
         self.IO=IO
         self.inp=[0, 0, 0, 0, 0, 0, 0, 0]
-        self.robot_manager = Robot_manager(self.IO)
         self.RobotVision = robot_vision(self.IO)
+        self.robot_manager = Robot_manager(self.IO,self.RobotVision)
 
 
     # This is a callback that will be called repeatedly.
@@ -60,7 +60,7 @@ class Toddler:
 	    print "time for 16 steps" , end-start
 	    print "time per steps" , (end-start)/16 
 	    print " over \n"
-	    time.sleep(5)
+	    time.sleep(15)
 
 	
 	
@@ -71,14 +71,14 @@ class Toddler:
 
         #color_list = ['red','green','blue']
         #Object_detected_list = [False, False, False]
-        """
+        
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
-            objects_num_list = self.RobotVision.find_objects()
-            print "=====final result for a turn==========="
-            print objects_num_list
-            print "===================================="
+            self.RobotVision.find_objects()
+            #print "=====final result for a turn==========="
+            #print objects_num_list
+            #print "===================================="
             #counter = 0
             #print detection
             #print "length of object list"
@@ -94,8 +94,8 @@ class Toddler:
                 #print element
                # counter = counter + 1
 
-            time.sleep(0.5)
-        """
+            #time.sleep(0.5)
+        
 
         """
         self.IO.cameraSetResolution('low')

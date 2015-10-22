@@ -103,6 +103,7 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         self.img = self.IO.cameraRead()
+        self.IO.imshow('image',self.img)
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',self.img)
         #time.sleep(1)
         #grey = cv2.cvtColor(self.img,cv2.COLOR_BGR2GRAY)
