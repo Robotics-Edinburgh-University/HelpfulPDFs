@@ -13,7 +13,8 @@ class Observer_Dynamics:
 	self.max_angular_vel_motor = max_angular_vel_motor 
 	self.wheel_radius = wheel_radius 				#unit:cm   
 	self.wheels_base_lenght = wheels_base_lenght
-	
+	self.tuning_turning_parameter =  2.2   #2.2   ---> 90 degrees
+	 
     def Compute_wheel_vel(self,Motor_speeds):	#Motor_speed, in percent format, 100%,20%...
 	
 	#V=w*R=max_angular_velocity*Motor_speed*wheel_radius   * self.Gear_ratio 
@@ -38,7 +39,7 @@ class Observer_Dynamics:
 	x_dt = dst*math.cos(theta_mid)
 	y_dt = dst*math.sin(theta_mid)
 
-	theta_new = theta + theta_dt/2.2   ### !!!!! tuning parameter of the observer !!! to rotate the amount we want..empirical value
+	theta_new = theta + theta_dt/ self.tuning_turning_parameter  ### !!!!! tuning parameter of the observer !!! to rotate the amount we want..empirical value
 	x_new = x + x_dt
 	y_new = y + y_dt
         return [x_new,y_new, (theta_new + math.pi)%(2*math.pi)-math.pi]

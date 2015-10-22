@@ -58,7 +58,8 @@ class Robot_manager:
 	# a 90 degrees turn with combination of to steps
 	#traj = [[5,-5,1],[0,-5,1]]
         
-        #traj = [[0,-0.001,1]]
+        #traj = [[0,-1,1]]
+        #traj = [[5,0.0,1]]
         
         #traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
 	        #[5,0,1],[5,0,1],[5,0,1],[5,0,1],[0,-0.001,1],
@@ -155,11 +156,136 @@ class Robot_manager:
 		  continue
 	        count += 1
 	        
+	        
 	    print " number of interation ", count
 	    
 	self.IO.setStatus('flash')
 	
+    def move_the_fucking_robot_to_goal(self):
+        
+        self.set_the_desired_trajectory()
+	sensors_interuption = (0,0)
+	subpoint_counter = -1
+	collision_loop = []
 	
+        for subpoint in self.robot.goal_trajectory:
+	    self.robot.reset_current_state()
+            steps = 0 
+	    subpoint_counter += 1
+   	    #print "steps " , count
+
+	    # compute error in distance
+	    distance_to_goal = self.Goal_reached1(subpoint) 
+	    while (distance_to_goal == False):
+	        
+	        # Collision While
+	        if len(collision_loop) > 0:
+		    
+		    if subpoint[0] != 0 and steps >=7:		#if collision in x (moving)
+		        print "COLLISION IN X(COLLISION LOOP)"
+                        sensors_interuption = self.overall_sensors_direction()
+		    
+	                if sensors_interuption != (0,0):
+			   # collision_loop.append(1)			#if we have collision append
+		            x = sensors_interuption[0]
+		            y = sensors_interuption[1]
+
+                            #if x != 0:
+			        #collision_loop.append(1)
+		                #self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+		            if y!= 0:
+			        collision_loop.append(1)
+		                #if x!=0:
+   	                            #self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+	                        #else:
+		                self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+		        collision_loop.pop()
+			break					# break the loop and continue
+		    elif subpoint[1] != 0 and steps >= 20:	#if collision in y (rotating)
+		        print "COLLISION IN Y(COLLISION LOOP)"
+                        sensors_interuption = self.overall_sensors_direction()
+		    
+	                if sensors_interuption != (0,0):
+			    #collision_loop.append(1)			#if we have collision append
+		            x = sensors_interuption[0]
+		            y = sensors_interuption[1]
+
+                           # if x != 0:
+  			    #    collision_loop.append(1)
+		             #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+		            if y!= 0:
+			        collision_loop.append(1)
+		                #if x!=0:
+   	                        #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+	                        #else:
+		                self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+		        collision_loop.pop()            
+			break					# break the loop and continue		      
+		    else:
+		        print "Entered Collision LOOP No Next Collision"
+		        print subpoint[0],"  ",subpoint[1]
+		        step_point = subpoint[0:2]
+		#Normal While        
+		else:
+		    		        
+                    sensors_interuption = self.overall_sensors_direction()
+		    
+	            if sensors_interuption != (0,0):
+  		        print "COLLISION FROM NORMAL LOOP"
+		        #collision_loop.append(1)			#if we have collision append
+		        x = sensors_interuption[0]
+		        y = sensors_interuption[1]
+
+                        #if x != 0:
+			#    collision_loop.append(1)
+		        #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+		        if y!= 0:
+			    collision_loop.append(1)
+		         #   if x!=0:
+   	                 #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+	                 #   else:
+		            self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+			break					# break the loop and continue	      
+		    else:
+		        step_point = subpoint[0:2]		      
+		    
+	        # dynamics 
+		v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
+		 
+		# from uni2diff
+		u_wheels = self.robot.unicicle2differential_drive(v_w)
+		ul,ur = u_wheels
+		  
+		# from lin vel of wheels 2 motor command
+		motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
+		self.robot.update_current_motor_speed(motor_speed)
+		self.IO.setMotors(-motor_speed[0],motor_speed[1])
+		  
+		# position update
+		self.robot.update_current_state()
+		 
+		# error computation
+		distance_to_goal = self.Goal_reached1(subpoint)
+		steps += 1                        
+	    
+	    #if break_flag:	      	
+                #x = sensors_interuption[0]
+                #y = sensors_interuption[1]
+                #entered = False
+                #if x != 0:
+		    #self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 8 ,0,1])
+		    #entered = True
+		#if y!= 0:
+		    #if entered == True:
+		        #entered  = False
+	                #self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+	            #else:
+		        #self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+	        #break_flag = False
+	    
+	    #print " number of interation ", count
+	    
+	self.IO.setStatus('flash') 	
 	
 	##############################################
     def move_robot_to_goal_aris(self):

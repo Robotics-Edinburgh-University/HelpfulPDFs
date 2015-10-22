@@ -53,7 +53,8 @@ class Toddler:
 	  
 	while (1):
 	    start = time.time()
-	    self.robot_manager.move_robot_to_goal_aris()
+	    #self.robot_manager.move_the_fucking_robot_to_goal()
+	    self.robot_manager.move_the_fucking_robot_to_goal()
 	    #print self.robot_manager.overall_sensors_direction()
             self.IO.setMotors(0,0)
 	    end = time.time()
@@ -69,11 +70,11 @@ class Toddler:
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
 
-        while(OK):
-            self.RobotVision.Set_Resolution()
-            self.RobotVision.ImgObtain()
-            self.RobotVision.ColorFilter()
-            #time.sleep(0.5)
+        #while(OK):
+            #self.RobotVision.Set_Resolution()
+            #self.RobotVision.ImgObtain()
+            #self.RobotVision.ColorFilter()
+            ##time.sleep(0.5)
 
         """
         self.IO.cameraSetResolution('low')
