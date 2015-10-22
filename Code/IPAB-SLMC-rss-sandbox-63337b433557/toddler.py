@@ -69,22 +69,26 @@ class Toddler:
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
 
-        color_list = ['red','geen','blue']
+        #color_list = ['red','green','blue']
+        #Object_detected_list = [False, False, False]
         while(OK):
             self.RobotVision.Set_Resolution()
             self.RobotVision.ImgObtain()
             detection = self.RobotVision.find_objects()
-            counter = 0
+            #counter = 0
             #print detection
-            print "length of object list"
-            print len(detection)
-            for element in detection:
+            #print "length of object list"
+            #print len(detection)
+            #for element in detection:
 
                 #print 'area'
                 #if len(element)>0:
-                print 'color is ', color_list[counter]
-                print element
-                counter = counter + 1
+                #print 'color is ', color_list[counter]
+                #if len(element) == 1:
+                    #print self.RobotVision.color_list[counter],'object detected'
+                    #self.RobotVision.Object_detected_list[counter] = True
+                #print element
+               # counter = counter + 1
 
             time.sleep(0.5)
 
