@@ -45,7 +45,7 @@ class robot_vision:
         self.IO.cameraGrab()
         self.img = self.IO.cameraRead()
 
-        self.color_list = ['red','green','blue','yellow','orange','white']
+        self.color_list = ['red','green','blue','yellow','orange']#,'white']
         self.object_detected_list = [False,False,False,False,False]
         #setting color filter ranges
         #white filter, hsv_white = [[[30,2,255]]]
@@ -87,7 +87,7 @@ class robot_vision:
         #self.boundry_list = [self.boundry_yellow]
         #self.boundry_list = [self.boundry_green]
         #self.boundry_list = [self.boundry_red]
-        self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange,self.boundry_white]
+        self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange]#,self.boundry_white]
         #self.boundry_list = [self.boundry_white]
 
     def Set_Resolution(self):
