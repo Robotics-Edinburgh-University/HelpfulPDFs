@@ -33,7 +33,6 @@ class Toddler:
         self.RobotVision = robot_vision(self.IO)
         self.robot_manager = Robot_manager(self.IO,self.RobotVision)
 
-
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Control(self, OK):
@@ -50,7 +49,7 @@ class Toddler:
 	  #self.sensors.update_analog_sensors_meas()
 	  #print self.sensors.analogs_sensors
 	  #time.sleep(0.1)
-
+        
 	while (1):
 	    start = time.time()
 	    self.robot_manager.move_the_fucking_robot_to_goal()
