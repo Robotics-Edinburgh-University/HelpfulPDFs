@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 
-import unittest
+
 import matplotlib.pyplot as plt
 import numpy
-import copy
 
 import Map
 
@@ -29,7 +28,51 @@ class map_representation:
 	self.robot_map.waypoints_as_graph.shortest(target, path)
 	#print 'The shortest path : %s' %(path[::-1])
         return path[::-1]
-      
+    
+    # returns the interpolated path
+    def waypoint_interpolation(self,path):
+        
+        coord_path = []
+        for node in path:
+	    coord = (self.robot_map.waypoints_as_graph.get_vertex(node)).coord
+	    coord_path.append([int(coord[0]),int(coord[1])])
+	
+	return coord_path
+	
+    # returns the interpolated path
+    def test_waypoint_interpolation(self,path):
+        
+        coord_path = []
+        for node in path:
+	    coord = (self.robot_map.waypoints_as_graph.get_vertex(node)).coord
+	    coord_path.append(numpy.array([int(coord[0]),int(coord[1])]))
+	
+	relative_coord_path = [coord_path[0]]
+	for i in xrange(len(coord_path)-1): 
+	    relative_coord_path.append(coord_path[i+1] - coord_path[i]) 
+	
+	#print coord_path
+	#print relative_coord_path
+	for subpath in relative_coord_path:
+	    print subpath
+	    xsteps = abs(subpath[0])/5
+	    x = numpy.sign(subpath[0])* 5.0
+	    xpath = [[x,0.0,0.0] for _ in xrange(xsteps)]
+	    if subpath[1] > 0.0 :
+	        ypath_init = [0.0, 0.001 , 0.0]
+	    if subpath[1] < 0.0 :
+	        ypath_init = [0.0, -0.001 , 0.0]
+	        
+	    ysteps = abs(subpath[1])/5
+	    y = numpy.sign(subpath[1])* 5.0
+	    ypath  = [ypath_init] + [[y,0.0,0.0] for _ in xrange(ysteps)] + [[ypath_init[0],(ypath_init[1]*(-1)),ypath_init[2]]]	 
+	    
+            print xpath
+            print "---------------------------------"
+            print ypath
+            raw_input("ddddd")
+            
+            
     # tesp the map
     def map_plot(self,plot_path = False, path = None):
         #robot_map = Map.MapRoom()
@@ -83,11 +126,11 @@ class map_representation:
 	# plot connections of node
 	plot_connections_node = False
 	if plot_connections_node:	
-	    j = 'A'
+	    j = 'N'
 	    node_coord = (self.robot_map.waypoints_as_graph.get_vertex(j)).coord
 	    adv =  self.robot_map.waypoints_as_graph.vert_dict[j].adjacent
 	    for i in adv:
-		print "in " , i.id 
+		#print "in " , i.id 
 		neighboor_coord = i.coord
 		px = [node_coord[0],neighboor_coord[0]]
 		py = [node_coord[1],neighboor_coord[1]]
@@ -113,31 +156,4 @@ class map_representation:
         plt.show()
      
 
-class map_rep_test(unittest.TestCase):
-    
-    # plot the map with each waypoints
-    def t_test_map_rep_funcs(self):
-        
-        mp = map_representation()
-        mp.map_plot()
-    
-    # test the building of the walls as lines
-    def t_test_map_build(self):
-        
-        mp = map_representation()
-        mp.walls()
-    
-    
-    # test the computation of the shortest path
-    def test_shortest_path_solution(self):
-        
-        mp = map_representation()
-        plot_path = True
-        solution_path = mp.retrieve_shortest_path('E','I')
-        mp.map_plot(plot_path,solution_path)
-    
-      
-if __name__ == '__main__':
-        
-    unittest.main() 
     
