@@ -50,11 +50,10 @@ class Toddler:
 	  #self.sensors.update_analog_sensors_meas()
 	  #print self.sensors.analogs_sensors
 	  #time.sleep(0.1)
-	  
+	"""
 	while (1):
 	    start = time.time()
-	    #self.robot_manager.move_the_fucking_robot_to_goal()
-	    self.robot_manager.move_the_fucking_robot_to_goal()
+	    self.robot_manager.move_robot_to_goal_aris()
 	    #print self.robot_manager.overall_sensors_direction()
             self.IO.setMotors(0,0)
 	    end = time.time()
@@ -62,7 +61,7 @@ class Toddler:
 	    print "time per steps" , (end-start)/16 
 	    print " over \n"
 	    time.sleep(5)
-	
+	"""
 	
 	
 	
@@ -70,11 +69,31 @@ class Toddler:
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
 
-        #while(OK):
-            #self.RobotVision.Set_Resolution()
-            #self.RobotVision.ImgObtain()
-            #self.RobotVision.ColorFilter()
-            ##time.sleep(0.5)
+        #color_list = ['red','green','blue']
+        #Object_detected_list = [False, False, False]
+        while(OK):
+            self.RobotVision.Set_Resolution()
+            self.RobotVision.ImgObtain()
+            objects_num_list = self.RobotVision.find_objects()
+            print "=====final result for a turn==========="
+            print objects_num_list
+            print "===================================="
+            #counter = 0
+            #print detection
+            #print "length of object list"
+            #print len(detection)
+            #for element in detection:
+
+                #print 'area'
+                #if len(element)>0:
+                #print 'color is ', color_list[counter]
+                #if len(element) == 1:
+                    #print self.RobotVision.color_list[counter],'object detected'
+                    #self.RobotVision.Object_detected_list[counter] = True
+                #print element
+               # counter = counter + 1
+
+            time.sleep(0.5)
 
         """
         self.IO.cameraSetResolution('low')
@@ -115,7 +134,7 @@ class Toddler:
             swPrev=sw
             
             time.sleep(0.05)
-        """
+            """
 
     def stop_motors_on_interupt(self):
         print('You pressed Ctrl+C!')
