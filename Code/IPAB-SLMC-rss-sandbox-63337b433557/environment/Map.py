@@ -199,6 +199,10 @@ class MapRoom:
 	
 	# Map waypoints 
 	p_interest = filter( lambda waypoint: waypoint['name']=='C' or waypoint['name']=='F', waypoint_list )
+	#pA_interest = filter( lambda waypoint: waypoint['name']=='A', waypoint_list )
+	#pC_interest = filter( lambda waypoint: waypoint['name']=='C', waypoint_list )
+	#print "ddd " , (pC_interest[0])['coord']
+	#waypoint_middle_south = numpy.array([((pA_interest[0])['coord'])[0] , ((pC_interest[0])['coord'])[1]])
 	waypoint_middle_south = ((p_interest[0])['coord'] + (p_interest[1])['coord'])/2
 	waypoint_info = {'coord': waypoint_middle_south,
 			 'room': "S",
