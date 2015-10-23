@@ -138,8 +138,8 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
-        #time.sleep(1)
+        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        time.sleep(1)
         return image
         #self.img = self.IO.cameraRead()
 
@@ -230,10 +230,9 @@ class robot_vision:
 
         #return object_list
 
-    def Segmentation_RGBXY(img):
+    def Segmentation_RGBXY(self,img,cluster_numbers):
 
         #Clastering number,setting 5
-        K = 5
 
         # Construct an array of 3D points in the RGB colour space.
         # Each pixel in the image is represented as a single point.
@@ -260,7 +259,7 @@ class robot_vision:
         # labels  - the cluster which each point belons to
         # centers - the centers of the K clusters
         ret,labels,centers=cv2.kmeans(rgbxy_pts,  # Input points
-                              K,          # Number of clusters
+                              cluster_numbers,          # Number of clusters
                               None,       # Initial estimate of the label of each point
                               criteria,   # Termination criteria
                               10,         # Return the best result after that many attempts
@@ -275,61 +274,19 @@ class robot_vision:
         # Make the RGB points array into an image again
         seg_rgbxy_img = seg_rgbxy_pts.reshape((img.shape))
 
+        return seg_rgbxy_img
 
-    def ColorFilter_segmentation(self,color):
+
+    def ColorFilter_segmentation(self,color,origin_image,seg_image_hsv):
 
         interested_contour_areas = []
         interested_contours = []
         final_contours = []
 
-        #Clastering number,setting 5
-        K = 5
-
-        # Construct an array of 3D points in the RGB colour space.
-        # Each pixel in the image is represented as a single point.
-        rgb_pts = numpy.float32(self.img.reshape(-1, 3))
-
-        # Create an array of 2D points corresponding to the xy position of each pixel in the image
-        xy_pts = numpy.indices(self.img.shape[:2]).reshape(2, -1).transpose()
-
-        # Since colour and position have different units we should weigh them appropriately
-        # such that both are equally important during clustering. The value of 0.2 is
-        # empirically determined, but you should try other values e.g. 0.1, 0.5, 1.0
-        # If the data is first normalised this step will not be necessary.
-        xy_weight = 0.2
-        # Stack the 3D RGB points and the 2D xy points into 5D points
-        rgbxy_pts = numpy.float32(numpy.hstack((rgb_pts, xy_weight * xy_pts)))
-
-        # Create the criteria when the K-means iterations should be terminated.
-        # The iteration will stop if the error is less then EPS = 1.0 or the
-        # maximum number of iteration MAX_ITER = 20 is achieved
-        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
-
-        # Run K-means. The return values are:
-        # ret     - the final value of the minimised sum of distances
-        # labels  - the cluster which each point belons to
-        # centers - the centers of the K clusters
-        ret,labels,centers=cv2.kmeans(rgbxy_pts,  # Input points
-                              K,          # Number of clusters
-                              None,       # Initial estimate of the label of each point
-                              criteria,   # Termination criteria
-                              10,         # Return the best result after that many attempts
-                              cv2.KMEANS_RANDOM_CENTERS)  # Initialise the clusters randomly
-
-        # Convert the centers from float32 to uint8 and take only the RGB coordinates
-        centers = numpy.uint8(centers[:, :3])
-
-        # Set the coordinates of each point to the center of the cluster it belongs to
-        seg_rgbxy_pts = centers[labels.flatten()]
-
-        # Make the RGB points array into an image again
-        seg_rgbxy_img = seg_rgbxy_pts.reshape((self.img.shape))
-
-
         boundry = self.boundry_list_segmentation[self.color_list_segmentation.index(color)]
-        hsv_image_segmented = cv2.cvtColor(seg_rgbxy_img, cv2.COLOR_BGR2HSV)
+        #hsv_image_segmented = cv2.cvtColor(seg_rgbxy_img, cv2.COLOR_BGR2HSV)
 
-        mask = cv2.inRange(hsv_image_segmented, boundry[0], boundry[1])
+        mask = cv2.inRange(seg_image_hsv, boundry[0], boundry[1])
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
         #max_contour = contours[0]
 
@@ -393,9 +350,9 @@ class robot_vision:
 
         #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
-        cv2.drawContours(self.img, final_contours, -1, (0,255,0), 2)
+        #cv2.drawContours(self.img, final_contours, -1, (0,255,0), 2)
         cv2.drawContours(self.img, interested_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',self.img)
+        self.IO.imshow('image',origin_image)
         #return max_contour
 
         print "------------------------"
