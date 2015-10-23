@@ -59,7 +59,8 @@ class Robot_manager:
     def run_robot(self):
 
         start = time.time()
-        self.compute_traj_to_goal('A','D')
+        #self.compute_traj_to_goal('A','D')
+        self.set_the_desired_trajectory()
         self.move_the_fucking_robot_to_goal()
 	#print self.robot_manager.overall_sensors_direction()
 	self.IO.setMotors(0,0)
@@ -341,7 +342,7 @@ class Robot_manager:
         return commands
     
     # Set the desired trajectory towards the goal
-    def set_the_desired_trajectory(self,traj): 
+    def set_the_desired_trajectory(self,traj=None): 
 	
 	#traj = [[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
 		#[5,0,1],[5,0,1],[5,0,1],[5,0,1],[5,0,1],
