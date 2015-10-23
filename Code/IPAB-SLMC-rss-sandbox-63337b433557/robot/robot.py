@@ -75,7 +75,7 @@ class Robot:
         # update the current frame of the robot
         self.update_current_frame()
     
-    # reset the current pose of the robot to Zero    
+    # reset the current pose of the robot to Zero(current_pos)    
     def reset_current_state(self):
         
         # log of the trace of the robot 

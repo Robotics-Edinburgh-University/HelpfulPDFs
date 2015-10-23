@@ -13,7 +13,7 @@ class Observer_Dynamics:
 	self.max_angular_vel_motor = max_angular_vel_motor 
 	self.wheel_radius = wheel_radius 				#unit:cm   
 	self.wheels_base_lenght = wheels_base_lenght
-	self.tuning_turning_parameter =  2.2   #2.2   ---> 90 degrees
+	self.tuning_turning_parameter =  1.8 #2.2   #2.2   ---> 90 degrees
 	 
     def Compute_wheel_vel(self,Motor_speeds):	#Motor_speed, in percent format, 100%,20%...
 	
