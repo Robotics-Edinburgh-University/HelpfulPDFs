@@ -51,15 +51,7 @@ class Toddler:
 	  #time.sleep(0.1)
         
 	while (1):
-	    start = time.time()
-	    self.robot_manager.move_the_fucking_robot_to_goal()
-	    #print self.robot_manager.overall_sensors_direction()
-            self.IO.setMotors(0,0)
-	    end = time.time()
-	    print "time for 16 steps" , end-start
-	    print "time per steps" , (end-start)/16 
-	    print " over \n"
-	    time.sleep(15)
+	    self.robot_manager.run_robot()
 
 	
 	
