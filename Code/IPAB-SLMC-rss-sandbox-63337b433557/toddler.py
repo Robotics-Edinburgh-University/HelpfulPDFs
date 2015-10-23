@@ -70,11 +70,10 @@ class Toddler:
 
         #color_list = ['red','green','blue']
         #Object_detected_list = [False, False, False]
-        
+        self.RobotVision.Set_Resolution()
         while(OK):
-            self.RobotVision.Set_Resolution()
-            self.RobotVision.ImgObtain()
-            self.RobotVision.find_objects()
+            image = self.RobotVision.ImgObtain()
+            self.RobotVision.find_objects(image)
             #print "=====final result for a turn==========="
             #print objects_num_list
             #print "===================================="

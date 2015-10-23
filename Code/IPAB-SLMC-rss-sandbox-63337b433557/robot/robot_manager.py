@@ -216,8 +216,8 @@ class Robot_manager:
 		steps += 1                        
 	    
 	    if visionCounter%4 == 0:
-	        if self.retrieve_image():
-		    
+	        if len(self.retrieve_image()) > 0 :
+		  
 		    # To engage the servo motor
 		    self.IO.servoEngage()
 
@@ -259,26 +259,24 @@ class Robot_manager:
 
     def retrieve_image(self):
         
-        vision_break_flag = False
+        
         self.vision.detect_object = True
         time1 = time.time()
 	while self.vision.detect_object:
-	     #time.sleep(0.05)
-	     self.IO.setMotors(0.0,0.0)
-	     #print "wait for vision"
+	    self.IO.setMotors(0.0,0.0)
+	     
 	time2 = time.time()
 	print "TIME: ",time2-time1
 
-	temp_obj_list_colors = self.vision.object_detected_list
-	print " object list ", temp_obj_list_colors    
-	if temp_obj_list_colors[1] > 0: 
-           self.IO.setMotors(0.0,0.0)	 		
-	   print "Targets found " , temp_obj_list_colors[1]
-	   #time.sleep(5)
-	   vision_break_flag = True 
-        
-        print vision_break_flag
-	return vision_break_flag
+	color_list = self.vision.object_detected_list
+	
+	colors = []
+	for color in color_list:
+	    if color > 0:
+	        colors.append(color)
+	        print "Color found found:" , color
+
+	return colors
 
 
     # Is the robot at the goal

@@ -137,11 +137,10 @@ class robot_vision:
         #read the buffer 5 times by cameraGrab and obtain it by cameraRead
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
-        #img = self.IO.cameraRead()
-        #self.IO.imshow('image',self.img)
+        image = self.IO.cameraRead()
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
         #time.sleep(1)
-        return self.IO.cameraRead()
+        return image
         #self.img = self.IO.cameraRead()
 
 
@@ -149,7 +148,7 @@ class robot_vision:
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return hsv_image
 
-    def ColorFilter(self,color,hsv_image):
+    def ColorFilter(self,color,origin_image,hsv_image):
 
         interested_contour_areas = []
         interested_contours = []
@@ -203,21 +202,21 @@ class robot_vision:
         #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
         #cv2.drawContours(self.img, interested_contours, -1, (0,255,0), 2)
-        cv2.drawContours(self.img, final_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',self.img)
+        cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
+        self.IO.imshow('image',origin_image)
         #return max_contour
 
         return len(final_contours)
 
 
-    def find_objects(self, img):
-        self.detect_object= True
+    def find_objects(self,img):
+
         # if controller commands to detect objects detect
         if self.detect_object:
             objects_num_list = []
             hsv_image = self.HSV_Conversion(img)
             for color in self.color_list:
-                object_num = self.ColorFilter(color,hsv_image)
+                object_num = self.ColorFilter(color,img,hsv_image)
                 if object_num == 0:
                     objects_num_list.append(0)
                 else:
