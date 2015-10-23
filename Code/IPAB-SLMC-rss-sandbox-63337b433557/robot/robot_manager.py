@@ -112,58 +112,7 @@ class Robot_manager:
 	
 	self.robot.set_desired_trajectory(traj)
 	
-    
-    # make it go to where we want
-    def move_robot_to_goal1(self):
-        
-        self.set_the_desired_trajectory()
-        
-        for subpoint in self.robot.goal_trajectory:
-	    self.robot.reset_current_state()
-            count = 0 
-	    break_flag = False
-
-	    # compute error in distance
-	    distance_to_goal = self.Goal_reached1(subpoint) 
-	    while (distance_to_goal == False):
-	        
-	        #sensors_interuption = self.overall_sensors_direction()
-	        sensors_interuption =  (0,0) 
-	        if (0,0) !=  sensors_interuption :
-		   #step_point = [sensors_interuption[0] * 10 + subpoint[0],sensors_interuption[1] * 10 + subpoint[1], 1] 
-  		   step_point = [sensors_interuption[0],sensors_interuption[1], 1] 
-  		   print "interrupt "
-		   break_flag = True
-		else:
-		   step_point = subpoint[0:2]
-		    
-	        # dynamics 
-	        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
-	        
-                # from uni2diff
-                u_wheels = self.robot.unicicle2differential_drive(v_w)
-                ul,ur = u_wheels
-                
-                # from lin vel of wheels 2 motor command
-                motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
-	        self.robot.update_current_motor_speed(motor_speed)
-	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
-	        
-	        # position update
-	        self.robot.update_current_state()
-	        
-	        # error computation
-	        distance_to_goal = self.Goal_reached1(subpoint)
-	        if break_flag:
-		  self.robot.reset_current_state()
-		  break_flag = False
-		  continue
-	        count += 1
-	        
-	        
-	    print " number of interation ", count
-	    
-	self.IO.setStatus('flash')
+   
 	
     def move_the_fucking_robot_to_goal(self):
         
@@ -171,29 +120,29 @@ class Robot_manager:
 	sensors_interuption = (0,0)
 	subpoint_counter = -1
 	collision_loop = []
-	
+	visionCounter = 0
         for subpoint in self.robot.goal_trajectory:
 	    self.robot.reset_current_state()
             steps = 0 
+            
 	    subpoint_counter += 1
-   	    #print "steps " , count
-
-	    # compute error in distance
+	    
+	    # Inner while loop that that move the robot for every subpoint	
+	    #___LOOP_BEGIN_________________________________________________________
 	    distance_to_goal = self.Goal_reached1(subpoint) 
 	    while (distance_to_goal == False):
-	        
+	       
 	        # Collision While
 	        if len(collision_loop) > 0:
 		    
 		    if subpoint[0] != 0 and steps >=7:		#if collision in x (moving)
 		        print "COLLISION IN X(COLLISION LOOP)"
                         sensors_interuption = self.overall_sensors_direction()
-		    
+			print "sensors : " , sensors_interuption
 	                if sensors_interuption != (0,0):
 			   # collision_loop.append(1)			#if we have collision append
 		            x = sensors_interuption[0]
 		            y = sensors_interuption[1]
-			    print x
                             #if x != 0:
 			        #collision_loop.append(1)
 		                #self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
@@ -203,17 +152,21 @@ class Robot_manager:
    	                            #self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
 	                        #else:
 		                self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+		            if y==0 and x==-1:
+			        collision_loop.append(1)
+			        self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+			        
 		        collision_loop.pop()
 			break					# break the loop and continue
+			
 		    elif subpoint[1] != 0 and steps >= 20:	#if collision in y (rotating)
 		        print "COLLISION IN Y(COLLISION LOOP)"
                         sensors_interuption = self.overall_sensors_direction()
-		    
+                        print "sensors : " , sensors_interuption
 	                if sensors_interuption != (0,0):
 			    #collision_loop.append(1)			#if we have collision append
 		            x = sensors_interuption[0]
 		            y = sensors_interuption[1]
-			    print x
                            # if x != 0:
   			    #    collision_loop.append(1)
 		             #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
@@ -223,23 +176,25 @@ class Robot_manager:
    	                        #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
 	                        #else:
 		                self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+		            if y==0 and x==-1:
+			        collision_loop.append(1)
+			        self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+			        
 		        collision_loop.pop()            
-			break					# break the loop and continue		      
+			break					# break the loop and continue
+			
 		    else:
 		        print "Entered Collision LOOP No Next Collision"
-		        print subpoint[0],"  ",subpoint[1]
 		        step_point = subpoint[0:2]
 		#Normal While        
-		else:
-		    		        
+		else:		    		        
                     sensors_interuption = self.overall_sensors_direction()
-		    
+		    print "sensors : " , sensors_interuption
 	            if sensors_interuption != (0,0):
   		        print "COLLISION FROM NORMAL LOOP"
 		        #collision_loop.append(1)			#if we have collision append
 		        x = sensors_interuption[0]
 		        y = sensors_interuption[1]
-			print x
                         #if x != 0:
 			#    collision_loop.append(1)
 		        #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
@@ -249,36 +204,34 @@ class Robot_manager:
    	                 #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
 	                 #   else:
 		            self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
+		        if y==0 and x==-1:
+			    collision_loop.append(1)
+			    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
 			break					# break the loop and continue	      
 		    else:
 		        step_point = subpoint[0:2]		      
-		     
+		#___LOOP_END_________________________________________________________   
+		
 		distance_to_goal = self.dynamics_control_motors(step_point,subpoint) 
 		steps += 1                        
 	    
-	    if self.retrieve_image():
-	        print "in the shit"
-	        break
-		   
-	    #if break_flag:	      	
-                #x = sensors_interuption[0]
-                #y = sensors_interuption[1]
-                #entered = False
-                #if x != 0:
-		    #self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 8 ,0,1])
-		    #entered = True
-		#if y!= 0:
-		    #if entered == True:
-		        #entered  = False
-	                #self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
-	            #else:
-		        #self.robot.goal_trajectory.insert(subpoint_counter+1,[0, y * 0.001,1])
-	        #break_flag = False
-	    
-	    #print " number of interation ", count
+	    if visionCounter%4 == 0:
+	        if self.retrieve_image():
+		    
+		    # To engage the servo motor
+		    self.IO.servoEngage()
+
+                    self.IO.servoSet(0)
+                    time.sleep(1)
+                    self.IO.servoSet(90)
+                    time.sleep(1)
+                    self.IO.servoSet(0)
+                    time.sleep(1)
+	    visionCounter += 1    
 	    
 	self.IO.setStatus('flash') 	
     
+   
     
     # handle dynamics, control and motors
     def dynamics_control_motors(self,step_point,subpoint):
@@ -303,127 +256,25 @@ class Robot_manager:
 	return distance_to_goal
       
       
-	
-	##############################################
-    def move_robot_to_goal_aris(self):
-        
-        self.set_the_desired_trajectory()
-        self.sensors_interuption =  (0,0) 	#Initialization
-	break_flag = False
-	
-        for subpoint in self.robot.goal_trajectory:
-	    self.robot.reset_current_state()
-            count = 0 
-	    
-   	    print "steps " , count
-
-	    # compute error in distance
-	    distance_to_goal = self.Goal_reached1(subpoint) 
-	    while (distance_to_goal == False):
-	        
-	        
-                self.sensors_interuption = self.overall_sensors_direction()
-                print " Outer ",  self.sensors_interuption
-	        if (0,0) !=  self.sensors_interuption :
-		    break_flag = True
-		    print "COLLISION!"
-		    break
-		else:
-		    step_point = subpoint[0:2]
-		    
-	        # dynamics 
-	        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
-	        
-                # from uni2diff
-                u_wheels = self.robot.unicicle2differential_drive(v_w)
-                ul,ur = u_wheels
-                
-                # from lin vel of wheels 2 motor command
-                motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
-	        self.robot.update_current_motor_speed(motor_speed)
-	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
-	        
-	        # position update
-	        self.robot.update_current_state()
-	        
-	        # error computation
-	        distance_to_goal = self.Goal_reached1(subpoint)
-	        count += 1
-	    
-	    if break_flag:
-	        temp_robot_manager = Robot_manager(self.IO)
-	        temp_robot_manager.move_robot_to_goal_aris_collision(self.sensors_interuption)
-	        break_flag = False
-	    
-	    #print " number of interation ", count
-	    
-	self.IO.setStatus('flash')   
-	
-	
-    def move_robot_to_goal_aris_collision(self,sensors_interuption):
-        
-	break_flag = False
-	
-	x = sensors_interuption[0]
-	y = sensors_interuption[1]
-	
-	custom_traj = [[x * 8 ,0,1],[0, y * 0.001,1]]
-    	    
-    	for subpoint in custom_traj:
-	    self.robot.reset_current_state()
-            count = 0 
-            print " In collision" , custom_traj
-	    # compute error in distance
-	    distance_to_goal = self.Goal_reached1(subpoint) 
-	    while (distance_to_goal == False):
-	        
-	        print "In the while of collision"
-                #self.sensors_interuption = self.overall_sensors_direction()
-	        step_point = subpoint[0:2]
-		    
-	        # dynamics 
-	        v_w = self.controller.execute(self.robot.Current_Pose, step_point[0:2] )
-	        
-                # from uni2diff
-                u_wheels = self.robot.unicicle2differential_drive(v_w)
-                ul,ur = u_wheels
-                
-                # from lin vel of wheels 2 motor command
-                motor_speed = self.robot.convert_wheel_lin_vel_2_motor_speed(ul,ur)
-	        self.robot.update_current_motor_speed(motor_speed)
-	        self.IO.setMotors(-motor_speed[0],motor_speed[1])
-	        
-	        # position update
-	        self.robot.update_current_state()
-	        
-	        # error computation
-	        distance_to_goal = self.Goal_reached1(subpoint)
-	        count += 1
-				        	
-
-	    if break_flag:
-	        #temp_robot_manager = Robot_manager(self.IO)
-	        #temp_robot_manager.move_robot_to_goal_aris_collision(self.sensors_interuption)
-		break_flag = False
-	    print " number of interation ", count
-	    
-	self.IO.setStatus('flash')
-	 
 
     def retrieve_image(self):
         
         vision_break_flag = False
-        self.vision.detect_object = True	
+        self.vision.detect_object = True
+        time1 = time.time()
 	while self.vision.detect_object:
-	     time.sleep(0.2)
+	     #time.sleep(0.05)
+	     self.IO.setMotors(0.0,0.0)
 	     #print "wait for vision"
-	    
+	time2 = time.time()
+	print "TIME: ",time2-time1
+
 	temp_obj_list_colors = self.vision.object_detected_list
-	#print " object list ", temp_obj_list_colors    
+	print " object list ", temp_obj_list_colors    
 	if temp_obj_list_colors[1] > 0: 
            self.IO.setMotors(0.0,0.0)	 		
 	   print "Targets found " , temp_obj_list_colors[1]
-	   time.sleep(5)
+	   #time.sleep(5)
 	   vision_break_flag = True 
         
         print vision_break_flag
