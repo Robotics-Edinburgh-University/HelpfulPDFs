@@ -30,6 +30,10 @@ from Distance_sensors import Distance_sensors
 sys.path.insert(0, CURRENT_PATH + '/environment')
 from map_representaion import map_representation
 
+# import calibration modules
+sys.path.insert(0, CURRENT_PATH + '/calibration')
+from calibrate import calibration
+
 
 class Robot_manager:
     def __init__(self, io, vision):
@@ -54,6 +58,10 @@ class Robot_manager:
         # Instance of the map and the graph for path planning
         self.map_representaion = map_representation()
 
+        # Instance of the calibration class
+        self.calibration = calibration()
+
+
         self.i_found_a_collision = False
 
 
@@ -62,8 +70,14 @@ class Robot_manager:
         #self.execute_path()
         #self.straight_robot_motion()
         #self.counterwise_follow_wall_in_room_stop_at_right_edge()
-        self.turn_right_360_robot_motion()
-
+        self.calibrate_turning_rate()
+        time.sleep(5)
+        print " calibration "
+        #self.perform_90_degrees_turn_right()
+        #time.sleep(1)
+        self.perform_90_degrees_turn_left()
+        print " over \n"
+        time.sleep(15)
 
     # excute the provided path
     def execute_path(self):
@@ -73,10 +87,7 @@ class Robot_manager:
         # self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
         end = time.time()
-        print "time for 16 steps" , end-start
-        print "time per steps" , (end-start)/16
-        print " over \n"
-        time.sleep(15)
+
 
     # move always forward
     def straight_robot_motion(self):
@@ -84,20 +95,7 @@ class Robot_manager:
         self.set_the_desired_trajectory(traj)
         self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
-        print " over \n"
-        time.sleep(15)
 
-    # move always forward
-    def turn_right_360_robot_motion(self):
-        sonar_360_values = []
-        for i in xrange(20):
-            self.set_tranjectory_right()
-            sonar_360_values += self.move_robot_to_measure()
-            #self.move_the_fucking_robot_to_goal()
-        self.IO.setMotors(0,0)
-        print(sonar_360_values)
-        print " over \n"
-        time.sleep(15)
 
     # move always forward
     def turn_left_360_robot_motion(self):
@@ -105,8 +103,7 @@ class Robot_manager:
             self.set_tranjectory_left()
             self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
-        print " over \n"
-        time.sleep(15)
+
 
     # follow the wall
     def counterwise_follow_wall_in_room_stop_at_right_edge( self ):
@@ -620,10 +617,9 @@ class Robot_manager:
     def move_robot_to_measure(self):
         #print self.robot.goal_trajectory
         sonar_360_measures= []
+        steps = 0
         for subpoint in self.robot.goal_trajectory:
             self.robot.reset_current_state()
-            steps = 0
-
             # Inner while loop that that move the robot for every subpoint
             # ___LOOP_BEGIN_________________________________________________________
             distance_to_goal = self.Goal_reached1(subpoint)
@@ -635,4 +631,43 @@ class Robot_manager:
                 # Normal While
                 distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
                 steps += 1
+
         return sonar_360_measures
+
+    # turn robot 90 degrees after calibration
+    def turn_robot_90_degrees(self,subpoint):
+        steps = 0
+        step_limit_90 = self.calibration.turn_360_steps/4
+        while (steps < step_limit_90):
+                step_point = subpoint[0:2]
+                distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
+                steps += 1
+
+    # calibration function
+    def calibrate_turning_rate(self):
+
+        calibration_data = self.turn_right_360_robot_motion_for_calibration()
+        #print calibration_data
+        self.calibration.calibrate_robot(calibration_data)
+
+    # move always forward
+    def turn_right_360_robot_motion_for_calibration(self):
+        sonar_360_values = []
+        steps = 0
+        for i in xrange(20):
+            self.set_tranjectory_right()
+            sonar_360_values += self.move_robot_to_measure()
+        self.IO.setMotors(0,0)
+        return sonar_360_values
+
+    # turn exactly 90 degrees right
+    def perform_90_degrees_turn_right(self):
+        self.set_tranjectory_right()
+        self.turn_robot_90_degrees(self.robot.goal_trajectory[0])
+        self.IO.setMotors(0,0)
+
+    # turn exactly 90 degrees left
+    def perform_90_degrees_turn_left(self):
+        self.set_tranjectory_left()
+        self.turn_robot_90_degrees(self.robot.goal_trajectory[0])
+        self.IO.setMotors(0,0)
