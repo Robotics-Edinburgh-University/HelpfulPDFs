@@ -56,21 +56,61 @@ class Robot_manager:
 
         self.i_found_a_collision = False
 
-    def run_robot(self):
-        self.start_and_stay_in_the_room()
 
-    # print self.IO.getSensors()
-    # start = time.time()
-    # self.compute_traj_to_goal('A','D')
-    ## self.set_the_desired_trajectory()
-    ## self.move_the_fucking_robot_to_goal()
-    # print self.robot_manager.overall_sensors_direction()
-    # self.IO.setMotors(0,0)
-    # end = time.time()
-    # print "time for 16 steps" , end-start
-    # print "time per steps" , (end-start)/16
-    # print " over \n"
-    # time.sleep(15)
+    def run_robot(self):
+
+        #self.execute_path()
+        #self.straight_robot_motion()
+        #self.counterwise_follow_wall_in_room_stop_at_right_edge()
+        self.turn_right_360_robot_motion()
+
+
+    # excute the provided path
+    def execute_path(self):
+
+        start = time.time()
+        self.compute_traj_to_goal('A','D')
+        # self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0,0)
+        end = time.time()
+        print "time for 16 steps" , end-start
+        print "time per steps" , (end-start)/16
+        print " over \n"
+        time.sleep(15)
+
+    # move always forward
+    def straight_robot_motion(self):
+        traj = self.straight_traj()
+        self.set_the_desired_trajectory(traj)
+        self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0,0)
+        print " over \n"
+        time.sleep(15)
+
+    # move always forward
+    def turn_right_360_robot_motion(self):
+        sonar_360_values = []
+        for i in xrange(20):
+            self.set_tranjectory_right()
+            sonar_360_values += self.move_robot_to_measure()
+            #self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0,0)
+        print(sonar_360_values)
+        print " over \n"
+        time.sleep(15)
+
+    # move always forward
+    def turn_left_360_robot_motion(self):
+        for i in xrange(6):
+            self.set_tranjectory_left()
+            self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0,0)
+        print " over \n"
+        time.sleep(15)
+
+    # follow the wall
+    def counterwise_follow_wall_in_room_stop_at_right_edge( self ):
+        self.start_and_stay_in_the_room()
 
 
     def start_and_stay_in_the_room(self):
@@ -392,47 +432,8 @@ class Robot_manager:
 
         return commands
 
-    # Set the desired trajectory to turn left one time
-    def set_tranjectory_left(self):
-        traj = [[0, 0.001, 1]]
-        self.robot.set_desired_trajectory(traj)
-
-    # Set the desired trajectory to turn right one time
-    def set_tranjectory_right(self):
-        traj = [[0, -0.001, 1]]
-
-    # Set the desired trajectory to turn right one time
-    def set_tranjectory_straight(self):
-        traj = [[5, 0, 1]]
-        self.robot.set_desired_trajectory(traj)
-
     # Set the desired trajectory towards the goal
-    def set_the_desired_trajectory(self, traj=None):
-
-        traj = [[5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
-        pprint.pprint(traj)
+    def set_the_desired_trajectory(self, traj):
 
         self.robot.set_desired_trajectory(traj)
 
@@ -557,3 +558,81 @@ class Robot_manager:
         # ------------------------------------------------------------------------------------------------
 
         # ------------------------------------------------------------------------------------------------
+
+     # Set the desired trajectory to turn left one time
+    def set_tranjectory_left(self):
+        traj = [[0, 0.001, 1]]
+        self.robot.set_desired_trajectory(traj)
+
+    # Set the desired trajectory to turn right one time
+    def set_tranjectory_right(self):
+        traj = [[0, -0.001, 1]]
+        self.robot.set_desired_trajectory(traj)
+
+    # Set the desired trajectory to turn right one time
+    def set_tranjectory_straight(self):
+        traj = [[5, 0, 1]]
+        self.robot.set_desired_trajectory(traj)
+
+
+
+    def straight_traj(self):
+        traj = [[5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
+        return traj
+
+    # not used
+    def turn_right_360(self):
+        traj = [[0, -0.001, 1],[0, -0.001, 1],[0, -0.001, 1],[0, -0.001, 1]]
+        return traj
+
+    # not used
+    def turn_left_360(self):
+        traj = [[0, 0.001, 1],[0, 0.001, 1],[0, 0.001, 1],[0, 0.001, 1]]
+        return traj
+
+
+    #---------------------------------------------------------------------------------------------------------------------
+    #------------------------------------------ Motion for measurements--------------------------------------------------
+    #---------------------------------------------------------------------------------------------------------------------
+
+    def move_robot_to_measure(self):
+        #print self.robot.goal_trajectory
+        sonar_360_measures= []
+        for subpoint in self.robot.goal_trajectory:
+            self.robot.reset_current_state()
+            steps = 0
+
+            # Inner while loop that that move the robot for every subpoint
+            # ___LOOP_BEGIN_________________________________________________________
+            distance_to_goal = self.Goal_reached1(subpoint)
+            while (distance_to_goal == False):
+                step_point = subpoint[0:2]
+
+                self.distance_sensors.update_analog_sensors_meas()
+                sonar_360_measures.append(self.distance_sensors.analogs_sensors[6])
+                # Normal While
+                distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
+                steps += 1
+        return sonar_360_measures
