@@ -50,6 +50,8 @@ class robot_vision:
 
 
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
+        #self.color_list = ['red']
+        #self.object_detected_list = [0]
         self.object_detected_list = [0,0,0,0,0]
 
         #setting color filter ranges
@@ -68,13 +70,13 @@ class robot_vision:
         self.upper_black = numpy.array([255,255,40])
         self.boundry_black = [self.lower_black,self.upper_black]
         '''
-        self.lower_yellow = numpy.array([20,130,120])
+        self.lower_yellow = numpy.array([20,120,120])
         self.upper_yellow = numpy.array([35,255,255])
         self.boundry_yellow = [self.lower_yellow,self.upper_yellow]
 
         #red, hue 0-5
         self.lower_red = numpy.array([0,100,100])
-        self.upper_red = numpy.array([10,255,255])
+        self.upper_red = numpy.array([7,255,255]) #original [10,255,255]
         self.boundry_red = [self.lower_red,self.upper_red]
 
         self.lower_white = numpy.array([0,0,240])
@@ -85,7 +87,7 @@ class robot_vision:
         self.upper_blue = numpy.array([130,255,255])
         self.boundry_blue = [self.lower_blue,self.upper_blue]
 
-        self.lower_orange = numpy.array([10,150,150])
+        self.lower_orange = numpy.array([10,130,130])
         self.upper_orange = numpy.array([20,255,255])
         self.boundry_orange = [self.lower_orange,self.upper_orange]
 
@@ -96,18 +98,13 @@ class robot_vision:
         self.upper_green_segmentation = numpy.array([80,255,255])
         self.boundry_green_segmentation = [self.lower_green_segmentation,self.upper_green_segmentation]
 
-        '''
-        self.lower_black = numpy.array([0,0,0])
-        self.upper_black = numpy.array([255,255,40])
-        self.boundry_black = [self.lower_black,self.upper_black]
-        '''
         self.lower_yellow_segmentation = numpy.array([20,130,120])
         self.upper_yellow_segmentation = numpy.array([35,255,255])
         self.boundry_yellow_segmentation = [self.lower_yellow_segmentation,self.upper_yellow_segmentation]
 
         #red, hue 0-5
         self.lower_red_segmentation = numpy.array([0,100,100])
-        self.upper_red_segmentation = numpy.array([10,255,255])
+        self.upper_red_segmentation = numpy.array([7,255,255])
         self.boundry_red_segmentation = [self.lower_red_segmentation,self.upper_red_segmentation]
 
         self.lower_white_segmentation = numpy.array([0,0,240])
@@ -138,15 +135,24 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
-        time.sleep(1)
+        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        #time.sleep(1)
         return image
         #self.img = self.IO.cameraRead()
+
+    def Blur(self,image,kernel_sz):
+        kernel_size = (kernel_sz,kernel_sz)
+        kernel = numpy.ones(kernel_size,numpy.float32)
+        kernel = kernel/kernel.sum()
+        average_img = cv2.filter2D(image,-1,kernel)
+
+        return average_img
 
 
     def HSV_Conversion(self,image):
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return hsv_image
+
 
     def ColorFilter(self,color,origin_image,hsv_image):
 
@@ -159,7 +165,7 @@ class robot_vision:
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
 
         for contour in contours:
-            if cv2.contourArea(contour)>100.0:
+            if cv2.contourArea(contour)>200.0:
                 interested_contour_areas.append(cv2.contourArea(contour))
                 interested_contours.append(contour)
 
@@ -183,9 +189,9 @@ class robot_vision:
                 #print "Total distance of the hull"
                 #print total_distance
                 ratio_distances_volumn = distance/cv2.contourArea(contour)
-                #print "distances/Volumn"
-                #print ratio_distances_volumn
-                if ratio_distances_volumn < 0.0015:
+                print "distances/Volumn"
+                print ratio_distances_volumn
+                if ratio_distances_volumn < 0.0025:
                     final_contours.append(contour)
                     print '========================================='
                     print "Total distance of the hull of the object"
@@ -201,7 +207,7 @@ class robot_vision:
 
         #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
-        #cv2.drawContours(self.img, interested_contours, -1, (0,255,0), 2)
+        cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
         cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
         self.IO.imshow('image',origin_image)
         #return max_contour
@@ -214,7 +220,8 @@ class robot_vision:
         # if controller commands to detect objects detect
         if self.detect_object:
             objects_num_list = []
-            hsv_image = self.HSV_Conversion(img)
+            blur_image = self.Blur(img,5)
+            hsv_image = self.HSV_Conversion(blur_image)
             for color in self.color_list:
                 object_num = self.ColorFilter(color,img,hsv_image)
                 if object_num == 0:
@@ -231,7 +238,7 @@ class robot_vision:
         #return object_list
 
     def Segmentation_RGBXY(self,img,cluster_numbers):
-
+        time1 = time.time()
         #Clastering number,setting 5
 
         # Construct an array of 3D points in the RGB colour space.
@@ -273,6 +280,10 @@ class robot_vision:
 
         # Make the RGB points array into an image again
         seg_rgbxy_img = seg_rgbxy_pts.reshape((img.shape))
+        time2 = time.time()
+
+        #print "segmentation time ", time2 - time1
+        self.IO.imshow('image',seg_rgbxy_img)
 
         return seg_rgbxy_img
 
@@ -288,104 +299,55 @@ class robot_vision:
 
         mask = cv2.inRange(seg_image_hsv, boundry[0], boundry[1])
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
-        #max_contour = contours[0]
 
-        """
         for contour in contours:
-            if cv2.contourArea(contour) > cv2.contourArea(max_contour):
-                max_contour = contour
-        """
-
-        #print 'contours sizes'
-        for contour in contours:
-            if cv2.contourArea(contour)>100.0:
+            if cv2.contourArea(contour)>200.0:
                 interested_contour_areas.append(cv2.contourArea(contour))
                 interested_contours.append(contour)
 
-        """
+        #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
+        #res = cv2.bitwise_and(self.img,self.img,mask=mask)
+        #cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
+        #cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
+        #self.IO.imshow('image',origin_image)
+        #return max_contour
+
         if len(interested_contours)>0:
             print "------------------------"
             print color, 'object detected'
             print "------------------------"
             print "find objects"
-            for contour in interested_contours:
-
-                #cv2.drawContours(self.img, contour, -1, (0,255,0), 2)
-                hull = cv2.convexHull(contour,returnPoints = False)
-                #print 'contour ', interested_contours.index(contour), 'hull is', len(hull)
-                defects = cv2.convexityDefects(contour,hull)
-                #print 'distances'
-                #print '---------------------------------------------------------'
-                #print 'shape of defects', defects.shape
-                total_distance = 0
-                for i in range(defects.shape[0]):
-                    s,e,f,d = defects[i,0]
-                    distance = d/256.0
-                    #print 'distance for every point ----' , distance
-                    total_distance = total_distance+distance
-                #print "Total distance of the hull"
-                #print total_distance
-                ratio_distances_volumn = distance/cv2.contourArea(contour)
-                print "distances/Volumn"
-                print ratio_distances_volumn
-                if ratio_distances_volumn < 0.003:
-                    final_contours.append(contour)
-                    #print '========================================='
-                    #print "Total distance of the hull of the object"
-                    #print total_distance
-                    print "Corresponding distances/Volumn"
-                    print ratio_distances_volumn
-            print '=================================================='
-            print 'number of ', color, 'objects', len(final_contours)
-
-
-                    #start = tuple(contour[s][0])
-                    #end = tuple(contour[e][0])
-                    #far = tuple(contour[f][0])
-                    #cv2.line(self.img,start,end,[0,255,0],2)
-                    #cv2.circle(self.img,far,5,[0,0,255],-1)
-                #x,y,w,h = cv2.boundingRect(contour)
-                #cv2.rectangle(self.img,(x,y),(x+w,y+h),(0,255,0),2)
-                """
-
-        #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
-        #res = cv2.bitwise_and(self.img,self.img,mask=mask)
-        #cv2.drawContours(self.img, final_contours, -1, (0,255,0), 2)
-        cv2.drawContours(self.img, interested_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',origin_image)
-        #return max_contour
-
-        print "------------------------"
-        print color, 'object detected'
-        print "------------------------"
-        print "find objects"
-        print "number of ", color, "objetcs fonnd: "
-        print len(interested_contours)
+            print "number of ", color, "objetcs fonnd: "
+            print len(interested_contours)
 
         return len(interested_contours)
 
 
-    def find_objects_segmentation(self):
+    def find_objects_segmentation(self,img):
+
         # if controller commands to detect objects detect
-        #if self.detect_object:
-        time1 = time.time()
-        objects_num_list = []
-        for color in self.color_list_segmentation:
-            object_num = self.ColorFilter_segmentation(color)
-            if object_num == 0:
-                objects_num_list.append(0)
-            else:
-                objects_num_list.append(object_num)
+        if self.detect_object:
+            #time1 = time.time()
+            objects_num_list = []
+            blur_image = self.Blur(img,5)
+            segmented_image = self.Segmentation_RGBXY(blur_image,cluster_numbers = 6)
+            hsv_image_seg = self.HSV_Conversion(segmented_image)
+            for color in self.color_list_segmentation:
+                object_num = self.ColorFilter_segmentation(color,img,hsv_image_seg)
+                if object_num == 0:
+                    objects_num_list.append(0)
+                else:
+                    objects_num_list.append(object_num)
 
-        time2 = time.time()
+            #@self.Black_filter()
+            self.object_detected_list = objects_num_list
+            self.detect_object = False
+            #time2 = time.time()
+            #print "time interval", time2-time1
 
-        time_diff = time2 -time1
+        #print 'object list', object_list
 
-        print "=====Counting time======"
-        print time_diff
-            #self.Black_filter()
-        self.object_detected_list = objects_num_list
-            #self.detect_object = False
+        #return object_list
 
 
 

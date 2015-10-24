@@ -65,7 +65,12 @@ class Toddler:
         self.RobotVision.Set_Resolution()
         while(OK):
             image = self.RobotVision.ImgObtain()
-            self.RobotVision.find_objects(image)
+
+            #using old approach
+            #self.RobotVision.find_objects(image)
+
+            #using segmentation approach
+            self.RobotVision.find_objects_segmentation(image)
             #print "=====final result for a turn==========="
             #print objects_num_list
             #print "===================================="
