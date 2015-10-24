@@ -91,7 +91,7 @@ class robot_vision:
         self.upper_orange = numpy.array([20,255,255])
         self.boundry_orange = [self.lower_orange,self.upper_orange]
 
-        self.color_list_segmentation = ['red','green','blue','yellow','orange','black']#,'white']
+        self.color_list_segmentation = ['red','green','blue','yellow','orange','white']#,'black']#,'white']
         self.object_detected_list_segmentation = [0,0,0,0,0,0]
 
         self.lower_green_segmentation = numpy.array([35,100,100])
@@ -107,8 +107,8 @@ class robot_vision:
         self.upper_red_segmentation = numpy.array([7,255,255])
         self.boundry_red_segmentation = [self.lower_red_segmentation,self.upper_red_segmentation]
 
-        self.lower_white_segmentation = numpy.array([0,0,240])
-        self.upper_white_segmentation = numpy.array([255,15,255])
+        self.lower_white_segmentation = numpy.array([0,0,180])
+        self.upper_white_segmentation = numpy.array([255,255,255])
         self.boundry_white_segmentation = [self.lower_white_segmentation,self.upper_white_segmentation]
 
         self.lower_blue_segmentation = numpy.array([80,100,50])
@@ -124,7 +124,7 @@ class robot_vision:
         self.boundry_black_segmentation = [self.lower_black_segmentation,self.upper_black_segmentation]
 
         self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange]#,self.boundry_white]
-        self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation,self.boundry_black_segmentation]#,self.boundry_white]
+        self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation,self.boundry_white_segmentation]#,self.boundry_black_segmentation]#,self.boundry_white]
 
     def Set_Resolution(self):
         self.IO.cameraSetResolution(self.cameraResolution)
@@ -283,7 +283,7 @@ class robot_vision:
         time2 = time.time()
 
         #print "segmentation time ", time2 - time1
-        self.IO.imshow('image',seg_rgbxy_img)
+        #self.IO.imshow('image',seg_rgbxy_img)
 
         return seg_rgbxy_img
 
@@ -308,8 +308,8 @@ class robot_vision:
         #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
         #cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
-        #cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
-        #self.IO.imshow('image',origin_image)
+        cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
+        self.IO.imshow('image',origin_image)
         #return max_contour
 
         if len(interested_contours)>0:
@@ -326,6 +326,7 @@ class robot_vision:
     def find_objects_segmentation(self,img):
 
         # if controller commands to detect objects detect
+        #self.detect_object = True
         if self.detect_object:
             #time1 = time.time()
             objects_num_list = []
