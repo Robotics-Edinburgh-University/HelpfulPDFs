@@ -307,6 +307,10 @@ class IOTools:
         self._inp[e.index] = e.state
 
     def getSensors(self):
+        """
+
+        :rtype : object
+        """
         return self._sen;
 
     def getInputs(self):
