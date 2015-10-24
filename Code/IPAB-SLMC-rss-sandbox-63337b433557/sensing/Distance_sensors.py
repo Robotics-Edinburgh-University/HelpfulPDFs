@@ -19,8 +19,8 @@ class Distance_sensors(Sensors):
 	self.SonarCollison = (0,0)
 	
 	# Thresholds of its sensor
-	self.left_IR_limit = 440 #15 #480
-	self.right_IR_limit = 440
+	self.left_IR_limit = 414 #15 #480
+	self.right_IR_limit = 414
 	self.sonar_limit = 22 # 22
 	
     # Transform IR measurements to distance
