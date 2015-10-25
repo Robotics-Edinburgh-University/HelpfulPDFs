@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-__TODDLER_VERSION__="1.0.0"
+__TODDLER_VERSION__ = "1.0.0"
 
 import time
 import numpy
@@ -12,7 +12,7 @@ import math
 
 
 # Get path of to the toddler file... to use always relative paths
-CURRENT_PATH = os.getcwd() 
+CURRENT_PATH = os.getcwd()
 
 
 # import robot status modules
@@ -26,73 +26,69 @@ from vision import robot_vision
 
 # Hardware test code
 class Toddler:
-    def __init__(self,IO):
+    def __init__(self, IO):
         print 'I am a toddler playing in a sandbox'
-        self.IO=IO
-        self.inp=[0, 0, 0, 0, 0, 0, 0, 0]
+        self.IO = IO
+        self.inp = [0, 0, 0, 0, 0, 0, 0, 0]
         self.RobotVision = robot_vision(self.IO)
-        self.robot_manager = Robot_manager(self.IO,self.RobotVision)
+        self.robot_manager = Robot_manager(self.IO, self.RobotVision)
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Control(self, OK):
-	
-	# Move forward and backward in collision
-        # self.buttonSensor.move_back_due_collision()
-	
-	# test the light sensors
-	#while (1):	
-	 #   self.lightSensor.measure_values_on_axis()#calculate_light_sensor_difference()
-	 #   time.sleep(0.1)
-	
-	#while (1):
-	  #self.sensors.update_analog_sensors_meas()
-	  #print self.sensors.analogs_sensors
-	  #time.sleep(0.1)
-        
-	while (1):
-        analog = self.IO.getSensors()
-        #print analog
-        #self.robot_manager.run_robot()
 
-	
-	
-	
+        # Move forward and backward in collision
+        # self.buttonSensor.move_back_due_collision()
+
+        # test the light sensors
+        # while (1):
+        #   self.lightSensor.measure_values_on_axis()#calculate_light_sensor_difference()
+        #   time.sleep(0.1)
+
+        # while (1):
+        # self.sensors.update_analog_sensors_meas()
+        # print self.sensors.analogs_sensors
+        # time.sleep(0.1)
+
+        while (1):
+        # analog = self.IO.getSensors()
+        # print analog
+            self.robot_manager.run_robot()
+
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
     def Vision(self, OK):
 
-        #color_list = ['red','green','blue']
-        #Object_detected_list = [False, False, False]
+        # color_list = ['red','green','blue']
+        # Object_detected_list = [False, False, False]
         self.RobotVision.Set_Resolution()
-        while(OK):
+        while (OK):
             image = self.RobotVision.ImgObtain()
 
-            #using old approach
-            #self.RobotVision.find_objects(image)
+            # using old approach
+            # self.RobotVision.find_objects(image)
 
-            #using segmentation approach
+            # using segmentation approach
             self.RobotVision.find_objects_segmentation(image)
-            #print "=====final result for a turn==========="
-            #print objects_num_list
-            #print "===================================="
-            #counter = 0
-            #print detection
-            #print "length of object list"
-            #print len(detection)
-            #for element in detection:
+            # print "=====final result for a turn==========="
+            # print objects_num_list
+            # print "===================================="
+            # counter = 0
+            # print detection
+            # print "length of object list"
+            # print len(detection)
+            # for element in detection:
 
-                #print 'area'
-                #if len(element)>0:
-                #print 'color is ', color_list[counter]
-                #if len(element) == 1:
-                    #print self.RobotVision.color_list[counter],'object detected'
-                    #self.RobotVision.Object_detected_list[counter] = True
-                #print element
-               # counter = counter + 1
+            # print 'area'
+            # if len(element)>0:
+            # print 'color is ', color_list[counter]
+            # if len(element) == 1:
+            # print self.RobotVision.color_list[counter],'object detected'
+            # self.RobotVision.Object_detected_list[counter] = True
+            # print element
+            # counter = counter + 1
 
-            #time.sleep(0.5)
-        
+            # time.sleep(0.5)
 
         """
         self.IO.cameraSetResolution('low')
@@ -138,8 +134,6 @@ class Toddler:
     def stop_motors_on_interupt(self):
         print('You pressed Ctrl+C!')
         time.sleep(1)
-        self.IO.setMotors(0,0)
+        self.IO.setMotors(0, 0)
         time.sleep(1)
-        self.IO.setMotors(0,0)
-
-
+        self.IO.setMotors(0, 0)

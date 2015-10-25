@@ -1,8 +1,9 @@
+
 #!/usr/bin/env python
 
 
 class FindRoomByColor:
-
+	
     def __init__(self):
 
         self.roomA = [Colors.blue]
@@ -14,24 +15,61 @@ class FindRoomByColor:
 
     def returnRoom(self, colorList):
 
-        rooms = []
+        colors_found = []
+        counter = 0
         for color in colorList:
-            if color in self.roomA:
-                rooms.append("A")
-            if color in self.roomB:
+            if color != 0:
+                  colors_found.append(counter)
+            counter += 1
+        rooms = []
+        if len(colors_found) > 1:
+            if Colors.red in colors_found:
+                return ["E"]
+
+            if Colors.orange in colors_found:
+                return ["B"]
+            if (Colors.yellow in colors_found) and (Colors.green in colors_found):
+                return ["B"]
+
+            if (Colors.yellow in colors_found) and (Colors.black in colors_found):
+                return ["D"]
+            if (Colors.yellow in colors_found) and (Colors.blue in colors_found):
+                return ["D"]
+
+          #  if Colors.white in colors_found:
+          #      return ["C"]
+
+        else:
+            if Colors.red in colors_found:
+                return ["E"]
+         #   if Colors.white in colors_found:
+         #       return ["C"]
+            if Colors.orange in colors_found:
+                return ["B"]
+            if Colors.yellow in colors_found:
                 rooms.append("B")
-            if color in self.roomC:
-                rooms.append("C")
-            if color in self.roomD:
                 rooms.append("D")
-            if color in self.roomE:
+                return rooms
+            if Colors.blue in colors_found:
+                rooms.append("A")
                 rooms.append("E")
-            if color in self.roomF:
+                rooms.append("D")
+                return rooms
+            if Colors.green in colors_found:
+                rooms.append("B")
+                rooms.append("C")
                 rooms.append("F")
+
         return rooms
 
+    def update_rooms(self,estimatedRooms,latestRoomsFromColor):
 
-
+        if len(estimatedRooms) == 0:
+            return latestRoomsFromColor
+        else:
+            if len(latestRoomsFromColor) != 0:
+                estimatedRooms = list(set(estimatedRooms).intersection(latestRoomsFromColor))
+        return estimatedRooms
 
 
 class Colors:
@@ -54,5 +92,30 @@ class Colors:
             return "Yellow"
         elif number == 4:
             return "Orange"
+########################################
+
+#findRoom = FindRoomByColor()
+#estimatedRooms = []
+
+#latestRoomsFromColor = findRoom.returnRoom([0,0,0,1,0,0,0])
+#print latestRoomsFromColor
+#estimatedRooms = findRoom.update_rooms(estimatedRooms,latestRoomsFromColor)
+#latestRoomsFromColor = findRoom.returnRoom([0,1,0,0,0,0,1])
+#estimatedRooms = findRoom.update_rooms(estimatedRooms,latestRoomsFromColor)
+#print estimatedRooms
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #list(set(list1).intersection(list2))

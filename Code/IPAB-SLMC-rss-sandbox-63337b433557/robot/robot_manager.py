@@ -29,6 +29,7 @@ from Distance_sensors import Distance_sensors
 # import mapping modules
 sys.path.insert(0, CURRENT_PATH + '/environment')
 from map_representaion import map_representation
+from FindRoom import *
 
 # import calibration modules
 sys.path.insert(0, CURRENT_PATH + '/calibration')
@@ -61,7 +62,8 @@ class Robot_manager:
         # Instance of the calibration class
         self.calibration = calibration()
 
-
+        self.findRoom = FindRoomByColor()
+        self.estimatedRooms = []
         self.i_found_a_collision = False
 
 
@@ -69,14 +71,16 @@ class Robot_manager:
 
         #self.execute_path()
         #self.straight_robot_motion()
-        #self.counterwise_follow_wall_in_room_stop_at_right_edge()
-        self.calibrate_turning_rate()
-        time.sleep(5)
-        print " calibration "
+        #self.start_and_stay_in_the_room()
+        #self.calibrate_turning_rate()
+        #time.sleep(5)
+        #print " calibration "
         #self.perform_90_degrees_turn_right()
         #time.sleep(1)
-        self.perform_90_degrees_turn_left()
+        #self.perform_90_degrees_turn_left()
+        self.start_and_stay_until_find_room()
         print " over \n"
+
         time.sleep(15)
 
     # excute the provided path
@@ -106,9 +110,58 @@ class Robot_manager:
 
 
     # follow the wall
-    def counterwise_follow_wall_in_room_stop_at_right_edge( self ):
+    def counterwise_follow_wall_in_room_stop_at_right_edge(self):
         self.start_and_stay_in_the_room()
 
+    def start_and_stay_until_find_room(self):
+
+        enableVisionEvery = 4   #every 4 steps
+        while(1):
+            first_catch = False
+            second_catch = False
+            malakitsa = 0
+            while (1):
+                sonar = self.IO.getSensors()[6]
+                print "sonar:", sonar
+                if sonar < 60:
+                    if first_catch:
+                        first_catch = False
+                        break
+                    first_catch = True
+                else:
+                    first_catch = False
+                self.set_tranjectory_left()
+                self.move_the_fucking_robot_to_goal()
+                if malakitsa%enableVisionEvery==0:
+                    self.snapShot()
+                malakitsa += 1
+            # it found a wall in a room
+            print "Wall Found!"
+            malakitsa = 0
+            while (1):
+                print self.i_found_a_collision
+                if self.i_found_a_collision == True:
+                    self.i_found_a_collision = False
+                    break
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                if malakitsa%enableVisionEvery==0:
+                    self.snapShot()
+                malakitsa += 1
+            malakitsa = 0
+            while (1):
+                IR_right = self.IO.getSensors()[7]
+                print "IR right:", IR_right
+                if IR_right < 100:
+                    break
+
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.i_found_a_collision = False
+                if malakitsa%enableVisionEvery==0:
+                    self.snapShot()
+                malakitsa += 1
+            print "Going out of the ROOM!"
 
     def start_and_stay_in_the_room(self):
         first_catch = False
@@ -258,21 +311,37 @@ class Robot_manager:
                 distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
                 steps += 1
 
-            if visionCounter % 2 == 0:
-                if len(self.retrieve_image()) > 0:
-                    # To engage the servo motor
-                    self.IO.servoEngage()
-                    self.IO.setMotors(0,0)
-                    self.IO.servoSet(0)
-                    time.sleep(1)
-                    self.IO.servoSet(90)
-                    time.sleep(1)
-                    self.IO.servoSet(0)
-                    time.sleep(1)
-            visionCounter += 1
+  #          if visionCounter % 2 == 0:
+  #              if len(self.retrieve_image()) > 0:
+  #                  # To engage the servo motor
+  #                  self.IO.servoEngage()
+  #                  self.IO.setMotors(0,0)
+  #                  self.IO.servoSet(0)
+  #                  time.sleep(1)
+  #                  self.IO.servoSet(90)
+  #                  time.sleep(1)
+  #                  self.IO.servoSet(0)
+  #                  time.sleep(1)
+  #          visionCounter += 1
 
         self.IO.setStatus('flash')
+    def snapShot(self):
 
+        latestRoomsFromColor = self.findRoom.returnRoom(self.retrieve_image())
+
+        self.estimatedRooms = self.findRoom.update_rooms(self.estimatedRooms,latestRoomsFromColor)
+        if len(self.estimatedRooms) == 1:
+            print "FOUND ROOM:",self.estimatedRooms
+            # To engage the servo motor
+            self.IO.servoEngage()
+            self.IO.setMotors(0,0)
+            self.IO.servoSet(0)
+            time.sleep(1)
+            self.IO.servoSet(90)
+            time.sleep(1)
+            self.IO.servoSet(0)
+            time.sleep(20)
+            self.estimatedRooms = []
     # handle dynamics, control and motors
     def dynamics_control_motors(self, step_point, subpoint):
 
@@ -301,20 +370,14 @@ class Robot_manager:
         self.vision.detect_object = True
         time1 = time.time()
         while self.vision.detect_object:
-            time.sleep(0.01)
+            self.IO.setMotors(0,0)
 
         time2 = time.time()
-       # print "TIME: ", time2 - time1
+        print "TIME: ", time2 - time1
 
         color_list = self.vision.object_detected_list
 
-        colors = []
-        for color in color_list:
-            if color > 0:
-                colors.append(color)
-                print "Color found found:", color
-
-        return colors
+        return color_list
 
     # Is the robot at the goal
     def Goal_reached1(self, goal):  # ,general_vec_orient):
