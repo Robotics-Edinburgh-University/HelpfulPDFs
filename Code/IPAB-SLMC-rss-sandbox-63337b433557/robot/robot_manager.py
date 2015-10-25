@@ -70,7 +70,7 @@ class Robot_manager:
     def run_robot(self):
 
         #self.execute_path()
-        #self.straight_robot_motion()
+        self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
         #self.calibrate_turning_rate()
         #time.sleep(5)
@@ -78,17 +78,18 @@ class Robot_manager:
         #self.perform_90_degrees_turn_right()
         #time.sleep(1)
         #self.perform_90_degrees_turn_left()
-        self.start_and_stay_until_find_room()
+        #self.start_and_stay_until_find_room()
         print " over \n"
 
         time.sleep(15)
 
     # excute the provided path
     def execute_path(self):
-
         start = time.time()
-        self.compute_traj_to_goal('A','D')
-        # self.move_the_fucking_robot_to_goal()
+        self.compute_traj_to_goal('EXIT_D','F')
+        #pprint.pprint(self.robot.goal_trajectory)
+        #raw_input("Ssss")
+        self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
         end = time.time()
 
@@ -443,6 +444,10 @@ class Robot_manager:
         for info_step in all_info_path:
             if abs(info_step[2]) != 5.0:
                 all_info_path.remove(info_step)
+            else:
+                if ((info_step[1])[0] == 0. or (info_step[1])[1] == 0.) != True:
+                    all_info_path.remove(info_step)
+
         return all_info_path
 
         # compute the norm of all the step vectors
@@ -451,6 +456,7 @@ class Robot_manager:
         norm_path = []
         for vector in relative_coord_path:
             norm_path.append(numpy.linalg.norm(vector))
+
         return norm_path
 
     # compute possible roation mats
@@ -500,28 +506,32 @@ class Robot_manager:
     # make all the trajectory
     def compute_traj_to_goal(self, waypoint_1, waypoint_2):
         # path from graph based path planner 
-        waypoints_path = self.retrieve_trajectory_waypone_to_wayptwo(waypoint_1, waypoint_2)
-        # interpolated traj following the path 
-        traj = self.interpolate_the_trajectory(waypoints_path, 'x')
+        waypoints_path_and_priority = self.retrieve_trajectory_waypone_to_wayptwo(waypoint_1, waypoint_2)
+
+        # interpolated traj following the path
+        traj = self.interpolate_the_trajectory(waypoints_path_and_priority)
 
         # compute vector from current pose to first waypoint and the interpolated trajectory with priority
         # self.robot.Current pose!!!
 
         # example!!!!!
-        waypoint_list = self.map_representaion.robot_map.waypoints
-        start_waypoint = filter(lambda waypoint: waypoint['name'] == 'B', waypoint_list)
-        start_pose = (start_waypoint[0])['coord']
+        #waypoint_list = self.map_representaion.robot_map.waypoints
+        #start_waypoint = filter(lambda waypoint: waypoint['name'] == 'EXIT_F', waypoint_list)
+        #start_pose = (start_waypoint[0])['coord']
         # self.robot.reset_current_state([start_pose[0],start_pose[1],0.0])
 
-        first_step = self.retrieve_trajectory_from_currentpos_to_waypoint(self.robot.Current_Pose, traj)
+        #first_step = self.retrieve_trajectory_from_currentpos_to_waypoint(start_pose, traj)
 
-        complete_traj = first_step + traj
+        #complete_traj = first_step + traj
+        complete_traj = traj
 
         self.global_trajectory = complete_traj
-
+        #print self.global_trajectory
         relative_trajectory = self.make_trajectory_from_global_relative(complete_traj)
-
+        #print relative_trajectory
         final_relative_trajectory = self.duplicate_turns(relative_trajectory)
+
+        
         self.set_the_desired_trajectory(final_relative_trajectory)
 
     # build the command list for the robot
@@ -551,20 +561,30 @@ class Robot_manager:
     # from current position to the first waypoint
     def retrieve_trajectory_from_currentpos_to_waypoint(self, current_pose, traj):
 
-        vector_to_1st_waypoint = [current_pose[0:2]] + [traj[0] - numpy.array(current_pose[0:2])]
-        return self.interpolate_the_trajectory(vector_to_1st_waypoint, 'x')
+        vector_to_1st_waypoint = []
+        vector_to_1st_waypoint.append(current_pose[0:2])
+        vector_to_1st_waypoint.append(traj[0]) #- numpy.array(current_pose[0:2]))
+        vector_to_1st_waypoint_tuple = []
+        for i in vector_to_1st_waypoint:
+            vector_to_1st_waypoint_tuple.append((i[0],i[1]))
+        return self.interpolate_the_trajectory(vector_to_1st_waypoint_tuple, 'y')
 
     # returns the coordinates of the trajectory global  
     def retrieve_trajectory_waypone_to_wayptwo(self, waypoint_1, waypoint_2):
 
         solution_path = self.map_representaion.retrieve_shortest_path(waypoint_1, waypoint_2)
-        return self.map_representaion.path_coordinates(solution_path)
+
+        return self.map_representaion.get_coord_and_priority(solution_path)
+        #return self.map_representaion.path_coordinates(solution_path)
 
     # interpolate the trajectory stepwise
     # priority_axis - >>> defines in which axis are we going to move first 
-    def interpolate_the_trajectory(self, trajectory, priority_axis):
+    def interpolate_the_trajectory(self, trajectory_priority, priority_axis = None):
 
         trajectory_list = []
+        trajectory, priority_list = zip(*trajectory_priority)
+        trajectory = list(trajectory)
+        priority_list = list(priority_list)
         for segments_index in xrange(len(trajectory) - 1):
             if (trajectory[segments_index])[0] <= (trajectory[segments_index + 1])[0]:
                 xpoints = numpy.arange((trajectory[segments_index])[0], (trajectory[segments_index + 1])[0] + 1, 5)
@@ -578,7 +598,7 @@ class Robot_manager:
                 ypoints = numpy.arange((trajectory[segments_index])[1], (trajectory[segments_index + 1])[1] - 1, -5)
             if len(ypoints) == 0: ypoints = [(trajectory[segments_index])[1]]
 
-            traj = self.combine_interpolated_paths(xpoints, ypoints, priority_axis)
+            traj = self.combine_interpolated_paths(xpoints, ypoints, priority_list[segments_index])
             trajectory_list += traj
 
         return trajectory_list
@@ -640,26 +660,28 @@ class Robot_manager:
         traj = [[5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-                [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
+
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
+        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
+        #
         return traj
 
     # not used
