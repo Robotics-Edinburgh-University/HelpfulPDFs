@@ -36,14 +36,14 @@ class FindRoomByColor:
             if (Colors.yellow in colors_found) and (Colors.blue in colors_found):
                 return ["D"]
 
-          #  if Colors.white in colors_found:
-          #      return ["C"]
+            if Colors.white in colors_found:
+                return ["C"]
 
         else:
             if Colors.red in colors_found:
                 return ["E"]
-         #   if Colors.white in colors_found:
-         #       return ["C"]
+            if Colors.white in colors_found:
+                return ["C"]
             if Colors.orange in colors_found:
                 return ["B"]
             if Colors.yellow in colors_found:

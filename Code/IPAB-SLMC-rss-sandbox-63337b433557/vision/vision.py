@@ -46,8 +46,7 @@ class robot_vision:
         self.img = self.IO.cameraRead()
 
         #control vision functionalities
-        self.detect_object = False
-
+        self.detect_object = True
 
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
         #self.color_list = ['red']
@@ -92,7 +91,7 @@ class robot_vision:
         self.boundry_orange = [self.lower_orange,self.upper_orange]
 
         self.color_list_segmentation = ['red','green','blue','yellow','orange']#,'white']#,'black']#,'white']
-        self.object_detected_list_segmentation = [0,0,0,0,0,0]
+        self.object_detected_list_segmentation = [0,0,0,0,0]
 
         self.lower_green_segmentation = numpy.array([35,100,100])
         self.upper_green_segmentation = numpy.array([80,255,255])
@@ -127,7 +126,7 @@ class robot_vision:
         self.upper_white_rgb = numpy.array([255,255,255])
 
         self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange]#,self.boundry_white]
-        self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation,self.boundry_white_segmentation]#,self.boundry_black_segmentation]#,self.boundry_white]
+        self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation]#,self.boundry_white_segmentation]#,self.boundry_black_segmentation]#,self.boundry_white]
 
     def Set_Resolution(self):
         self.IO.cameraSetResolution(self.cameraResolution)
@@ -164,15 +163,16 @@ class robot_vision:
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
         for contour in contours:
             #cv2.drawContours(origin_img, contour, -1, (0,255,0), 2)
-            if cv2.contourArea(contour)>20.0:
+            if ((cv2.contourArea(contour)>20.0) and (cv2.contourArea(contour)<250.0)):
                 interested_contour_areas.append(cv2.contourArea(contour))
                 interested_contours.append(contour)
 
         print "area of interested white objects"
         print interested_contour_areas
 
-        #cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
-        #self.IO.imshow('image',origin_img)
+        cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
+        self.IO.imshow('image',origin_img)
+        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
 
         if len(interested_contours)>0:
             print "------------------------"
@@ -346,8 +346,9 @@ class robot_vision:
         #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
         #cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
-        #cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
-        #self.IO.imshow('image',origin_image)
+        cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
+        self.IO.imshow('image',origin_image)
+        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
         #return max_contour
 
         if len(interested_contours)>0:
@@ -362,10 +363,10 @@ class robot_vision:
 
 
     def find_objects_segmentation(self,img):
-
         # if controller commands to detect objects detect
         #self.detect_object = True
         if self.detect_object:
+            #self.IO.imshow('image',img)
             #time1 = time.time()
             objects_num_list = []
             white_object_num = self.White_Filter_BGR(img,img)

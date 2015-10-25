@@ -236,8 +236,9 @@ class Robot_manager:
                             # self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
                             if y != 0:
                             #    print "X_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
-                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit:
-                                    self.i_found_a_collision = True
+                                if y == 1:
+                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                        self.i_found_a_collision = True
                                 collision_loop.append(1)
                                 # if x!=0:
                                 # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
@@ -263,8 +264,9 @@ class Robot_manager:
                             #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
                             if y != 0:
                              #   print "Y_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
-                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit:
-                                    self.i_found_a_collision = True
+                                if y==1:
+                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                        self.i_found_a_collision = True
                                 collision_loop.append(1)
                                 # if x!=0:
                                 #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
@@ -294,8 +296,9 @@ class Robot_manager:
                         #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
                         if y != 0:
                             #print "NORMAL_LOOP:",self.distance_sensors.analogs_sensors[7]
-                            if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit:
-                                self.i_found_a_collision = True
+                            if y==1:
+                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit:
+                                    self.i_found_a_collision = True
                             collision_loop.append(1)
                             #   if x!=0:
                             #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
@@ -341,8 +344,9 @@ class Robot_manager:
             self.IO.servoSet(90)
             time.sleep(1)
             self.IO.servoSet(0)
-            time.sleep(20)
+           # time.sleep(20)
             self.estimatedRooms = []
+
     # handle dynamics, control and motors
     def dynamics_control_motors(self, step_point, subpoint):
 
