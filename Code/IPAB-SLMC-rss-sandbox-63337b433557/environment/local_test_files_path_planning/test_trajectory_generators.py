@@ -7,6 +7,7 @@ import numpy
 from numpy import linalg
 
 
+import copy
 # Get path of to the toddler file... to use always relative paths
 CURRENT_PATH = os.getcwd()
 
@@ -196,6 +197,72 @@ class traj_test(unittest.TestCase):
         mp = map_representaion.map_representation()
         tmp = test_map_representation.map_rep_test()
         tmp.map_plot(mp,coord_path = False ,plot_path = False, path = None,global_path = None)
+
+
+    def t_test_command_trajectory(self):
+
+        commnas_list =  [numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.])]
+
+        #pprint.pprint(commnas_list)
+        indices = [i for i, x in enumerate(commnas_list) if x[0] == 0]
+        indices_backup = copy.deepcopy(indices)
+        indices.insert(0,0)
+        indices.insert(len(indices),len(commnas_list))
+
+        #print indices
+        straight_commands = []
+        for i in zip(indices, indices[1:]):
+            straight_commands.append(commnas_list[i[0]+1:i[1]])
+        #pprint.pprint(straight_commands)
+
+        for line in straight_commands:
+            additional_straight = int(len(line)*0.35)
+            #print len(line)
+            line += [numpy.array([ 5.,  0.])]*additional_straight
+            #print len(line)
+        #print len(straight_commands) , len(indices_backup)
+
+        for index, i in enumerate(indices_backup):
+            straight_commands.insert(index+1+index,[commnas_list[i]])
+        #pprint.pprint(straight_commands)
+
+
+        final_plus_commands = [item for sublist in straight_commands for item in sublist]
+        pprint.pprint(final_plus_commands)
+
+    def command_trajectory(self,commnas_list):
+
+        commnas_list =  [numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.])]
+
+        # find the indices where the list hast to be cut
+        indices = [i for i, x in enumerate(commnas_list) if x[0] == 0]
+        indices_backup = copy.deepcopy(indices)
+        indices.insert(0,0)
+        indices.insert(len(indices),len(commnas_list))
+
+        # build the sublists with the straight lines
+        straight_commands = []
+        for i in zip(indices, indices[1:]):
+            straight_commands.append(commnas_list[i[0]+1:i[1]])
+
+        # extend the lists appropriately * 0.3
+        for line in straight_commands:
+            additional_straight = int(len(line)*0.35)
+            line += [numpy.array([ 5.,  0.])]*additional_straight
+
+        # merge the staight line lists with the turns
+        for index, i in enumerate(indices_backup):
+            straight_commands.insert(index+1+index,[commnas_list[i]])
+
+        # flatten the final list
+        final_plus_commands = [item for sublist in straight_commands for item in sublist]
+
+        #pprint.pprint(final_plus_commands)
+
+        return final_plus_commands
+
+
+
 
 if __name__ == '__main__':
     unittest.main()
