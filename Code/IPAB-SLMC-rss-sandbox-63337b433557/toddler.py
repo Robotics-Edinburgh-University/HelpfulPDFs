@@ -66,10 +66,11 @@ class Toddler:
             image = self.RobotVision.ImgObtain()
 
             # using old approach
-            # self.RobotVision.find_objects(image)
+            #self.RobotVision.find_objects(image)
 
             # using segmentation approach
             self.RobotVision.find_objects_segmentation(image)
+
             # print "=====final result for a turn==========="
             # print objects_num_list
             # print "===================================="

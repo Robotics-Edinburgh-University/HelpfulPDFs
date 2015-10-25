@@ -91,7 +91,7 @@ class robot_vision:
         self.upper_orange = numpy.array([20,255,255])
         self.boundry_orange = [self.lower_orange,self.upper_orange]
 
-        self.color_list_segmentation = ['red','green','blue','yellow','orange','white']#,'black']#,'white']
+        self.color_list_segmentation = ['red','green','blue','yellow','orange']#,'white']#,'black']#,'white']
         self.object_detected_list_segmentation = [0,0,0,0,0,0]
 
         self.lower_green_segmentation = numpy.array([35,100,100])
@@ -123,6 +123,9 @@ class robot_vision:
         self.upper_black_segmentation = numpy.array([255,255,80])
         self.boundry_black_segmentation = [self.lower_black_segmentation,self.upper_black_segmentation]
 
+        self.lower_white_rgb = numpy.array([200,200,200])
+        self.upper_white_rgb = numpy.array([255,255,255])
+
         self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange]#,self.boundry_white]
         self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation,self.boundry_white_segmentation]#,self.boundry_black_segmentation]#,self.boundry_white]
 
@@ -152,6 +155,29 @@ class robot_vision:
     def HSV_Conversion(self,image):
         hsv_image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
         return hsv_image
+
+    def White_Filter_BGR(self,origin_img,img):
+
+        interested_contour_areas = []
+        interested_contours = []
+        mask = cv2.inRange(img, self.lower_white_rgb, self.upper_white_rgb)
+        im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+        for contour in contours:
+            if (cv2.contourArea(contour)>30.0) and (cv2.contourArea(contour)<200.0):
+                interested_contour_areas.append(cv2.contourArea(contour))
+                interested_contours.append(contour)
+
+        print "area of interested white objects"
+        print interested_contour_areas
+
+        if len(interested_contours)>0:
+            print "------------------------"
+            print len(interested_contours), "white objects detected"
+
+        cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
+        #self.IO.imshow('image',origin_img)
+
+        return 1
 
 
     def ColorFilter(self,color,origin_image,hsv_image):
@@ -210,7 +236,6 @@ class robot_vision:
         cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
         cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
         self.IO.imshow('image',origin_image)
-        #return max_contour
 
         return len(final_contours)
 
@@ -331,6 +356,7 @@ class robot_vision:
             #time1 = time.time()
             objects_num_list = []
             blur_image = self.Blur(img,5)
+            white_object = self.White_Filter_BGR(img,blur_image)
             segmented_image = self.Segmentation_RGBXY(blur_image,cluster_numbers = 6)
             hsv_image_seg = self.HSV_Conversion(segmented_image)
             for color in self.color_list_segmentation:
@@ -339,6 +365,7 @@ class robot_vision:
                     objects_num_list.append(0)
                 else:
                     objects_num_list.append(object_num)
+            objects_num_list.append(white_object)
 
             #@self.Black_filter()
             self.object_detected_list = objects_num_list
