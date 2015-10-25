@@ -246,6 +246,7 @@ class robot_vision:
         if self.detect_object:
             objects_num_list = []
             blur_image = self.Blur(img,5)
+            white_object = self.White_Filter_BGR(img,blur_image)
             hsv_image = self.HSV_Conversion(blur_image)
             for color in self.color_list:
                 object_num = self.ColorFilter(color,img,hsv_image)
@@ -253,10 +254,13 @@ class robot_vision:
                     objects_num_list.append(0)
                 else:
                     objects_num_list.append(object_num)
-
+            objects_num_list.append(white_object)
+            
             #@self.Black_filter()
             self.object_detected_list = objects_num_list
             self.detect_object = False
+
+
 
         #print 'object list', object_list
 
