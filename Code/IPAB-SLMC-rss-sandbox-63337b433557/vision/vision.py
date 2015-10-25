@@ -163,7 +163,7 @@ class robot_vision:
         mask = cv2.inRange(img, self.lower_white_rgb, self.upper_white_rgb)
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
         for contour in contours:
-            if (cv2.contourArea(contour)>30.0) and (cv2.contourArea(contour)<200.0):
+            if (cv2.contourArea(contour)>20.0) and (cv2.contourArea(contour)<250.0):
                 interested_contour_areas.append(cv2.contourArea(contour))
                 interested_contours.append(contour)
 
@@ -255,7 +255,7 @@ class robot_vision:
                 else:
                     objects_num_list.append(object_num)
             objects_num_list.append(white_object)
-            
+
             #@self.Black_filter()
             self.object_detected_list = objects_num_list
             self.detect_object = False
