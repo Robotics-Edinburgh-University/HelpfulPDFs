@@ -173,11 +173,13 @@ class robot_vision:
         if len(interested_contours)>0:
             print "------------------------"
             print len(interested_contours), "white objects detected"
-
-        cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
+            return 1
+        else:
+            return 0
+        #cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
         #self.IO.imshow('image',origin_img)
 
-        return 1
+
 
 
     def ColorFilter(self,color,origin_image,hsv_image):
