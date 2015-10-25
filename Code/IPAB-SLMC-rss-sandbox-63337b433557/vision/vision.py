@@ -163,22 +163,31 @@ class robot_vision:
         mask = cv2.inRange(img, self.lower_white_rgb, self.upper_white_rgb)
         im2,contours, hierachy = cv2.findContours(mask,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
         for contour in contours:
-            if (cv2.contourArea(contour)>20.0) and (cv2.contourArea(contour)<250.0):
+            #cv2.drawContours(origin_img, contour, -1, (0,255,0), 2)
+            if cv2.contourArea(contour)>20.0:
                 interested_contour_areas.append(cv2.contourArea(contour))
                 interested_contours.append(contour)
 
         print "area of interested white objects"
         print interested_contour_areas
 
+        #cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
+        #self.IO.imshow('image',origin_img)
+
         if len(interested_contours)>0:
             print "------------------------"
             print len(interested_contours), "white objects detected"
+            white_obj_num = 1
+        else:
+            white_obj_num = 0
 
-        cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
-        #self.IO.imshow('image',origin_img)
+        return white_obj_num
 
-        return 1
 
+    def Draw_contours(self,origin_image,contours):
+
+        cv2.drawContours(origin_image, contours, -1, (0,255,0), 2)
+        self.IO.imshow('image',origin_image)
 
     def ColorFilter(self,color,origin_image,hsv_image):
 
@@ -214,7 +223,7 @@ class robot_vision:
                     total_distance = total_distance+distance
                 #print "Total distance of the hull"
                 #print total_distance
-                ratio_distances_volumn = distance/cv2.contourArea(contour)
+                ratio_distances_volumn = total_distance/cv2.contourArea(contour)
                 print "distances/Volumn"
                 print ratio_distances_volumn
                 if ratio_distances_volumn < 0.0025:
@@ -337,8 +346,8 @@ class robot_vision:
         #cv2.drawContours(self.img, contours, -1, (0,255,0),2)
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
         #cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
-        cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',origin_image)
+        #cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
+        #self.IO.imshow('image',origin_image)
         #return max_contour
 
         if len(interested_contours)>0:
@@ -359,8 +368,8 @@ class robot_vision:
         if self.detect_object:
             #time1 = time.time()
             objects_num_list = []
+            white_object_num = self.White_Filter_BGR(img,img)
             blur_image = self.Blur(img,5)
-            white_object = self.White_Filter_BGR(img,blur_image)
             segmented_image = self.Segmentation_RGBXY(blur_image,cluster_numbers = 6)
             hsv_image_seg = self.HSV_Conversion(segmented_image)
             for color in self.color_list_segmentation:
@@ -369,7 +378,7 @@ class robot_vision:
                     objects_num_list.append(0)
                 else:
                     objects_num_list.append(object_num)
-            objects_num_list.append(white_object)
+            objects_num_list.append(white_object_num)
 
             #@self.Black_filter()
             self.object_detected_list = objects_num_list
