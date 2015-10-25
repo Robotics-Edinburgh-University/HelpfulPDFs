@@ -51,7 +51,7 @@ class Toddler:
         # time.sleep(0.1)
 
         while (1):
-        # analog = self.IO.getSensors()
+        #analog = self.IO.getSensors()
         # print analog
             self.robot_manager.run_robot()
 
