@@ -110,7 +110,9 @@ class robot_vision:
         self.upper_white_segmentation = numpy.array([255,255,255])
         self.boundry_white_segmentation = [self.lower_white_segmentation,self.upper_white_segmentation]
 
-        self.lower_blue_segmentation = numpy.array([80,100,50])
+        self.lower_blue_segmentation = numpy.array([85,100,50])
+        #wrong
+        #self.lower_blue_segmentation = numpy.array([80,100,50])
         self.upper_blue_segmentation = numpy.array([130,255,255])
         self.boundry_blue_segmentation = [self.lower_blue_segmentation,self.upper_blue_segmentation]
 
@@ -174,7 +176,7 @@ class robot_vision:
         self.IO.imshow('image',origin_img)
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
 
-        if len(interested_contours)>0:
+        if len(interested_contours)>2:
             print "------------------------"
             print len(interested_contours), "white objects detected"
             white_obj_num = 1
@@ -364,7 +366,7 @@ class robot_vision:
 
     def find_objects_segmentation(self,img):
         # if controller commands to detect objects detect
-        #self.detect_object = True
+        self.detect_object = True
         if self.detect_object:
             #self.IO.imshow('image',img)
             #time1 = time.time()
@@ -372,6 +374,7 @@ class robot_vision:
             white_object_num = self.White_Filter_BGR(img,img)
             blur_image = self.Blur(img,5)
             segmented_image = self.Segmentation_RGBXY(blur_image,cluster_numbers = 6)
+            #white_object_num = self.White_Filter_BGR(img,segmented_image)
             hsv_image_seg = self.HSV_Conversion(segmented_image)
             for color in self.color_list_segmentation:
                 object_num = self.ColorFilter_segmentation(color,img,hsv_image_seg)
