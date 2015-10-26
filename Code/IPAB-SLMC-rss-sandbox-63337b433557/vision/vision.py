@@ -110,7 +110,9 @@ class robot_vision:
         self.upper_white_segmentation = numpy.array([255,255,255])
         self.boundry_white_segmentation = [self.lower_white_segmentation,self.upper_white_segmentation]
 
-        self.lower_blue_segmentation = numpy.array([80,100,50])
+        self.lower_blue_segmentation = numpy.array([85,100,50])
+        #wrong
+        #self.lower_blue_segmentation = numpy.array([80,100,50])
         self.upper_blue_segmentation = numpy.array([130,255,255])
         self.boundry_blue_segmentation = [self.lower_blue_segmentation,self.upper_blue_segmentation]
 
@@ -364,7 +366,7 @@ class robot_vision:
 
     def find_objects_segmentation(self,img):
         # if controller commands to detect objects detect
-        #self.detect_object = True
+        self.detect_object = True
         if self.detect_object:
             #self.IO.imshow('image',img)
             #time1 = time.time()
