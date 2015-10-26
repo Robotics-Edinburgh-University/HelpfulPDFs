@@ -88,8 +88,8 @@ class Robot_manager:
     def execute_path(self,start,end):
 
         self.compute_traj_to_goal(start,end)
-        #pprint.pprint(self.robot.goal_trajectory)
-        #raw_input("Ssss")
+        pprint.pprint(self.robot.goal_trajectory)
+        raw_input("Ssss")
         self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
 
@@ -540,8 +540,10 @@ class Robot_manager:
         longer_relative_trajectory = self.command_trajectory(relative_trajectory)
         #pprint.pprint(longer_relative_trajectory)
         #raw_input("dddddddd")
-        final_relative_trajectory = self.duplicate_turns(longer_relative_trajectory)
 
+        longer_relative_trajectory = self.clear_180_turns(longer_relative_trajectory)
+
+        final_relative_trajectory = self.duplicate_turns(longer_relative_trajectory)
 
         self.set_the_desired_trajectory(final_relative_trajectory)
 
@@ -575,6 +577,19 @@ class Robot_manager:
 
         return final_plus_commands
 
+    # changes the 180 degrees turns with 4 * 45 turns
+    def clear_180_turns(self,commnas_list):
+
+        for index,i in enumerate(commnas_list):
+            if i[0] == -5:
+                del commnas_list[index]
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+
+        #pprint.pprint(commnas_list)
+        return commnas_list
 
     # build the command list for the robot
     def make_trajectory_from_global_relative(self, traj):
