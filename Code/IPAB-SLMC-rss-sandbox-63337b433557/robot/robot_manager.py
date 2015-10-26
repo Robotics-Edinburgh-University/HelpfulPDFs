@@ -7,6 +7,7 @@ import os
 import time
 import math
 import pprint
+import copy
 
 # Get path of to the toddler file... to use always relative paths
 CURRENT_PATH = os.getcwd()
@@ -70,10 +71,10 @@ class Robot_manager:
         self.roomThatJustFound = ""
     def run_robot(self):
 
-        #self.execute_path()
+        self.execute_path('EXIT_D','I')
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
-        self.calibrate_turning_rate()
+        #self.calibrate_turning_rate()
         #time.sleep(5)
         #print " calibration "
         #self.perform_90_degrees_turn_right()
@@ -85,14 +86,13 @@ class Robot_manager:
         time.sleep(15)
 
     # excute the provided path
-    def execute_path(self):
-        start = time.time()
-        self.compute_traj_to_goal('EXIT_D','F')
-        #pprint.pprint(self.robot.goal_trajectory)
-        #raw_input("Ssss")
+    def execute_path(self,start,end):
+
+        self.compute_traj_to_goal(start,end)
+        pprint.pprint(self.robot.goal_trajectory)
+        raw_input("Ssss")
         self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
-        end = time.time()
 
 
     # move always forward
@@ -580,28 +580,81 @@ class Robot_manager:
         # interpolated traj following the path
         traj = self.interpolate_the_trajectory(waypoints_path_and_priority)
 
+
+        # ---- More generic solution to go from any point to a waypoint --------------------------------#
+        # -----------------------------------------------------------------------------------------------#
         # compute vector from current pose to first waypoint and the interpolated trajectory with priority
         # self.robot.Current pose!!!
-
         # example!!!!!
         #waypoint_list = self.map_representaion.robot_map.waypoints
         #start_waypoint = filter(lambda waypoint: waypoint['name'] == 'EXIT_F', waypoint_list)
         #start_pose = (start_waypoint[0])['coord']
         # self.robot.reset_current_state([start_pose[0],start_pose[1],0.0])
-
         #first_step = self.retrieve_trajectory_from_currentpos_to_waypoint(start_pose, traj)
-
         #complete_traj = first_step + traj
+        # -----------------------------------------------------------------------------------------------#
+
+
         complete_traj = traj
 
         self.global_trajectory = complete_traj
         #print self.global_trajectory
         relative_trajectory = self.make_trajectory_from_global_relative(complete_traj)
-        #print relative_trajectory
-        final_relative_trajectory = self.duplicate_turns(relative_trajectory)
 
-        
+        # extend the straight lines of the trajectory...
+        longer_relative_trajectory = self.command_trajectory(relative_trajectory)
+        #pprint.pprint(longer_relative_trajectory)
+        #raw_input("dddddddd")
+
+        longer_relative_trajectory = self.clear_180_turns(longer_relative_trajectory)
+
+        final_relative_trajectory = self.duplicate_turns(longer_relative_trajectory)
+
         self.set_the_desired_trajectory(final_relative_trajectory)
+
+    # Extend the lines of the trajectory ....
+    def command_trajectory(self,commnas_list):
+
+        # find the indices where the list hast to be cut
+        indices = [i for i, x in enumerate(commnas_list) if x[0] == 0]
+        indices_backup = copy.deepcopy(indices)
+        indices.insert(0,0)
+        indices.insert(len(indices),len(commnas_list))
+
+        # build the sublists with the straight lines
+        straight_commands = []
+        for i in zip(indices, indices[1:]):
+            straight_commands.append(commnas_list[i[0]+1:i[1]])
+
+        # extend the lists appropriately * 0.3
+        for line in straight_commands:
+            additional_straight = int(len(line)*0.35)
+            line += [numpy.array([ 5.,  0.])]*additional_straight
+
+        # merge the staight line lists with the turns
+        for index, i in enumerate(indices_backup):
+            straight_commands.insert(index+1+index,[commnas_list[i]])
+
+        # flatten the final list
+        final_plus_commands = [item for sublist in straight_commands for item in sublist]
+
+        #pprint.pprint(final_plus_commands)
+
+        return final_plus_commands
+
+    # changes the 180 degrees turns with 4 * 45 turns
+    def clear_180_turns(self,commnas_list):
+
+        for index,i in enumerate(commnas_list):
+            if i[0] == -5:
+                del commnas_list[index]
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+
+        #pprint.pprint(commnas_list)
+        return commnas_list
 
     # build the command list for the robot
     def make_trajectory_from_global_relative(self, traj):

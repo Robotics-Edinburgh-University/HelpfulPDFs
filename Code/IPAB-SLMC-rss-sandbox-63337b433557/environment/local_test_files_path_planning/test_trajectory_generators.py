@@ -7,6 +7,7 @@ import numpy
 from numpy import linalg
 
 
+import copy
 # Get path of to the toddler file... to use always relative paths
 CURRENT_PATH = os.getcwd()
 
@@ -149,7 +150,7 @@ class traj_test(unittest.TestCase):
         return rot_list
     # print "auto"
 
-    def test_previw_trajectory(self):
+    def t_test_previw_trajectory(self):
         tt = traj()
         global_points = list(zip(*tt.traj)[0])
         mp = map_representaion.map_representation()
@@ -163,7 +164,7 @@ class traj_test(unittest.TestCase):
         global_points = [(248, 370), (243, 370), (238, 370), (238, 370), (238, 365), (238, 360), (238, 355), (238, 350), (238, 345), (238, 340), (238, 335), (238, 330), (238, 325), (238, 320), (238, 320), (233, 320), (228, 320), (223, 320), (218, 320), (213, 320), (208, 320), (208, 320), (208, 315), (208, 310), (208, 305), (208, 300), (208, 295), (208, 290), (208, 285), (208, 280), (208, 275), (208, 270), (208, 265), (208, 260), (208, 255), (208, 250), (208, 245), (208, 240), (208, 235), (208, 230), (208, 225), (204, 224), (199, 224), (194, 224), (189, 224), (184, 224), (179, 224), (174, 224), (169, 224), (164, 224), (159, 224), (154, 224), (149, 224), (149, 224), (149, 219), (149, 214), (149, 209), (149, 204), (149, 199), (149, 194), (149, 189), (149, 184), (149, 179), (148, 179), (153, 179), (158, 179), (163, 179), (168, 179), (173, 179), (178, 179), (183, 179), (188, 179), (193, 179), (198, 179), (203, 179), (208, 179), (208, 179), (208, 174), (208, 169), (208, 164), (208, 159), (208, 154), (208, 149), (212, 146), (217, 146), (222, 146), (227, 146), (232, 146), (237, 146), (242, 146), (247, 146), (252, 146), (257, 146), (262, 146), (267, 146), (272, 146), (277, 146), (282, 146), (287, 146), (292, 146), (297, 146), (297, 146)]
 
         # exit e -- > e
-        global_points =[(69, 343), (69, 348), (69, 353), (69, 353), (74, 353), (79, 353), (84, 353), (89, 353), (94, 353), (99, 353), (104, 353), (109, 353), (114, 353), (119, 353), (124, 353), (129, 353), (134, 353), (139, 353), (144, 353), (149, 353), (154, 353), (159, 353), (164, 353), (169, 353), (172, 356), (172, 351), (172, 346), (172, 341), (172, 336), (172, 331), (172, 326), (172, 321), (172, 316), (172, 316), (167, 316), (162, 316), (157, 316), (152, 316), (147, 316), (142, 316), (137, 316), (132, 316), (127, 316), (122, 316), (117, 316), (117, 313), (117, 308), (117, 303), (117, 298), (117, 293), (117, 288), (117, 283), (117, 278), (117, 273), (117, 268), (117, 263), (117, 258), (117, 253), (117, 248), (117, 243), (117, 238), (117, 233), (117, 228), (117, 223), (117, 218), (117, 213), (117, 213), (112, 213), (107, 213), (102, 213), (97, 213), (92, 213), (87, 213), (84, 213), (89, 213), (94, 213), (99, 213), (104, 213), (109, 213), (114, 213), (119, 213), (124, 213), (129, 213), (134, 213), (139, 213), (144, 213), (144, 213), (144, 208), (144, 203), (144, 198), (144, 193), (144, 188), (144, 183), (148, 179), (153, 179), (158, 179), (163, 179), (168, 179), (173, 179), (178, 179), (183, 179), (188, 179), (193, 179), (198, 179), (203, 179), (208, 179), (208, 179), (208, 174), (208, 169), (208, 164), (208, 159), (208, 154), (208, 149), (212, 146), (212, 146), (212, 141), (212, 136), (212, 131), (212, 126), (212, 121), (212, 116), (212, 111), (212, 106), (212, 101), (212, 96), (212, 91), (212, 86), (212, 81), (212, 76), (212, 71), (212, 66), (212, 61), (212, 56), (212, 51), (212, 46), (212, 41), (212, 36), (212, 31)]
+        #global_points =[(69, 343), (69, 348), (69, 353), (69, 353), (74, 353), (79, 353), (84, 353), (89, 353), (94, 353), (99, 353), (104, 353), (109, 353), (114, 353), (119, 353), (124, 353), (129, 353), (134, 353), (139, 353), (144, 353), (149, 353), (154, 353), (159, 353), (164, 353), (169, 353), (172, 356), (172, 351), (172, 346), (172, 341), (172, 336), (172, 331), (172, 326), (172, 321), (172, 316), (172, 316), (167, 316), (162, 316), (157, 316), (152, 316), (147, 316), (142, 316), (137, 316), (132, 316), (127, 316), (122, 316), (117, 316), (117, 313), (117, 308), (117, 303), (117, 298), (117, 293), (117, 288), (117, 283), (117, 278), (117, 273), (117, 268), (117, 263), (117, 258), (117, 253), (117, 248), (117, 243), (117, 238), (117, 233), (117, 228), (117, 223), (117, 218), (117, 213), (117, 213), (112, 213), (107, 213), (102, 213), (97, 213), (92, 213), (87, 213), (84, 213), (89, 213), (94, 213), (99, 213), (104, 213), (109, 213), (114, 213), (119, 213), (124, 213), (129, 213), (134, 213), (139, 213), (144, 213), (144, 213), (144, 208), (144, 203), (144, 198), (144, 193), (144, 188), (144, 183), (148, 179), (153, 179), (158, 179), (163, 179), (168, 179), (173, 179), (178, 179), (183, 179), (188, 179), (193, 179), (198, 179), (203, 179), (208, 179), (208, 179), (208, 174), (208, 169), (208, 164), (208, 159), (208, 154), (208, 149), (212, 146), (212, 146), (212, 141), (212, 136), (212, 131), (212, 126), (212, 121), (212, 116), (212, 111), (212, 106), (212, 101), (212, 96), (212, 91), (212, 86), (212, 81), (212, 76), (212, 71), (212, 66), (212, 61), (212, 56), (212, 51), (212, 46), (212, 41), (212, 36), (212, 31)]
 
 
         tmp.map_plot(mp,coord_path = coord_path ,plot_path = False, path = None,global_path = global_points)
@@ -196,6 +197,96 @@ class traj_test(unittest.TestCase):
         mp = map_representaion.map_representation()
         tmp = test_map_representation.map_rep_test()
         tmp.map_plot(mp,coord_path = False ,plot_path = False, path = None,global_path = None)
+
+
+    def t_test_command_trajectory(self):
+
+        commnas_list =  [numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.])]
+
+        #pprint.pprint(commnas_list)
+        indices = [i for i, x in enumerate(commnas_list) if x[0] == 0]
+        indices_backup = copy.deepcopy(indices)
+        indices.insert(0,0)
+        indices.insert(len(indices),len(commnas_list))
+
+        #print indices
+        straight_commands = []
+        for i in zip(indices, indices[1:]):
+            straight_commands.append(commnas_list[i[0]+1:i[1]])
+        #pprint.pprint(straight_commands)
+
+        for line in straight_commands:
+            additional_straight = int(len(line)*0.35)
+            #print len(line)
+            line += [numpy.array([ 5.,  0.])]*additional_straight
+            #print len(line)
+        #print len(straight_commands) , len(indices_backup)
+
+        for index, i in enumerate(indices_backup):
+            straight_commands.insert(index+1+index,[commnas_list[i]])
+        #pprint.pprint(straight_commands)
+
+
+        final_plus_commands = [item for sublist in straight_commands for item in sublist]
+        pprint.pprint(final_plus_commands)
+
+    def command_trajectory(self,commnas_list):
+
+        commnas_list =  [numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]),numpy.array([ -5.,  0.]) ,numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.])]
+
+        # find the indices where the list hast to be cut
+        indices = [i for i, x in enumerate(commnas_list) if x[0] == 0]
+        indices_backup = copy.deepcopy(indices)
+        indices.insert(0,0)
+        indices.insert(len(indices),len(commnas_list))
+
+        # build the sublists with the straight lines
+        straight_commands = []
+        for i in zip(indices, indices[1:]):
+            straight_commands.append(commnas_list[i[0]+1:i[1]])
+
+        # extend the lists appropriately * 0.3
+        for line in straight_commands:
+            additional_straight = int(len(line)*0.35)
+            line += [numpy.array([ 5.,  0.])]*additional_straight
+
+        # merge the staight line lists with the turns
+        for index, i in enumerate(indices_backup):
+            straight_commands.insert(index+1+index,[commnas_list[i]])
+
+        # flatten the final list
+        final_plus_commands = [item for sublist in straight_commands for item in sublist]
+
+        #pprint.pprint(final_plus_commands)
+
+        return final_plus_commands
+
+    def test_trajectory(self,commnas_list =None):
+
+        commnas_list =  [numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]),numpy.array([ -5.,  0.]) ,numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.])]
+
+        for index,i in enumerate(commnas_list):
+            if i[0] == -5:
+                del commnas_list[index]
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+
+        pprint.pprint(commnas_list)
+
+    def clear_180_turns(self,commnas_list):
+
+       for index,i in enumerate(commnas_list):
+            if i[0] == -5:
+                del commnas_list[index]
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+                commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
+
+        #pprint.pprint(commnas_list)
+        return commnas_list
 
 if __name__ == '__main__':
     unittest.main()
