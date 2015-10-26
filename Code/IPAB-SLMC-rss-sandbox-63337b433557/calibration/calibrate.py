@@ -10,7 +10,7 @@ class calibration:
 
         self.turn_360_steps = 455
 
-        #464,512 ,474
+        #464,512 ,474,464
 
 
     def calibrate_robot(self,data):
