@@ -65,14 +65,15 @@ class Robot_manager:
         self.findRoom = FindRoomByColor()
         self.estimatedRooms = []
         self.i_found_a_collision = False
-
-
+        self.base_found = False
+        self.floorLightMin = 80
+        self.roomThatJustFound = ""
     def run_robot(self):
 
         #self.execute_path()
-        self.straight_robot_motion()
+        #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
-        #self.calibrate_turning_rate()
+        self.calibrate_turning_rate()
         #time.sleep(5)
         #print " calibration "
         #self.perform_90_degrees_turn_right()
@@ -117,11 +118,15 @@ class Robot_manager:
     def start_and_stay_until_find_room(self):
 
         enableVisionEvery = 4   #every 4 steps
-        while(1):
+        room_found = False
+        while(room_found == False):
             first_catch = False
             second_catch = False
             malakitsa = 0
             while (1):
+                light = self.IO.getSensors()[5]
+                if light < self.floorLightMin:
+                    self.base_found = True
                 sonar = self.IO.getSensors()[6]
                 print "sonar:", sonar
                 if sonar < 60:
@@ -135,11 +140,19 @@ class Robot_manager:
                 self.move_the_fucking_robot_to_goal()
                 if malakitsa%enableVisionEvery==0:
                     self.snapShot()
+                    if self.roomThatJustFound!="": # if u find a room break
+                        room_found = True
+                        break
                 malakitsa += 1
+            if room_found == True:
+                break
             # it found a wall in a room
             print "Wall Found!"
             malakitsa = 0
             while (1):
+                light = self.IO.getSensors()[5]
+                if light < self.floorLightMin:
+                    self.base_found = True
                 print self.i_found_a_collision
                 if self.i_found_a_collision == True:
                     self.i_found_a_collision = False
@@ -148,11 +161,20 @@ class Robot_manager:
                 self.move_the_fucking_robot_to_goal()
                 if malakitsa%enableVisionEvery==0:
                     self.snapShot()
+                    if self.roomThatJustFound!="": # if u find a room break
+                        room_found = True
+                        break
                 malakitsa += 1
+            if room_found == True:
+                break
+            print "IR Locked"
             malakitsa = 0
             while (1):
+                light = self.IO.getSensors()[5]
+                if light < self.floorLightMin:
+                    self.base_found = True
                 IR_right = self.IO.getSensors()[7]
-                print "IR right:", IR_right
+            #    print "IR right:", IR_right
                 if IR_right < 100:
                     break
 
@@ -161,10 +183,22 @@ class Robot_manager:
                 self.i_found_a_collision = False
                 if malakitsa%enableVisionEvery==0:
                     self.snapShot()
+                    if self.roomThatJustFound!="": # if u find a room break
+                        room_found = True
+                        break
                 malakitsa += 1
-            print "Going out of the ROOM!"
+            if room_found == True:
+                break
+        #    print "Going out of the ROOM!"
+        if self.roomThatJustFound!="":
+            print "I AM IN ROOM: ",self.roomThatJustFound
+            temp = self.roomThatJustFound
+            self.roomThatJustFound = ""
+            print "I GO TO THE EXIT SPOT ",temp
+            self.go_to_the_exit_spot(temp)
 
-    def start_and_stay_in_the_room(self):
+
+    def go_to_the_exit_spot(self,myroom):
         first_catch = False
         second_catch = False
 
@@ -181,7 +215,7 @@ class Robot_manager:
             self.set_tranjectory_left()
             self.move_the_fucking_robot_to_goal()
         # it found a wall in a room
-        print "Wall Found!"
+       # print "Wall Found!"
 
         while (1):
             print self.i_found_a_collision
@@ -193,16 +227,16 @@ class Robot_manager:
 
         while (1):
             IR_right = self.IO.getSensors()[7]
-            print "IR right:", IR_right
+           # print "IR right:", IR_right
             if IR_right < 100:
                 break
 
             self.set_tranjectory_straight()
             self.move_the_fucking_robot_to_goal()
             self.i_found_a_collision = False
-        print "Going out of the ROOM!"
+        print "I AM IN THE EXIT SPOT ",myroom
         self.IO.setMotors(0, 0)
-        time.sleep(15)
+        time.sleep(25)
 
     def move_the_fucking_robot_to_goal(self):
 
@@ -335,7 +369,7 @@ class Robot_manager:
 
         self.estimatedRooms = self.findRoom.update_rooms(self.estimatedRooms,latestRoomsFromColor)
         if len(self.estimatedRooms) == 1:
-            print "FOUND ROOM:",self.estimatedRooms
+            #print "I AM IN ROOM:",self.estimatedRooms
             # To engage the servo motor
             self.IO.servoEngage()
             self.IO.setMotors(0,0)
@@ -345,7 +379,38 @@ class Robot_manager:
             time.sleep(1)
             self.IO.servoSet(0)
            # time.sleep(20)
+            self.roomThatJustFound = self.estimatedRooms[0]
             self.estimatedRooms = []
+
+        else:
+            if self.base_found and "F" in self.estimatedRooms:
+                #print "I AM IN ROOM: F"
+                # To engage the servo motor
+                self.IO.servoEngage()
+                self.IO.setMotors(0,0)
+                self.IO.servoSet(0)
+                time.sleep(1)
+                self.IO.servoSet(90)
+                time.sleep(1)
+                self.IO.servoSet(0)
+               # time.sleep(20)
+                self.estimatedRooms = []
+                self.base_found = False
+                self.roomThatJustFound = "F"
+            elif self.base_found and "A" in self.estimatedRooms:
+               # print "I AM IN ROOM: A"
+                # To engage the servo motor
+                self.IO.servoEngage()
+                self.IO.setMotors(0,0)
+                self.IO.servoSet(0)
+                time.sleep(1)
+                self.IO.servoSet(90)
+                time.sleep(1)
+                self.IO.servoSet(0)
+            #    time.sleep(20)
+                self.estimatedRooms = []
+                self.base_found = False
+                self.roomThatJustFound = "A"
 
     # handle dynamics, control and motors
     def dynamics_control_motors(self, step_point, subpoint):
@@ -738,6 +803,7 @@ class Robot_manager:
         calibration_data = self.turn_right_360_robot_motion_for_calibration()
         #print calibration_data
         self.calibration.calibrate_robot(calibration_data)
+        print "Calibration values " ,self.calibration.turn_360_steps
 
     # move always forward
     def turn_right_360_robot_motion_for_calibration(self):

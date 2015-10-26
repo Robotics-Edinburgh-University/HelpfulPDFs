@@ -53,6 +53,7 @@ class Toddler:
         while (1):
         #analog = self.IO.getSensors()
         # print analog
+           # print self.IO.getSensors()[5]
             self.robot_manager.run_robot()
 
     # This is a callback that will be called repeatedly.
