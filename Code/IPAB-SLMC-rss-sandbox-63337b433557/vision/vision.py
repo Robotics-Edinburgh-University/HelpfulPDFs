@@ -176,7 +176,7 @@ class robot_vision:
         self.IO.imshow('image',origin_img)
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
 
-        if len(interested_contours)>0:
+        if len(interested_contours)>2:
             print "------------------------"
             print len(interested_contours), "white objects detected"
             white_obj_num = 1
@@ -374,6 +374,7 @@ class robot_vision:
             white_object_num = self.White_Filter_BGR(img,img)
             blur_image = self.Blur(img,5)
             segmented_image = self.Segmentation_RGBXY(blur_image,cluster_numbers = 6)
+            #white_object_num = self.White_Filter_BGR(img,segmented_image)
             hsv_image_seg = self.HSV_Conversion(segmented_image)
             for color in self.color_list_segmentation:
                 object_num = self.ColorFilter_segmentation(color,img,hsv_image_seg)
