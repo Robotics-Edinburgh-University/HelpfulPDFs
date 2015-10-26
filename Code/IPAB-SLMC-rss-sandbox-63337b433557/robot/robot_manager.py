@@ -81,15 +81,27 @@ class Robot_manager:
         #time.sleep(1)
         #self.perform_90_degrees_turn_left()
         while(1):
+            #ADVANCED!
             room = self.start_and_stay_until_find_room()
             print "Starting Path"
-            self.execute_path("EXIT_" + room, 'L')
+            self.execute_path("EXIT_" + room, 'E')
             print "I ARRIVED First!"
             room = self.start_and_stay_until_find_room()
-            if room == "L":
+            if room == "B":
                 break
-        print " over \n"
-        time.sleep(20)
+            #BASIC!
+            # room = self.go_to_the_exit_spot("F")
+            # print "Starting Path"
+            # self.execute_path("EXIT_" + room, 'E')
+            #
+            # room = self.start_and_stay_until_find_room()
+            # while( room != "B"):
+            #     print "Starting Path"
+            #     self.execute_path("EXIT_" + room, 'E')
+            #     room = self.start_and_stay_until_find_room()
+
+        print "Over I arrived!\n",room
+        time.sleep(120)
         # print "Starting Path"
         # self.execute_path("EXIT_" + room, 'G')
         # print "I ARRIVED second!"
@@ -358,7 +370,7 @@ class Robot_manager:
                         if y != 0:
                             #print "NORMAL_LOOP:",self.distance_sensors.analogs_sensors[7]
                             if y==1:
-                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit:
+                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
                                     self.i_found_a_collision = True
                             collision_loop.append(1)
                             #   if x!=0:
@@ -805,7 +817,7 @@ class Robot_manager:
 
     # Set the desired trajectory to turn right one time
     def set_tranjectory_straight_6_steps(self):
-        traj = [[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1]]
+        traj = [[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1]]
         self.robot.set_desired_trajectory(traj)
 
     def straight_traj(self):

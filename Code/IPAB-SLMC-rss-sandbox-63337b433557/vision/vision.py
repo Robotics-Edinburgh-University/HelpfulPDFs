@@ -173,7 +173,7 @@ class robot_vision:
         print interested_contour_areas
 
         cv2.drawContours(origin_img, interested_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',origin_img)
+        ###self.IO.imshow('image',origin_img)
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
 
         if len(interested_contours)>2:
@@ -189,7 +189,7 @@ class robot_vision:
     def Draw_contours(self,origin_image,contours):
 
         cv2.drawContours(origin_image, contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',origin_image)
+        ###self.IO.imshow('image',origin_image)
 
     def ColorFilter(self,color,origin_image,hsv_image):
 
@@ -246,7 +246,7 @@ class robot_vision:
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
         cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
         cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',origin_image)
+        ###self.IO.imshow('image',origin_image)
 
         return len(final_contours)
 
@@ -349,7 +349,7 @@ class robot_vision:
         #res = cv2.bitwise_and(self.img,self.img,mask=mask)
         #cv2.drawContours(origin_image, final_contours, -1, (0,255,0), 2)
         cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
-        self.IO.imshow('image',origin_image)
+        ###self.IO.imshow('image',origin_image)
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
         #return max_contour
 
@@ -366,7 +366,7 @@ class robot_vision:
 
     def find_objects_segmentation(self,img):
         # if controller commands to detect objects detect
-        self.detect_object = True
+        #self.detect_object = True
         if self.detect_object:
             #self.IO.imshow('image',img)
             #time1 = time.time()
