@@ -71,7 +71,7 @@ class Robot_manager:
         self.roomThatJustFound = ""
     def run_robot(self):
 
-        self.execute_path('EXIT_E','B')
+        #self.execute_path('EXIT_D','I')
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
         #self.calibrate_turning_rate()
@@ -80,17 +80,44 @@ class Robot_manager:
         #self.perform_90_degrees_turn_right()
         #time.sleep(1)
         #self.perform_90_degrees_turn_left()
-        #self.start_and_stay_until_find_room()
-        print " over \n"
+        while(1):
+            #ADVANCED!
+            room = self.start_and_stay_until_find_room()
+            print "Starting Path"
+            self.execute_path("EXIT_" + room, 'E')
+            print "I ARRIVED First!"
+            room = self.start_and_stay_until_find_room()
+            if room == "B":
+                break
+            #BASIC!
+            # room = self.go_to_the_exit_spot("F")
+            # print "Starting Path"
+            # self.execute_path("EXIT_" + room, 'E')
+            #
+            # room = self.start_and_stay_until_find_room()
+            # while( room != "B"):
+            #     print "Starting Path"
+            #     self.execute_path("EXIT_" + room, 'E')
+            #     room = self.start_and_stay_until_find_room()
 
-        time.sleep(15)
+        print "Over I arrived!\n",room
+        time.sleep(120)
+        # print "Starting Path"
+        # self.execute_path("EXIT_" + room, 'G')
+        # print "I ARRIVED second!"
+        # room = self.start_and_stay_until_find_room()
+        # print " over \n"
+
+
+
+
 
     # excute the provided path
     def execute_path(self,start,end):
 
         self.compute_traj_to_goal(start,end)
-        pprint.pprint(self.robot.goal_trajectory)
-        raw_input("Ssss")
+        #pprint.pprint(self.robot.goal_trajectory)
+        #raw_input("Ssss")
         self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0,0)
 
@@ -125,6 +152,7 @@ class Robot_manager:
             malakitsa = 0
             while (1):
                 light = self.IO.getSensors()[5]
+                print light
                 if light < self.floorLightMin:
                     self.base_found = True
                 sonar = self.IO.getSensors()[6]
@@ -138,7 +166,7 @@ class Robot_manager:
                     first_catch = False
                 self.set_tranjectory_left()
                 self.move_the_fucking_robot_to_goal()
-                if malakitsa%enableVisionEvery==0:
+                if malakitsa%(enableVisionEvery/2)==0:
                     self.snapShot()
                     if self.roomThatJustFound!="": # if u find a room break
                         room_found = True
@@ -149,8 +177,10 @@ class Robot_manager:
             # it found a wall in a room
             print "Wall Found!"
             malakitsa = 0
+            self.i_found_a_collision = False
             while (1):
                 light = self.IO.getSensors()[5]
+                print light
                 if light < self.floorLightMin:
                     self.base_found = True
                 print self.i_found_a_collision
@@ -171,6 +201,7 @@ class Robot_manager:
             malakitsa = 0
             while (1):
                 light = self.IO.getSensors()[5]
+                print light
                 if light < self.floorLightMin:
                     self.base_found = True
                 IR_right = self.IO.getSensors()[7]
@@ -195,7 +226,11 @@ class Robot_manager:
             temp = self.roomThatJustFound
             self.roomThatJustFound = ""
             print "I GO TO THE EXIT SPOT ",temp
-            self.go_to_the_exit_spot(temp)
+            return self.go_to_the_exit_spot(temp)
+        else:
+            print "BUG!!"
+            return None
+
 
 
     def go_to_the_exit_spot(self,myroom):
@@ -216,7 +251,7 @@ class Robot_manager:
             self.move_the_fucking_robot_to_goal()
         # it found a wall in a room
        # print "Wall Found!"
-
+        self.i_found_a_collision = False
         while (1):
             print self.i_found_a_collision
             if self.i_found_a_collision == True:
@@ -235,8 +270,12 @@ class Robot_manager:
             self.move_the_fucking_robot_to_goal()
             self.i_found_a_collision = False
         print "I AM IN THE EXIT SPOT ",myroom
+        if myroom == "B" or myroom == "E":
+            self.set_tranjectory_straight_6_steps()
+            self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0, 0)
-        time.sleep(25)
+        time.sleep(5)
+        return myroom
 
     def move_the_fucking_robot_to_goal(self):
 
@@ -331,7 +370,7 @@ class Robot_manager:
                         if y != 0:
                             #print "NORMAL_LOOP:",self.distance_sensors.analogs_sensors[7]
                             if y==1:
-                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit:
+                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
                                     self.i_found_a_collision = True
                             collision_loop.append(1)
                             #   if x!=0:
@@ -776,7 +815,10 @@ class Robot_manager:
         traj = [[5, 0, 1]]
         self.robot.set_desired_trajectory(traj)
 
-
+    # Set the desired trajectory to turn right one time
+    def set_tranjectory_straight_6_steps(self):
+        traj = [[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1]]
+        self.robot.set_desired_trajectory(traj)
 
     def straight_traj(self):
         traj = [[5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
