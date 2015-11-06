@@ -192,7 +192,7 @@ class traj_test(unittest.TestCase):
         tmp.map_plot(mp,coord_path = coord_path ,plot_path = False, path = None,global_path = rotated_list)
 
 
-    def t_test_previw_map(self):
+    def test_previw_map(self):
         tt = traj()
         mp = map_representaion.map_representation()
         tmp = test_map_representation.map_rep_test()
@@ -261,7 +261,7 @@ class traj_test(unittest.TestCase):
 
         return final_plus_commands
 
-    def test_trajectory(self,commnas_list =None):
+    def t_test_trajectory(self,commnas_list =None):
 
         commnas_list =  [numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]),numpy.array([ -5.,  0.]) ,numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   ,  0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 0.   , -0.001]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.]), numpy.array([ 5.,  0.])]
 
@@ -286,7 +286,7 @@ class traj_test(unittest.TestCase):
                 commnas_list.insert(index,numpy.array([ 0.   , -0.001]))
 
         #pprint.pprint(commnas_list)
-        return commnas_list
+        #return commnas_list
 
 if __name__ == '__main__':
     unittest.main()

@@ -71,7 +71,7 @@ class Robot_manager:
         self.roomThatJustFound = ""
     def run_robot(self):
 
-        self.execute_path('EXIT_D','I')
+        self.execute_path('EXIT_E','B')
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
         #self.calibrate_turning_rate()
