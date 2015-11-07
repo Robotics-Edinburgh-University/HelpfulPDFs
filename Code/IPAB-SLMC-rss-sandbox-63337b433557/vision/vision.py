@@ -33,7 +33,7 @@ class robot_vision:
         self.IO = io
 
         #resolution
-        self.cameraResolution = 'low'
+        self.cameraResolution = 'high'
 
         #parameters
         self.hasImage = False
@@ -139,8 +139,8 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
-        #time.sleep(1)
+        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        time.sleep(1)
         return image
         #self.img = self.IO.cameraRead()
 
@@ -366,7 +366,7 @@ class robot_vision:
 
     def find_objects_segmentation(self,img):
         # if controller commands to detect objects detect
-        #self.detect_object = True
+        self.detect_object = True
         if self.detect_object:
             #self.IO.imshow('image',img)
             #time1 = time.time()
