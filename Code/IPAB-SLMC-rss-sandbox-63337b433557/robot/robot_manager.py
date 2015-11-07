@@ -69,6 +69,12 @@ class Robot_manager:
         self.base_found = False
         self.floorLightMin = 80
         self.roomThatJustFound = ""
+
+
+    def test_run_robot(self):
+
+        self.cage_object()
+
     def run_robot(self):
 
         #self.execute_path('EXIT_D','I')
@@ -921,3 +927,16 @@ class Robot_manager:
         self.set_tranjectory_left()
         self.turn_robot_90_degrees(self.robot.goal_trajectory[0])
         self.IO.setMotors(0,0)
+
+    # Function for the
+    def cage_object(self):
+        self.IO.servoEngage()
+        self.IO.servoSet(180)
+        time.sleep(1)
+        self.IO.servoSet(75)
+        print "Servo in Zero!!!"
+        time.sleep(1)
+        self.IO.servoDisengage()
+        #self.IO.servoSet(90)
+        #time.sleep(1)
+        #self.IO.servoSet(0)
