@@ -51,10 +51,10 @@ class Toddler:
         # time.sleep(0.1)
 
         while (1):
-        #analog = self.IO.getSensors()
+            analog = self.IO.getSensors()
         # print analog
            # print self.IO.getSensors()[5]
-            self.robot_manager.run_robot()
+            #self.robot_manager.run_robot()
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
@@ -62,10 +62,14 @@ class Toddler:
 
         # color_list = ['red','green','blue']
         # Object_detected_list = [False, False, False]
-        self.RobotVision.Set_Resolution()
+        self.RobotVision.Set_Resolution('high')
         while (OK):
             image = self.RobotVision.ImgObtain()
+            self.RobotVision.Lock_Mario(image)
+            #Find Mario
+            #self.RobotVision.show_template()
 
+            #Color_Obect_detection
             # using old approach
             #self.RobotVision.find_objects(image)
 

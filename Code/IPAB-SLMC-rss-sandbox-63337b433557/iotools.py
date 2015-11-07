@@ -96,6 +96,10 @@ class IOTools:
             return False
 
     def cameraSetResolution(self, sz):
+        """
+
+        :rtype : object
+        """
         if self._openCam:
             sz=sz.lower()
             if sz=='low':
