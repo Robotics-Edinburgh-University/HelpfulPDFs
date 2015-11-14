@@ -62,10 +62,12 @@ class Toddler:
 
         # color_list = ['red','green','blue']
         # Object_detected_list = [False, False, False]
-        self.RobotVision.Set_Resolution('high')
+        #self.RobotVision.Set_Resolution('high')
+        self.RobotVision.Set_Resolution('low')
         while (OK):
             image = self.RobotVision.ImgObtain()
-            self.RobotVision.Lock_Mario(image)
+            #self.RobotVision.Lock_Mario(image)
+            self.RobotVision.detect_resources(image)
             #Find Mario
             #self.RobotVision.show_template()
 
