@@ -51,8 +51,6 @@ class Toddler:
         # time.sleep(0.1)
 
         while (1):
-            analog = self.IO.getSensors()
-        # print analog
            # print self.IO.getSensors()[5]
             self.robot_manager.run_robot()
 
@@ -66,8 +64,8 @@ class Toddler:
         self.RobotVision.Set_Resolution('low')
         while (OK):
             image = self.RobotVision.ImgObtain()
-            #self.RobotVision.Lock_Mario(image)
-            self.RobotVision.detect_resources(image)
+            self.RobotVision.Lock_Mario()
+            #self.RobotVision.detect_resources(image)
             #Find Mario
             #self.RobotVision.show_template()
 

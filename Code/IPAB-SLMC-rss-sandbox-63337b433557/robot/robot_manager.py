@@ -169,9 +169,9 @@ class Robot_manager:
             second_catch = False
             if self.finished_left_wall_following:
                 while (1):
-                    move_x,move_y = self.found_box_object()
+                    move_y,move_x = self.found_box_from_tsiai()
                     if move_x != -999:
-                        print "in y rotate-->",move_y
+                        print "Found Box and rotate in y ->",move_y
                         if move_y != 0:
                             self.turn_for_box(move_y)
                             self.move_the_fucking_robot_to_goal_less_turn()
@@ -193,9 +193,9 @@ class Robot_manager:
                     self.move_the_fucking_robot_to_goal()
             else:
                 while (1):
-                    move_x,move_y = self.found_box_object()
+                    move_y,move_x = self.found_box_from_tsiai()
                     if move_x != -999:
-                        print "in y rotate-->",move_y
+                        print "Found Box and rotate in y ->",move_y
                         if move_y != 0:
                             self.turn_for_box(move_y)
                             self.move_the_fucking_robot_to_goal_less_turn()
@@ -204,7 +204,6 @@ class Robot_manager:
                             self.move_the_fucking_robot_to_goal()
                         self.IO.setMotors(0, 0)
                         time.sleep(4)
-
                     sonar = self.IO.getSensors()[6]
                     if sonar < 60:
                         if first_catch:
@@ -219,9 +218,9 @@ class Robot_manager:
             print "Wall Found!"
             self.i_found_a_collision = False
             while (1):
-                move_x,move_y = self.found_box_object()
+                move_y,move_x = self.found_box_from_tsiai()
                 if move_x != -999:
-                    print "in y rotate-->",move_y
+                    print "Found Box and rotate in y ->",move_y
                     if move_y != 0:
                         self.turn_for_box(move_y)
                         self.move_the_fucking_robot_to_goal_less_turn()
@@ -230,7 +229,6 @@ class Robot_manager:
                         self.move_the_fucking_robot_to_goal()
                     self.IO.setMotors(0, 0)
                     time.sleep(4)
-
                 if self.i_found_a_collision == True:
                     self.i_found_a_collision = False
                     break
@@ -243,9 +241,9 @@ class Robot_manager:
                 print "LEFT IR LOCKED!"
 
             while (1):
-                move_x,move_y = self.found_box_object()
+                move_y,move_x = self.found_box_from_tsiai()
                 if move_x != -999:
-                    print "in y rotate-->",move_y
+                    print "Found Box and rotate in y ->",move_y
                     if move_y != 0:
                         self.turn_for_box(move_y)
                         self.move_the_fucking_robot_to_goal_less_turn()
@@ -254,7 +252,6 @@ class Robot_manager:
                         self.move_the_fucking_robot_to_goal()
                     self.IO.setMotors(0, 0)
                     time.sleep(4)
-
                 IR_right = self.IO.getSensors()[7]
                 IR_left = self.IO.getSensors()[0]
                # print "IR right:", IR_right
@@ -823,6 +820,21 @@ class Robot_manager:
 
         return move_x,move_y
 
+    def found_box_from_tsiai(self):
+        self.vision.find_the_box_tsiai = True
+        time1 = time.time()
+
+        while self.vision.find_the_box_tsiai:
+            self.IO.setMotors(0,0)
+        time2 = time.time()
+        print "TIME: ", time2 - time1
+        if self.vision.tsiai_found_box:
+            move_x = self.vision.box_far_away_coord_tsiai[0]/100
+            move_y = self.vision.box_far_away_coord_tsiai[1]/100
+
+            return move_x,move_y
+        return -999,-999
+
     # Is the robot at the goal
     def Goal_reached1(self, goal):  # ,general_vec_orient):
 
@@ -1165,13 +1177,13 @@ class Robot_manager:
         if move_y == -1:
             traj = [[0, -0.001, 1]]
             self.robot.set_desired_trajectory(traj)
-        elif move_y == -2:
+        elif move_y <= -2:
             traj = [[0, -0.001, 1]]
             self.robot.set_desired_trajectory(traj)
         elif move_y == 1:
             traj = [[0, 0.001, 1]]
             self.robot.set_desired_trajectory(traj)
-        elif move_y == 2:
+        elif move_y >= 2:
             traj = [[0, 0.001, 1]]
             self.robot.set_desired_trajectory(traj)
 

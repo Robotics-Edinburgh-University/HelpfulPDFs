@@ -51,6 +51,8 @@ class robot_vision:
         self.find_the_box_from_far_away = False
         self.box_far_away_found = False
         self.box_far_away_coord = [0,0]
+        self.find_the_box_tsiai = False
+        self.tsiai_found_box = False
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
         #self.color_list = ['red']
         #self.object_detected_list = [0]
@@ -133,7 +135,12 @@ class robot_vision:
         self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange]#,self.boundry_white]
         self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation]#,self.boundry_white_segmentation]#,self.boundry_black_segmentation]#,self.boundry_white]
 
-        self.Mario_template = cv2.imread('./vision/mario_resize_60.png',0)
+
+        self.Mario_template_far = cv2.imread('./vision/mario_resize_60.png',0)
+        self.Mario_template_close = cv2.imread('./vision/mario_close.png',0)
+
+        self.Mario = [self.Mario_template_close,self.Mario_template_far]
+        self.Mario_thre = [0.5,0.55]
 
     def Set_Resolution(self,res):
         self.IO.cameraSetResolution(res)
@@ -148,7 +155,7 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
         #self.IO.imshow('image',image)
         #time.sleep(1)
         return image
@@ -405,34 +412,50 @@ class robot_vision:
         #return object_list
 
 
-    def Lock_Mario(self,origin_img):
-        origin_gray_img = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
-        w, h = self.Mario_template.shape[::-1]
+    def Lock_Mario(self):#,origin_img):
+        if self.find_the_box_tsiai:
+            self.Set_Resolution('high')
+            origin_img = self.ImgObtain()
+            #self.IO.imshow('img',origin_img)
+            origin_gray_img = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
+            methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                        'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+            method = eval('cv2.TM_CCOEFF_NORMED')
+            found = 0
+            #print "sssssssssss in sides"
+            for index_threshold , template in enumerate(self.Mario):
+                w, h = template.shape[::-1]
+                result = cv2.matchTemplate(origin_gray_img,template,method)
+                min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+                print "max value", max_val
+            #loc = numpy.where( result >= 0.55)
+            #print len(loc)
+            #for pt in zip(*loc[::-1]):
+            #    cv2.rectangle(origin_img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+                top_left = max_loc
+                bottom_right = (top_left[0] + w, top_left[1] + h)
+                center = numpy.array([400,500])
+                if max_val > self.Mario_thre[index_threshold]:
+                    cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 2)
+                    obj_center = numpy.array([top_left[0]+w/2,top_left[1]+h/2])
+                    self.box_far_away_coord_tsiai = center - obj_center
+                    found = 1
+                    #print "center:", center
+                    #cv2.circle(origin_img,(obj_center[0],obj_center[1]), 3, (0,0,255), 2)
 
-        methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
-                   'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
-        method = eval('cv2.TM_CCOEFF_NORMED')
-        time1= time.time()
-        result = cv2.matchTemplate(origin_gray_img,self.Mario_template,method)
-        #print "---------------------"
-        #print "results:", result
-        #time2 = time.time()
-        #print "time diff", time2 - time1
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        #print "max value", max_val
-        loc = numpy.where( result >= 0.55)
-        #print len(loc)
-        for pt in zip(*loc[::-1]):
-            cv2.rectangle(origin_img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-        #top_left = max_loc
-        #bottom_right = (top_left[0] + w, top_left[1] + h)
-        #cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 2)
-        if len(loc) >1:
-            print "found mario"
-        else:
-            print "nothing"
 
-        self.IO.imshow('img',origin_img)
+                if found:
+                    self.tsiai_found_box = True
+                    self.find_the_box_tsiai = False
+                    break
+                else:
+                    self.tsiai_found_box = False
+                    self.find_the_box_tsiai = False
+                    self.box_far_away_coord_tsiai = numpy.array([0,0])
+
+            self.IO.imshow('img',origin_img)
+            self.Set_Resolution('low')
+
 
     def Cube_Detection(self,origin_img):
         time1 = time.time()
