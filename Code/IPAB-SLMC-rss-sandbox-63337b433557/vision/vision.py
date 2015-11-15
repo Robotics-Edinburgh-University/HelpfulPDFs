@@ -145,7 +145,7 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
         #self.IO.imshow('image',image)
         #time.sleep(1)
         return image
@@ -401,27 +401,7 @@ class robot_vision:
 
         #return object_list
 
-    def Lock_Mario(self,origin_img):
-        origin_gray_img = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
-        w, h = self.Mario_template.shape[::-1]
 
-        methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
-                   'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
-        method = eval('cv2.TM_CCOEFF_NORMED')
-        time1= time.time()
-        result = cv2.matchTemplate(origin_gray_img,self.Mario_template,method)
-        time2 = time.time()
-        print "time diff", time2 - time1
-        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-        #print "max value", max_val
-        loc = numpy.where( result >= 0.5)
-        print len(loc)
-        for pt in zip(*loc[::-1]):
-            cv2.rectangle(origin_img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-        #top_left = max_loc
-        #bottom_right = (top_left[0] + w, top_left[1] + h)
-        #cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 2)
-        self.IO.imshow('img',origin_img)
 
 
 
