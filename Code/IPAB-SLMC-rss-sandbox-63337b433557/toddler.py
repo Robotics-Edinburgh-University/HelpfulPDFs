@@ -64,10 +64,10 @@ class Toddler:
         self.RobotVision.Set_Resolution('low')
         while (OK):
             image = self.RobotVision.ImgObtain()
-            self.RobotVision.Lock_Mario()
+            self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
             #self.RobotVision.detect_resources(image)
             #Find Mario
-            #self.RobotVision.show_template()
+            #self.RobotVision.show_template(self.RobotVision.Watching[0])
 
             #Color_Obect_detection
             # using old approach

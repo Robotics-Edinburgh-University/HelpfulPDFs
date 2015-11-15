@@ -135,20 +135,39 @@ class robot_vision:
         self.boundry_list = [self.boundry_red, self.boundry_green, self.boundry_blue,self.boundry_yellow,self.boundry_orange]#,self.boundry_white]
         self.boundry_list_segmentation = [self.boundry_red_segmentation, self.boundry_green_segmentation, self.boundry_blue_segmentation,self.boundry_yellow_segmentation,self.boundry_orange_segmentation]#,self.boundry_white_segmentation]#,self.boundry_black_segmentation]#,self.boundry_white]
 
+        self.box_from_close_algorithm = False
 
-        self.Mario_template_far = cv2.imread('./vision/mario_resize_60.png',0)
         self.Mario_template_close = cv2.imread('./vision/mario_close.png',0)
-
+        self.Mario_template_far = cv2.imread('./vision/mario_resize_60.png',0)
         self.Mario = [self.Mario_template_close,self.Mario_template_far]
         self.Mario_thre = [0.5,0.55]
+
+        self.Wario_template_close = cv2.imread('./vision/wario_close.png',0)
+        self.Wario_template_far = cv2.imread('./vision/wario_resize_60.png',0)
+        self.Wario = [self.Wario_template_close,self.Wario_template_far]
+        self.Wario_thre = [0.5,0.55]
+
+        self.Zoidberg_template_close = cv2.imread('./vision/zoidberg_close.png',0)
+        self.Zoidberg_template_far = cv2.imread('./vision/zoidberg_resize_60.png',0)
+        self.Zoidberg = [self.Zoidberg_template_close,self.Zoidberg_template_far]
+        self.Zoidberg_thre = [0.5,0.55]
+
+        self.Watching_template_close = cv2.imread('./vision/watching_close.png',0)
+        self.Watching_template_far = cv2.imread('./vision/watching_resize_60.png',0)
+        self.Watching = [self.Watching_template_close,self.Watching_template_far]
+        self.Watching_thre = [0.55,0.57]
+
+        self.distance = ['close','far','mid']
+
 
     def Set_Resolution(self,res):
         self.IO.cameraSetResolution(res)
 
-    def show_template(self):
+    def show_template(self,template):
         #print len(self.Mario_template)
-        self.IO.imshow('template',self.Mario_template)
-
+        #for template in templates:
+        self.IO.imshow('template',template)
+        #time.sleep(2)
     def ImgObtain(self):
 
         #read the buffer 5 times by cameraGrab and obtain it by cameraRead
@@ -412,10 +431,12 @@ class robot_vision:
         #return object_list
 
 
-    def Lock_Mario(self):#,origin_img):
+    def Lock_Cubes(self,templates,thresholds):#,origin_img):
+        self.find_the_box_tsiai=True
         if self.find_the_box_tsiai:
             self.Set_Resolution('high')
             origin_img = self.ImgObtain()
+            #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',origin_img)
             #self.IO.imshow('img',origin_img)
             origin_gray_img = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
             methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
@@ -423,11 +444,11 @@ class robot_vision:
             method = eval('cv2.TM_CCOEFF_NORMED')
             found = 0
             #print "sssssssssss in sides"
-            for index_threshold , template in enumerate(self.Mario):
+            for index_threshold , template in enumerate(templates):
                 w, h = template.shape[::-1]
                 result = cv2.matchTemplate(origin_gray_img,template,method)
                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
-                print "max value", max_val
+                print "max value of",self.distance[index_threshold], max_val
             #loc = numpy.where( result >= 0.55)
             #print len(loc)
             #for pt in zip(*loc[::-1]):
@@ -435,14 +456,17 @@ class robot_vision:
                 top_left = max_loc
                 bottom_right = (top_left[0] + w, top_left[1] + h)
                 center = numpy.array([400,500])
-                if max_val > self.Mario_thre[index_threshold]:
+                if max_val > thresholds[index_threshold]:
                     cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 2)
                     obj_center = numpy.array([top_left[0]+w/2,top_left[1]+h/2])
                     self.box_far_away_coord_tsiai = center - obj_center
                     found = 1
                     #print "center:", center
                     #cv2.circle(origin_img,(obj_center[0],obj_center[1]), 3, (0,0,255), 2)
-
+                    if index_threshold == 0:
+                        self.box_from_close_algorithm = True
+                    else:
+                        self.box_from_close_algorithm = False
 
                 if found:
                     self.tsiai_found_box = True
