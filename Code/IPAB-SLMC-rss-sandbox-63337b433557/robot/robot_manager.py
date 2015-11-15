@@ -103,6 +103,7 @@ class Robot_manager:
             #     self.execute_path("EXIT_" + room, 'E')
             #     room = self.start_and_stay_until_find_room()
             self.observe_the_room()
+
         #print "Over I arrived!\n",room
         #time.sleep(120)
         # print "Starting Path"
@@ -145,8 +146,101 @@ class Robot_manager:
     def counterwise_follow_wall_in_room_stop_at_right_edge(self):
         self.start_and_stay_in_the_room()
 
+    def aris_algorithm(self):
+        move_y,move_x = self.found_box_from_tsiai()
+        if move_y != -999:
+            print "Box Found! Lets Grab it!"
+            if move_y < 0:
+                print "Rotating a bit Right.."
+            elif move_y > 0:
+                print "Rotating a bit Left.."
+            else:
+                print "No need for rotation"
+
+            if move_y != 0:
+                self.turn_for_box(move_y)
+                self.move_the_fucking_robot_to_goal_less_turn()
+
+            print "Go Straight"
+            self.open_cage()
+            ##################<<<<<--------------------------------------
+            if self.vision.box_from_close_algorithm:
+                print "Box is Close..."
+                for i in range(7):
+                    self.set_tranjectory_straight()
+                    self.move_the_fucking_robot_to_goal()
+
+                    #check one time only after 1 move
+                    if i == 0 or i == 1:
+                        print "one more check"
+                        move_y,move_x = self.found_box_from_tsiai()
+                        if move_y != -999:
+                            "box found again"
+                            if move_y != 0:
+                                self.turn_for_box(move_y)
+                                self.move_the_fucking_robot_to_goal_less_turn()
+                    if self.box_inside():
+                        print "BOX GRABBED!!!"
+                        self.close_cage()
+                        self.IO.setMotors(0, 0)
+                        time.sleep(10000)
+                print "I suck i failed to grabb it.. :/ Let me go back a bit"
+
+                self.set_tranjectory_straight_back()
+                self.move_the_fucking_robot_to_goal()
+
+                print "Let me try again.."
+                for i in range(7):
+                    self.set_tranjectory_straight()
+                    self.move_the_fucking_robot_to_goal()
+
+                    move_y,move_x = self.found_box_from_tsiai()
+                    if move_y != -999:
+                        if move_y != 0:
+                         self.turn_for_box(move_y)
+                         self.move_the_fucking_robot_to_goal_less_turn()
+
+                    if self.box_inside():
+                        print "BOX GRABBED!!!"
+                        self.close_cage()
+                        self.IO.setMotors(0, 0)
+                        time.sleep(10000)
+                print "I failed again."
+                self.close_cage()
+                return False
+            else:
+                print "Box is Far..."
+                for i in range(22):
+                    self.set_tranjectory_straight()
+                    self.move_the_fucking_robot_to_goal()
+
+                    #check one time only after 1 move
+                    if i%3 == 0:
+                        print "check again"
+                        move_y,move_x = self.found_box_from_tsiai()
+                        if move_y != -999:
+                            "box found again"
+                            if move_y != 0:
+                                self.turn_for_box(move_y)
+                                self.move_the_fucking_robot_to_goal_less_turn()
+
+                    if self.box_inside():
+                        print "BOX GRABBED!!!"
+                        self.close_cage()
+                        self.IO.setMotors(0, 0)
+                        time.sleep(10000)
+                print "I failed, sorry"
+                self.close_cage()
+                return False
+        # if is True it just continue the observe_the_room algorithm
+        return True
+
+
     def observe_the_room(self):
+        my_steps = 0
+        checkEvery = 4
         while(True):
+            my_steps+=1
             ###############################
             ##close if u grab a box
             ##!! should be in another function that runs aftair we found the item
@@ -169,18 +263,15 @@ class Robot_manager:
             second_catch = False
             if self.finished_left_wall_following:
                 while (1):
-                    move_y,move_x = self.found_box_from_tsiai()
-                    if move_x != -999:
-                        print "Found Box and rotate in y ->",move_y
-                        if move_y != 0:
-                            self.turn_for_box(move_y)
-                            self.move_the_fucking_robot_to_goal_less_turn()
-                        if move_x != 0:
-                            self.walk_for_box(move_x)
-                            self.move_the_fucking_robot_to_goal()
-                        self.IO.setMotors(0, 0)
-                        time.sleep(4)
-
+                    #Check here 1
+                    if my_steps%checkEvery == 0:
+                        check = self.aris_algorithm()
+                        if check == False:
+                            self.i_found_a_collision = False
+                            self.observe_left = True
+                            self.distance_sensors.turn = 1
+                            self.finished_left_wall_following = True
+                            return
                     sonar = self.IO.getSensors()[6]
                     if sonar < 60:
                         if first_catch:
@@ -193,17 +284,15 @@ class Robot_manager:
                     self.move_the_fucking_robot_to_goal()
             else:
                 while (1):
-                    move_y,move_x = self.found_box_from_tsiai()
-                    if move_x != -999:
-                        print "Found Box and rotate in y ->",move_y
-                        if move_y != 0:
-                            self.turn_for_box(move_y)
-                            self.move_the_fucking_robot_to_goal_less_turn()
-                        if move_x != 0:
-                            self.walk_for_box(move_x)
-                            self.move_the_fucking_robot_to_goal()
-                        self.IO.setMotors(0, 0)
-                        time.sleep(4)
+                    #check here 2
+                    if my_steps%checkEvery == 0:
+                        check = self.aris_algorithm()
+                        if check == False:
+                            self.i_found_a_collision = False
+                            self.observe_left = True
+                            self.distance_sensors.turn = 1
+                            self.finished_left_wall_following = True
+                            return
                     sonar = self.IO.getSensors()[6]
                     if sonar < 60:
                         if first_catch:
@@ -218,17 +307,15 @@ class Robot_manager:
             print "Wall Found!"
             self.i_found_a_collision = False
             while (1):
-                move_y,move_x = self.found_box_from_tsiai()
-                if move_x != -999:
-                    print "Found Box and rotate in y ->",move_y
-                    if move_y != 0:
-                        self.turn_for_box(move_y)
-                        self.move_the_fucking_robot_to_goal_less_turn()
-                    if move_x != 0:
-                        self.walk_for_box(move_x)
-                        self.move_the_fucking_robot_to_goal()
-                    self.IO.setMotors(0, 0)
-                    time.sleep(4)
+                #check here 3
+                if my_steps%checkEvery == 0:
+                    check = self.aris_algorithm()
+                    if check == False:
+                        self.i_found_a_collision = False
+                        self.observe_left = True
+                        self.distance_sensors.turn = 1
+                        self.finished_left_wall_following = True
+                        return
                 if self.i_found_a_collision == True:
                     self.i_found_a_collision = False
                     break
@@ -241,17 +328,15 @@ class Robot_manager:
                 print "LEFT IR LOCKED!"
 
             while (1):
-                move_y,move_x = self.found_box_from_tsiai()
-                if move_x != -999:
-                    print "Found Box and rotate in y ->",move_y
-                    if move_y != 0:
-                        self.turn_for_box(move_y)
-                        self.move_the_fucking_robot_to_goal_less_turn()
-                    if move_x != 0:
-                        self.walk_for_box(move_x)
-                        self.move_the_fucking_robot_to_goal()
-                    self.IO.setMotors(0, 0)
-                    time.sleep(4)
+                #check here 4
+                if my_steps%checkEvery == 0:
+                    check = self.aris_algorithm()
+                    if check == False:
+                        self.i_found_a_collision = False
+                        self.observe_left = True
+                        self.distance_sensors.turn = 1
+                        self.finished_left_wall_following = True
+                        return
                 IR_right = self.IO.getSensors()[7]
                 IR_left = self.IO.getSensors()[0]
                # print "IR right:", IR_right
@@ -1162,6 +1247,9 @@ class Robot_manager:
         traj = [[5, 0, 1]]
         self.robot.set_desired_trajectory(traj)
 
+    def set_tranjectory_straight_back(self):
+        traj = [[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1]]
+        self.robot.set_desired_trajectory(traj)
     # Set the desired trajectory to turn right one time
     def set_tranjectory_straight_6_steps(self):
         traj = [[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1]]
