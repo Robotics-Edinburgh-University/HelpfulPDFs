@@ -405,6 +405,74 @@ class robot_vision:
         #return object_list
 
 
+    def Lock_Mario(self,origin_img):
+        origin_gray_img = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
+        w, h = self.Mario_template.shape[::-1]
+
+        methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                   'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+        method = eval('cv2.TM_CCOEFF_NORMED')
+        time1= time.time()
+        result = cv2.matchTemplate(origin_gray_img,self.Mario_template,method)
+        #print "---------------------"
+        #print "results:", result
+        #time2 = time.time()
+        #print "time diff", time2 - time1
+        #min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
+        #print "max value", max_val
+        loc = numpy.where( result >= 0.55)
+        #print len(loc)
+        for pt in zip(*loc[::-1]):
+            cv2.rectangle(origin_img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+        #top_left = max_loc
+        #bottom_right = (top_left[0] + w, top_left[1] + h)
+        #cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 2)
+        if len(loc) >1:
+            print "found mario"
+        else:
+            print "nothing"
+
+        self.IO.imshow('img',origin_img)
+
+    def Cube_Detection(self,origin_img):
+        time1 = time.time()
+        origin_gray = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
+        gray_gaussian = cv2.GaussianBlur(origin_gray,(7,7),0)
+        canny_edge = cv2.Canny(gray_gaussian,120,250)
+        #self.IO.imshow('img',canny_edge)
+        #construct and apply a closing kernel to 'close' gaps between 'white' pixels
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(15,15))
+        closed =cv2.morphologyEx(canny_edge,cv2.MORPH_CLOSE,kernel)
+
+        self.IO.imshow('img',closed)
+
+        im2,cnts,hierarchky = cv2.findContours(closed.copy(),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        #im2,cnts,hierarchky = cv2.findContours(canny_edge.copy(),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        total = 0
+
+        for c in cnts:
+            if cv2.contourArea(c)>150 and cv2.contourArea(c)<10000 :
+                #x,y,w,h = cv2.boundingRect(c)
+                #if  w*h > 2000  and w*h < 6000:
+                peri = cv2.arcLength(c,True)
+                approx = cv2.approxPolyDP(c,0.02*peri,True)
+                x,y,w,h = cv2.boundingRect(approx)
+                if len(approx) > 3 and len(approx)<11:
+                    if w*h<10000:
+                        cv2.drawContours(origin_img,[approx],-1,(0,255,0),4)
+                        total += 1
+                        print "number of convex",len(approx)
+                        print "original controu area", cv2.contourArea(c)
+                #print "contour area", w*h
+
+
+        time2 = time.time()
+        print "time_diff", time2 - time1
+        print "------------------------"
+        self.IO.imshow('img',origin_img)
+
+
+
 
 
     def detect_resources(self,img):
