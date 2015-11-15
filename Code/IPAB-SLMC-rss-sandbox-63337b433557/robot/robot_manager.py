@@ -69,12 +69,9 @@ class Robot_manager:
         self.base_found = False
         self.floorLightMin = 80
         self.roomThatJustFound = ""
-
-
-    def test_run_robot(self):
-
-        self.cage_object()
-
+        self.observe_left = True
+        self.distance_sensors.turn = 1
+        self.finished_left_wall_following = True
     def run_robot(self):
 
         #self.execute_path('EXIT_D','I')
@@ -88,13 +85,13 @@ class Robot_manager:
         #self.perform_90_degrees_turn_left()
         while(1):
             #ADVANCED!
-            room = self.start_and_stay_until_find_room()
-            print "Starting Path"
-            self.execute_path("EXIT_" + room, 'E')
-            print "I ARRIVED First!"
-            room = self.start_and_stay_until_find_room()
-            if room == "B":
-                break
+            #room = self.start_and_stay_until_find_room()
+            #print "Starting Path"
+            #self.execute_path("EXIT_" + room, 'E')
+            #print "I ARRIVED First!"
+            #room = self.start_and_stay_until_find_room()
+            #if room == "B":
+            #    break
             #BASIC!
             # room = self.go_to_the_exit_spot("F")
             # print "Starting Path"
@@ -105,9 +102,9 @@ class Robot_manager:
             #     print "Starting Path"
             #     self.execute_path("EXIT_" + room, 'E')
             #     room = self.start_and_stay_until_find_room()
-
-        print "Over I arrived!\n",room
-        time.sleep(120)
+            self.observe_the_room()
+        #print "Over I arrived!\n",room
+        #time.sleep(120)
         # print "Starting Path"
         # self.execute_path("EXIT_" + room, 'G')
         # print "I ARRIVED second!"
@@ -148,6 +145,142 @@ class Robot_manager:
     def counterwise_follow_wall_in_room_stop_at_right_edge(self):
         self.start_and_stay_in_the_room()
 
+    def observe_the_room(self):
+        while(True):
+            ###############################
+            ##close if u grab a box
+            ##!! should be in another function that runs aftair we found the item
+            ##while(1)
+            ##next_code
+            ##self.set_tranjectory_straight()
+            ##self.move_the_fucking_robot_to_goal()
+
+          #  if self.box_inside():
+          #      self.close_cage() #Open the cage first!!!!!!!!!!!
+          #      print "Box grabbed!"
+          #      time.sleep(4)
+
+            ###############################
+            if self.observe_left:
+                print "Left check Starting!"
+            else:
+                print "Right check Starting!"
+            first_catch = False
+            second_catch = False
+            if self.finished_left_wall_following:
+                while (1):
+                    move_x,move_y = self.found_box_object()
+                    if move_x != -999:
+                        print "in y rotate-->",move_y
+                        if move_y != 0:
+                            self.turn_for_box(move_y)
+                            self.move_the_fucking_robot_to_goal_less_turn()
+                        if move_x != 0:
+                            self.walk_for_box(move_x)
+                            self.move_the_fucking_robot_to_goal()
+                        self.IO.setMotors(0, 0)
+                        time.sleep(4)
+
+                    sonar = self.IO.getSensors()[6]
+                    if sonar < 60:
+                        if first_catch:
+                            first_catch = False
+                            break
+                        first_catch = True
+                    else:
+                        first_catch = False
+                    self.set_tranjectory_left()
+                    self.move_the_fucking_robot_to_goal()
+            else:
+                while (1):
+                    move_x,move_y = self.found_box_object()
+                    if move_x != -999:
+                        print "in y rotate-->",move_y
+                        if move_y != 0:
+                            self.turn_for_box(move_y)
+                            self.move_the_fucking_robot_to_goal_less_turn()
+                        if move_x != 0:
+                            self.walk_for_box(move_x)
+                            self.move_the_fucking_robot_to_goal()
+                        self.IO.setMotors(0, 0)
+                        time.sleep(4)
+
+                    sonar = self.IO.getSensors()[6]
+                    if sonar < 60:
+                        if first_catch:
+                            first_catch = False
+                            break
+                        first_catch = True
+                    else:
+                        first_catch = False
+                    self.set_tranjectory_right()
+                    self.move_the_fucking_robot_to_goal()
+            # it found a wall in a room
+            print "Wall Found!"
+            self.i_found_a_collision = False
+            while (1):
+                move_x,move_y = self.found_box_object()
+                if move_x != -999:
+                    print "in y rotate-->",move_y
+                    if move_y != 0:
+                        self.turn_for_box(move_y)
+                        self.move_the_fucking_robot_to_goal_less_turn()
+                    if move_x != 0:
+                        self.walk_for_box(move_x)
+                        self.move_the_fucking_robot_to_goal()
+                    self.IO.setMotors(0, 0)
+                    time.sleep(4)
+
+                if self.i_found_a_collision == True:
+                    self.i_found_a_collision = False
+                    break
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+
+            if self.observe_left:
+                print "RIGHT IR LOCKED!"
+            else:
+                print "LEFT IR LOCKED!"
+
+            while (1):
+                move_x,move_y = self.found_box_object()
+                if move_x != -999:
+                    print "in y rotate-->",move_y
+                    if move_y != 0:
+                        self.turn_for_box(move_y)
+                        self.move_the_fucking_robot_to_goal_less_turn()
+                    if move_x != 0:
+                        self.walk_for_box(move_x)
+                        self.move_the_fucking_robot_to_goal()
+                    self.IO.setMotors(0, 0)
+                    time.sleep(4)
+
+                IR_right = self.IO.getSensors()[7]
+                IR_left = self.IO.getSensors()[0]
+               # print "IR right:", IR_right
+                if self.observe_left:
+                    if IR_right < 100:
+                        break
+                else:
+                    if IR_left < 100:
+                        break
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.i_found_a_collision = False
+            print "ouups Sorry! I go back again now! :/"
+            if self.observe_left:
+                self.observe_left = False
+                self.distance_sensors.turn = -1
+                self.finished_left_wall_following = True
+            else:
+                self.observe_left = True
+                self.distance_sensors.turn = 1
+                self.finished_left_wall_following = False
+
+            self.IO.setMotors(0, 0)
+            time.sleep(4)
+
+    ###############3
     def start_and_stay_until_find_room(self):
 
         enableVisionEvery = 4   #every 4 steps
@@ -238,7 +371,6 @@ class Robot_manager:
             return None
 
 
-
     def go_to_the_exit_spot(self,myroom):
         first_catch = False
         second_catch = False
@@ -315,14 +447,26 @@ class Robot_manager:
                             # self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
                             if y != 0:
                             #    print "X_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
-                                if y == 1:
-                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
-                                        self.i_found_a_collision = True
-                                collision_loop.append(1)
-                                # if x!=0:
-                                # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
-                                # else:
-                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            # FOR LEFT AS THE PREVIOUS IMPLEMENTATION
+                                if self.observe_left:
+                                    if y == 1:
+                                        if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            # FOR RIGHT A BIT DIFFERENT
+                                else:
+                                    if y == -1:
+                                        if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
                             if y == 0 and x == -1:
                                 collision_loop.append(1)
                                 self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
@@ -343,14 +487,24 @@ class Robot_manager:
                             #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
                             if y != 0:
                              #   print "Y_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
-                                if y==1:
-                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
-                                        self.i_found_a_collision = True
-                                collision_loop.append(1)
-                                # if x!=0:
-                                #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
-                                # else:
-                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                                if self.observe_left:
+                                    if y==1:
+                                        if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                                else:
+                                    if y==-1:
+                                        if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
                             if y == 0 and x == -1:
                                 collision_loop.append(1)
                                 self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
@@ -375,14 +529,173 @@ class Robot_manager:
                         #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
                         if y != 0:
                             #print "NORMAL_LOOP:",self.distance_sensors.analogs_sensors[7]
-                            if y==1:
-                                if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
-                                    self.i_found_a_collision = True
+                            if self.observe_left:
+                                if y==1:
+                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                        self.i_found_a_collision = True
+                                collision_loop.append(1)
+                                #   if x!=0:
+                                #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                #   else:
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            else:
+                                if y==-1:
+                                    if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                        self.i_found_a_collision = True
+                                collision_loop.append(1)
+                                #   if x!=0:
+                                #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                #   else:
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+
+                        if y == 0 and x == -1:
                             collision_loop.append(1)
-                            #   if x!=0:
-                            #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
-                            #   else:
-                            self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
+                        break  # break the loop and continue
+                    else:
+                        step_point = subpoint[0:2]
+                    # ___LOOP_END_________________________________________________________
+
+                distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
+                steps += 1
+
+
+        self.IO.setStatus('flash')
+
+    def move_the_fucking_robot_to_goal_less_turn(self):
+
+        sensors_interuption = (0, 0)
+        subpoint_counter = -1
+        collision_loop = []
+        visionCounter = 0
+        for subpoint in self.robot.goal_trajectory:
+            self.robot.reset_current_state()
+            steps = 0
+            subpoint_counter += 1
+
+            # Inner while loop that that move the robot for every subpoint
+            # ___LOOP_BEGIN_________________________________________________________
+            distance_to_goal = self.Goal_reached1(subpoint)
+            while (distance_to_goal == False):
+                if(steps >=18):
+                    break
+                # Collision While
+                if len(collision_loop) > 0:
+
+                    if subpoint[0] != 0 and steps >= 7:  # if collision in x (moving)
+                        #print "COLLISION IN X(COLLISION LOOP)"
+                        sensors_interuption = self.overall_sensors_direction()
+                        # print "sensors : " , sensors_interuption
+                        if sensors_interuption != (0, 0):
+                            # collision_loop.append(1)			#if we have collision append
+                            x = sensors_interuption[0]
+                            y = sensors_interuption[1]
+                            # if x != 0:
+                            # collision_loop.append(1)
+                            # self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+                            if y != 0:
+                            #    print "X_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
+                            # FOR LEFT AS THE PREVIOUS IMPLEMENTATION
+                                if self.observe_left:
+                                    if y == 1:
+                                        if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            # FOR RIGHT A BIT DIFFERENT
+                                else:
+                                    if y == -1:
+                                        if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            if y == 0 and x == -1:
+                                collision_loop.append(1)
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
+
+                        collision_loop.pop()
+                        break  # break the loop and continue
+
+                    elif subpoint[1] != 0 and steps >= 20:  # if collision in y (rotating)
+                        #print "COLLISION IN Y(COLLISION LOOP)"
+                        sensors_interuption = self.overall_sensors_direction()
+                        # print "sensors : " , sensors_interuption
+                        if sensors_interuption != (0, 0):
+                            # collision_loop.append(1)			#if we have collision append
+                            x = sensors_interuption[0]
+                            y = sensors_interuption[1]
+                            # if x != 0:
+                            #    collision_loop.append(1)
+                            #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+                            if y != 0:
+                             #   print "Y_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
+                                if self.observe_left:
+                                    if y==1:
+                                        if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                                else:
+                                    if y==-1:
+                                        if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            if y == 0 and x == -1:
+                                collision_loop.append(1)
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
+
+                        collision_loop.pop()
+                        break  # break the loop and continue
+
+                    else:
+                        #print "Entered Collision LOOP No Next Collision"
+                        step_point = subpoint[0:2]
+                    # Normal While
+                else:
+                    sensors_interuption = self.overall_sensors_direction()
+                    # print "sensors : " , sensors_interuption
+                    if sensors_interuption != (0, 0):
+                        #print "COLLISION FROM NORMAL LOOP"
+                        # collision_loop.append(1)			#if we have collision append
+                        x = sensors_interuption[0]
+                        y = sensors_interuption[1]
+                        # if x != 0:
+                        #    collision_loop.append(1)
+                        #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+                        if y != 0:
+                            #print "NORMAL_LOOP:",self.distance_sensors.analogs_sensors[7]
+                            if self.observe_left:
+                                if y==1:
+                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                        self.i_found_a_collision = True
+                                collision_loop.append(1)
+                                #   if x!=0:
+                                #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                #   else:
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            else:
+                                if y==-1:
+                                    if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                        self.i_found_a_collision = True
+                                collision_loop.append(1)
+                                #   if x!=0:
+                                #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                #   else:
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+
                         if y == 0 and x == -1:
                             collision_loop.append(1)
                             self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
@@ -493,6 +806,22 @@ class Robot_manager:
         color_list = self.vision.object_detected_list
 
         return color_list
+
+    def found_box_object(self):
+        self.vision.find_the_box_from_far_away = True
+        time1 = time.time()
+        while self.vision.find_the_box_from_far_away:
+            self.IO.setMotors(0,0)
+        time2 = time.time()
+        print "TIME: ", time2 - time1
+        print "box_far_away_found:",self.vision.box_far_away_found
+        print "box_far_away_coord:",self.vision.box_far_away_coord
+        move_x = self.vision.box_far_away_coord[0]/25
+        move_y = self.vision.box_far_away_coord[1]/35
+        if self.vision.box_far_away_found == False:
+            return -999,-999
+
+        return move_x,move_y
 
     # Is the robot at the goal
     def Goal_reached1(self, goal):  # ,general_vec_orient):
@@ -832,27 +1161,27 @@ class Robot_manager:
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
 
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
-        #         [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
-        #
-        return traj
+    def turn_for_box(self,move_y):
+        if move_y == -1:
+            traj = [[0, -0.001, 1]]
+            self.robot.set_desired_trajectory(traj)
+        elif move_y == -2:
+            traj = [[0, -0.001, 1]]
+            self.robot.set_desired_trajectory(traj)
+        elif move_y == 1:
+            traj = [[0, 0.001, 1]]
+            self.robot.set_desired_trajectory(traj)
+        elif move_y == 2:
+            traj = [[0, 0.001, 1]]
+            self.robot.set_desired_trajectory(traj)
+
+    def walk_for_box(self,move_x):
+        if move_x == 1:
+            traj = [[5, 0, 1]]
+            self.robot.set_desired_trajectory(traj)
+        elif move_x == 2:
+            traj = [[5, 0, 1],[5, 0, 1]]
+            self.robot.set_desired_trajectory(traj)
 
     # not used
     def turn_right_360(self):
@@ -940,3 +1269,23 @@ class Robot_manager:
         #self.IO.servoSet(90)
         #time.sleep(1)
         #self.IO.servoSet(0)
+
+#change open/close and light number
+    def close_cage(self):
+        self.IO.servoEngage()
+        self.IO.servoSet(75)
+        self.IO.servoDisengage()
+
+    def open_cage(self):
+        self.IO.servoEngage()
+        self.IO.servoSet(180)
+        self.IO.servoDisengage()
+
+    def box_inside(self):
+        light1 = self.IO.getSensors()[1]
+        light2 = self.IO.getSensors()[2]
+        light3 = self.IO.getSensors()[3]
+        if light1 < 80 or light2 < 80 or light3 < 80:
+            return True
+        return False
+
