@@ -48,6 +48,9 @@ class robot_vision:
         #control vision functionalities
         self.detect_object = True
 
+        self.find_the_box_from_far_away = False
+        self.box_far_away_found = False
+        self.box_far_away_coord = [0,0]
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
         #self.color_list = ['red']
         #self.object_detected_list = [0]
@@ -426,131 +429,148 @@ class robot_vision:
 
     def detect_resources(self,img):
 
-        xy_r = 40 # The spatial window radius
-        rgb_r = 40 # The color window radius
+        if self.find_the_box_from_far_away:
+            xy_r = 40 # The spatial window radius
+            rgb_r = 40 # The color window radius
 
-        #Run meanshift
-        meanshift_img = cv2.pyrMeanShiftFiltering(img, xy_r, rgb_r)
+            #Run meanshift
+            meanshift_img = cv2.pyrMeanShiftFiltering(img, xy_r, rgb_r)
 
-        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',img)
+            #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',img)
 
-        # Convert image to Hsv
-        hsv = cv2.cvtColor(meanshift_img,cv2.COLOR_BGR2HSV)
+            # Convert image to Hsv
+            hsv = cv2.cvtColor(meanshift_img,cv2.COLOR_BGR2HSV)
 
-        #wall 23, 48,148
-        wall_lower = numpy.array([10, 35, 130])
-        wall_upper = numpy.array([30, 60, 160])
+            #wall 23, 48,148
+            wall_lower = numpy.array([10, 35, 130])
+            wall_upper = numpy.array([30, 60, 160])
 
-        #floor 103,63,183
-        floor_lower = numpy.array([90, 50, 170])
-        floor_upper = numpy.array([115, 80, 190])
+            #floor 103,63,183
+            floor_lower = numpy.array([90, 50, 170])
+            floor_upper = numpy.array([115, 80, 190])
 
-        # find the colors within the specified boundaries and apply
-        # the mask
-        mask_wall = cv2.inRange(hsv, wall_lower, wall_upper)
-        mask_floor = cv2.inRange(hsv, floor_lower, floor_upper)
+            # find the colors within the specified boundaries and apply
+            # the mask
+            mask_wall = cv2.inRange(hsv, wall_lower, wall_upper)
+            mask_floor = cv2.inRange(hsv, floor_lower, floor_upper)
 
-        lower_green_segmentation = numpy.array([35,100,100])
-        upper_green_segmentation = numpy.array([80,255,255])
-        mask_green = cv2.inRange(hsv, lower_green_segmentation, upper_green_segmentation)
+            lower_green_segmentation = numpy.array([35,100,100])
+            upper_green_segmentation = numpy.array([80,255,255])
+            mask_green = cv2.inRange(hsv, lower_green_segmentation, upper_green_segmentation)
 
-        lower_yellow_segmentation = numpy.array([20,130,120])
-        upper_yellow_segmentation = numpy.array([35,255,255])
-        mask_yellow = cv2.inRange(hsv, lower_yellow_segmentation, upper_yellow_segmentation)
+            lower_yellow_segmentation = numpy.array([20,130,120])
+            upper_yellow_segmentation = numpy.array([35,255,255])
+            mask_yellow = cv2.inRange(hsv, lower_yellow_segmentation, upper_yellow_segmentation)
 
-        #red, hue 0-5
-        lower_red_segmentation = numpy.array([0,100,100])
-        upper_red_segmentation = numpy.array([7,255,255])
-        mask_red = cv2.inRange(hsv, lower_red_segmentation, upper_red_segmentation)
+            #red, hue 0-5
+            lower_red_segmentation = numpy.array([0,100,100])
+            upper_red_segmentation = numpy.array([7,255,255])
+            mask_red = cv2.inRange(hsv, lower_red_segmentation, upper_red_segmentation)
 
-        lower_white_segmentation = numpy.array([0,0,180])
-        upper_white_segmentation = numpy.array([255,255,255])
-        mask_white = cv2.inRange(hsv, lower_white_segmentation, upper_white_segmentation)
+            lower_white_segmentation = numpy.array([0,0,180])
+            upper_white_segmentation = numpy.array([255,255,255])
+            mask_white = cv2.inRange(hsv, lower_white_segmentation, upper_white_segmentation)
 
-        lower_blue_segmentation = numpy.array([85,100,50])
-        upper_blue_segmentation = numpy.array([130,255,255])
-        mask_blue = cv2.inRange(hsv, lower_blue_segmentation, upper_blue_segmentation)
+            lower_blue_segmentation = numpy.array([85,100,50])
+            upper_blue_segmentation = numpy.array([130,255,255])
+            mask_blue = cv2.inRange(hsv, lower_blue_segmentation, upper_blue_segmentation)
 
-        lower_orange_segmentation = numpy.array([10,150,150])
-        upper_orange_segmentation = numpy.array([20,255,255])
-        mask_orange = cv2.inRange(hsv, lower_orange_segmentation, upper_orange_segmentation)
+            lower_orange_segmentation = numpy.array([10,150,150])
+            upper_orange_segmentation = numpy.array([20,255,255])
+            mask_orange = cv2.inRange(hsv, lower_orange_segmentation, upper_orange_segmentation)
 
-        mask_colors = mask_green + mask_yellow + mask_green + mask_orange + mask_blue + mask_red #+ mask_wall + mask_floor
-        mask_colors_inv = cv2.bitwise_not(mask_colors)
-        #output = cv2.bitwise_and(hsv, hsv, mask = mask_colors_inv)
+            mask_colors = mask_green + mask_yellow + mask_green + mask_orange + mask_blue + mask_red #+ mask_wall + mask_floor
+            mask_colors_inv = cv2.bitwise_not(mask_colors)
+            #output = cv2.bitwise_and(hsv, hsv, mask = mask_colors_inv)
 
-        im2, contours, hierarchy = cv2.findContours(mask_colors,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+            im2, contours, hierarchy = cv2.findContours(mask_colors,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-        if len(contours) > 1:
-            contour_lens = [len(i) for i in contours]
-            #print contour_lens
-            max_contour_index = contour_lens.index(max(contour_lens))
+            if len(contours) > 1:
+                contour_lens = [len(i) for i in contours]
+                #print contour_lens
+                max_contour_index = contour_lens.index(max(contour_lens))
 
-            (x,y),radius = cv2.minEnclosingCircle(contours[max_contour_index])
-            center = (int(x),int(y))
-            radius = 2*int(radius)
-            img = cv2.circle(img,center,radius,(0,255,0),2)
-            obstacle_circle = circle(center[0],center[1],radius)
-             #if len(contour) > 10:
-        else:
-            obstacle_circle = circle(0,0,0.1)
-
-        #final = cv2.cvtColor(output,cv2.COLOR_HSV2BGR)
-        ######
-        # till here filter and noisy object detection....
-        ######
-
-        #Convert the scene image to a grayscale image
-        gray = cv2.cvtColor(meanshift_img, cv2.COLOR_BGR2GRAY)
-        #Run the Harris corner detector
-        harris_response = cv2.cornerHarris(gray, # Image to be procesed
-                                               2, # Size of the window (2x2)
-                                               3, # Size of the Sobel filter used to calculate
-                                               # the gradients. Can be 1, 3, 5 or 7.
-                                               0.07)   # Value for the free prameter k
-        #Calculate a threshold for the corner response
-        thresh = harris_response.max() * 0.1
-        #Find all pixels which have harris detector response greater than the threshold
-        corners = numpy.where(harris_response > thresh)
-
-        if len(corners[0]) == 0 :
-           print "Nothing was found !!!"
-           print "NUmber of corners ", len(corners[0])
-           return False, numpy.array([0,0])
-        else:
-            #Draw a circle centred at each detected corner
-            points_interest = []
-            for x, y in zip(corners[1], corners[0]):
-                p_i = circle(x,y,1)
-                if self.is_overlap(obstacle_circle,p_i) == False:
-                    points_interest.append((x,y))
-                    cv2.circle(meanshift_img,   # Image where to draw
-                           (x, y),          # Centre of the circle
-                           1,               # Radius of the circle
-                           (0, 255, 0),     # Colour (B, G, R)
-                           1)               # Line width
-
-            self.IO.imshow('cornors',meanshift_img)
-            if len(points_interest) > 0:
-                p_is = numpy.array(points_interest , dtype=numpy.int)
-                area = cv2.contourArea(p_is)
-                x,y,w,h = cv2.boundingRect(p_is)
-                rect_area = w*h
-                print "area " , area , rect_area
-                image_center = numpy.array( [80 , 100] )
-                if area < 100 and rect_area < 300 :
-                   print "object found !!! "
-                   obj_coord = numpy.array([ int(numpy.mean(p_is[:,0])) , int(numpy.mean(p_is[:,0])) ] )
-                   return True, image_center - obj_coord
-                else:
-                   print " too many corners detected "
-                   return  False, numpy.array([0,0])
+                (x,y),radius = cv2.minEnclosingCircle(contours[max_contour_index])
+                center = (int(x),int(y))
+                radius = 2*int(radius)
+                img = cv2.circle(img,center,radius,(0,255,0),2)
+                obstacle_circle = circle(center[0],center[1],radius)
+                 #if len(contour) > 10:
             else:
-                print " No interesting points"
-                return  False, numpy.array([0,0])
-            #x,y,w,h = cv2.boundingRect(p_is)
-            #rect_area = w*h
-            #print "rect_area ", rect_area
+                obstacle_circle = circle(0,0,0.1)
+
+            #final = cv2.cvtColor(output,cv2.COLOR_HSV2BGR)
+            ######
+            # till here filter and noisy object detection....
+            ######
+
+            #Convert the scene image to a grayscale image
+            gray = cv2.cvtColor(meanshift_img, cv2.COLOR_BGR2GRAY)
+            #Run the Harris corner detector
+            harris_response = cv2.cornerHarris(gray, # Image to be procesed
+                                                   2, # Size of the window (2x2)
+                                                   3, # Size of the Sobel filter used to calculate
+                                                   # the gradients. Can be 1, 3, 5 or 7.
+                                                   0.07)   # Value for the free prameter k
+            #Calculate a threshold for the corner response
+            thresh = harris_response.max() * 0.1
+            #Find all pixels which have harris detector response greater than the threshold
+            corners = numpy.where(harris_response > thresh)
+
+            if len(corners[0]) == 0 :
+               #print "Nothing was found !!!"
+               #print "NUmber of corners ", len(corners[0])
+               self.box_far_away_found = False
+               self.box_far_away_coord = [0,0]
+               self.find_the_box_from_far_away = False
+               return
+#               return False, numpy.array([0,0])
+            else:
+                #Draw a circle centred at each detected corner
+                points_interest = []
+                for x, y in zip(corners[1], corners[0]):
+                    p_i = circle(x,y,1)
+                    if self.is_overlap(obstacle_circle,p_i) == False:
+                        points_interest.append((x,y))
+                        cv2.circle(meanshift_img,   # Image where to draw
+                               (x, y),          # Centre of the circle
+                               1,               # Radius of the circle
+                               (0, 255, 0),     # Colour (B, G, R)
+                               1)               # Line width
+
+                self.IO.imshow('cornors',meanshift_img)
+                if len(points_interest) > 0:
+                    p_is = numpy.array(points_interest , dtype=numpy.int)
+                    area = cv2.contourArea(p_is)
+                    x,y,w,h = cv2.boundingRect(p_is)
+                    rect_area = w*h
+                    print "area " , area , rect_area
+                    image_center = numpy.array( [80 , 100] )
+                    if area < 100 and rect_area < 300 :
+                        print "object found !!! "
+                        obj_coord = numpy.array([ int(numpy.mean(p_is[:,0])) , int(numpy.mean(p_is[:,0])) ] )
+                        self.box_far_away_found = True
+                        self.box_far_away_coord = image_center - obj_coord
+                        self.find_the_box_from_far_away = False
+                        return
+                        #return True, image_center - obj_coord
+                    else:
+                        #print " too many corners detected "
+                        self.box_far_away_found = False
+                        self.box_far_away_coord = numpy.array([0,0])
+                        self.find_the_box_from_far_away = False
+                        return
+#                       return  False, numpy.array([0,0])
+                else:
+                    #print " No interesting points"
+                    self.box_far_away_found = False
+                    self.box_far_away_coord = numpy.array([0,0])
+                    self.find_the_box_from_far_away = False
+                    return
+#                    return  False, numpy.array([0,0])
+                #x,y,w,h = cv2.boundingRect(p_is)
+                #rect_area = w*h
+                #print "rect_area ", rect_area
 
 
     def is_overlap(self,circle1, circle2):
