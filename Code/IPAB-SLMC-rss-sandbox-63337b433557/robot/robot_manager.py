@@ -378,7 +378,7 @@ class Robot_manager:
                 self.set_tranjectory_straight()
                 self.move_the_fucking_robot_to_goal()
                 self.i_found_a_collision = False
-            my_steps+=1
+                my_steps+=1
             print "ouups Sorry! I go back again now! :/"
             if self.observe_left:
                 self.observe_left = False

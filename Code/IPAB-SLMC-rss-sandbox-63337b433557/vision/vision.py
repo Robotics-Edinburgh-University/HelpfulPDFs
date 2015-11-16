@@ -164,7 +164,7 @@ class robot_vision:
         self.Watching_template_far = cv2.imread('./vision/watching_resize_60.png',0)
         self.Watching = [self.Watching_template_close,self.Watching_template_mid,self.Watching_template_far]
         #self.Watching_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
-        self.Watching_thre = [0.5,0.5,0.5]
+        self.Watching_thre = [0.5,0.515,0.5]
 
         self.distance = ['close','mid','far']
         self.distance_range = [[481,554],[353,461],[249,328]]
