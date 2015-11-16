@@ -7,6 +7,7 @@ import time
 import math
 import datetime
 
+
 # Get path of to the toddler file... to use always relative paths
 CURRENT_PATH = os.getcwd()
 
@@ -138,27 +139,35 @@ class robot_vision:
         self.box_from_close_algorithm = False
 
         self.Mario_template_close = cv2.imread('./vision/mario_close.png',0)
+        self.Mario_template_mid = cv2.imread('./vision/mario_mid.png',0)
         self.Mario_template_far = cv2.imread('./vision/mario_resize_60.png',0)
-        self.Mario = [self.Mario_template_close,self.Mario_template_far]
-        self.Mario_thre = [0.5,0.55]
+        self.Mario = [self.Mario_template_close,self.Mario_template_mid,self.Mario_template_far]
+        #self.Mario_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
+        self.Mario_thre = [0.5,0.5,0.5]
 
         self.Wario_template_close = cv2.imread('./vision/wario_close.png',0)
+        self.Wario_template_mid = cv2.imread('./vision/wario_mid.png',0)
         self.Wario_template_far = cv2.imread('./vision/wario_resize_60.png',0)
-        self.Wario = [self.Wario_template_close,self.Wario_template_far]
-        self.Wario_thre = [0.5,0.55]
+        self.Wario = [self.Wario_template_close,self.Wario_template_mid,self.Wario_template_far]
+        #self.Wario_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
+        self.Wario_thre = [0.5,0.5,0.5]
 
         self.Zoidberg_template_close = cv2.imread('./vision/zoidberg_close.png',0)
+        self.Zoidberg_template_mid = cv2.imread('./vision/zoidberg_mid.png',0)
         self.Zoidberg_template_far = cv2.imread('./vision/zoidberg_resize_60.png',0)
-        self.Zoidberg = [self.Zoidberg_template_close,self.Zoidberg_template_far]
-        self.Zoidberg_thre = [0.5,0.55]
+        self.Zoidberg = [self.Zoidberg_template_close,self.Zoidberg_template_mid,self.Zoidberg_template_far]
+        #self.Zoidberg_thre = [0.55,0.55,0.59]#far threshold higher in case of wrong detection of walls
+        self.Zoidberg_thre = [0.5,0.5,0.5]
 
         self.Watching_template_close = cv2.imread('./vision/watching_close.png',0)
+        self.Watching_template_mid = cv2.imread('./vision/watching_mid.png',0)
         self.Watching_template_far = cv2.imread('./vision/watching_resize_60.png',0)
-        self.Watching = [self.Watching_template_close,self.Watching_template_far]
-        self.Watching_thre = [0.55,0.57]
+        self.Watching = [self.Watching_template_close,self.Watching_template_mid,self.Watching_template_far]
+        #self.Watching_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
+        self.Watching_thre = [0.5,0.5,0.5]
 
-        self.distance = ['close','far','mid']
-
+        self.distance = ['close','mid','far']
+        self.distance_range = [[481,554],[353,461],[249,328]]
 
     def Set_Resolution(self,res):
         self.IO.cameraSetResolution(res)
@@ -432,7 +441,6 @@ class robot_vision:
 
 
     def Lock_Cubes(self,templates,thresholds):#,origin_img):
-        self.find_the_box_tsiai=True
         if self.find_the_box_tsiai:
             self.Set_Resolution('high')
             origin_img = self.ImgObtain()
@@ -444,29 +452,35 @@ class robot_vision:
             method = eval('cv2.TM_CCOEFF_NORMED')
             found = 0
             #print "sssssssssss in sides"
+
             for index_threshold , template in enumerate(templates):
                 w, h = template.shape[::-1]
                 result = cv2.matchTemplate(origin_gray_img,template,method)
                 min_val, max_val, min_loc, max_loc = cv2.minMaxLoc(result)
                 print "max value of",self.distance[index_threshold], max_val
+
             #loc = numpy.where( result >= 0.55)
             #print len(loc)
             #for pt in zip(*loc[::-1]):
-            #    cv2.rectangle(origin_img, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
                 top_left = max_loc
                 bottom_right = (top_left[0] + w, top_left[1] + h)
                 center = numpy.array([400,500])
                 if max_val > thresholds[index_threshold]:
-                    cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 2)
+                    distance_range = self.distance_range[index_threshold]   #object should stay in this y distance range
                     obj_center = numpy.array([top_left[0]+w/2,top_left[1]+h/2])
-                    self.box_far_away_coord_tsiai = center - obj_center
-                    found = 1
+                    cv2.rectangle(origin_img,top_left, bottom_right, (0,0,255), 3)
+
+                    if obj_center[1]>distance_range[0] and obj_center[1]<distance_range[1]:
+                        cv2.rectangle(origin_img,top_left, bottom_right, (0,255,0), 3)
+                        self.box_far_away_coord_tsiai = center - obj_center
+                        found = 1
+                        print "found box in<-----",self.distance[index_threshold]
                     #print "center:", center
                     #cv2.circle(origin_img,(obj_center[0],obj_center[1]), 3, (0,0,255), 2)
-                    if index_threshold == 0:
-                        self.box_from_close_algorithm = True
-                    else:
-                        self.box_from_close_algorithm = False
+                        if index_threshold == 0:
+                            self.box_from_close_algorithm = True
+                        else:
+                            self.box_from_close_algorithm = False
 
                 if found:
                     self.tsiai_found_box = True
@@ -474,9 +488,8 @@ class robot_vision:
                     break
                 else:
                     self.tsiai_found_box = False
-                    self.find_the_box_tsiai = False
                     self.box_far_away_coord_tsiai = numpy.array([0,0])
-
+            self.find_the_box_tsiai = False
             self.IO.imshow('img',origin_img)
             self.Set_Resolution('low')
 

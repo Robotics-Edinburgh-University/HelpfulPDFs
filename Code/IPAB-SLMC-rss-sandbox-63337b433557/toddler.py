@@ -32,6 +32,7 @@ class Toddler:
         self.inp = [0, 0, 0, 0, 0, 0, 0, 0]
         self.RobotVision = robot_vision(self.IO)
         self.robot_manager = Robot_manager(self.IO, self.RobotVision)
+        self.IO.servoEngage()
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
@@ -64,7 +65,7 @@ class Toddler:
         self.RobotVision.Set_Resolution('low')
         while (OK):
             image = self.RobotVision.ImgObtain()
-            self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
+            self.RobotVision.Lock_Cubes(self.RobotVision.Mario,self.RobotVision.Mario_thre)
             #self.RobotVision.detect_resources(image)
             #Find Mario
             #self.RobotVision.show_template(self.RobotVision.Watching[0])
@@ -138,8 +139,10 @@ class Toddler:
             """
 
     def stop_motors_on_interupt(self):
+        self.IO.servoDisengage()
         print('You pressed Ctrl+C!')
         time.sleep(1)
         self.IO.setMotors(0, 0)
         time.sleep(1)
+        self.IO.servoDisengage()
         self.IO.setMotors(0, 0)

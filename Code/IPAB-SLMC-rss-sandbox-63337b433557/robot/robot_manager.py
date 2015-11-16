@@ -72,6 +72,7 @@ class Robot_manager:
         self.observe_left = True
         self.distance_sensors.turn = 1
         self.finished_left_wall_following = True
+        self.ariskots = False
     def run_robot(self):
 
         #self.execute_path('EXIT_D','I')
@@ -83,6 +84,7 @@ class Robot_manager:
         #self.perform_90_degrees_turn_right()
         #time.sleep(1)
         #self.perform_90_degrees_turn_left()
+        self.close_cage()
         while(1):
             #ADVANCED!
             #room = self.start_and_stay_until_find_room()
@@ -103,7 +105,6 @@ class Robot_manager:
             #     self.execute_path("EXIT_" + room, 'E')
             #     room = self.start_and_stay_until_find_room()
             self.observe_the_room()
-
         #print "Over I arrived!\n",room
         #time.sleep(120)
         # print "Starting Path"
@@ -160,13 +161,14 @@ class Robot_manager:
             if move_y != 0:
                 self.turn_for_box(move_y)
                 self.move_the_fucking_robot_to_goal_less_turn()
-
+            self.IO.setMotors(0, 0)
+            print move_y
             print "Go Straight"
             self.open_cage()
             ##################<<<<<--------------------------------------
             if self.vision.box_from_close_algorithm:
                 print "Box is Close..."
-                for i in range(7):
+                for i in range(10):
                     self.set_tranjectory_straight()
                     self.move_the_fucking_robot_to_goal()
 
@@ -179,10 +181,12 @@ class Robot_manager:
                             if move_y != 0:
                                 self.turn_for_box(move_y)
                                 self.move_the_fucking_robot_to_goal_less_turn()
+                                self.IO.setMotors(0, 0)
                     if self.box_inside():
                         print "BOX GRABBED!!!"
-                        self.close_cage()
                         self.IO.setMotors(0, 0)
+                        self.close_cage()
+                        self.IO.servoDisengage()
                         time.sleep(10000)
                 print "I suck i failed to grabb it.. :/ Let me go back a bit"
 
@@ -197,13 +201,15 @@ class Robot_manager:
                     move_y,move_x = self.found_box_from_tsiai()
                     if move_y != -999:
                         if move_y != 0:
-                         self.turn_for_box(move_y)
-                         self.move_the_fucking_robot_to_goal_less_turn()
+                            self.turn_for_box(move_y)
+                            self.move_the_fucking_robot_to_goal_less_turn()
+                            self.IO.setMotors(0, 0)
 
                     if self.box_inside():
                         print "BOX GRABBED!!!"
-                        self.close_cage()
                         self.IO.setMotors(0, 0)
+                        self.close_cage()
+                        self.IO.servoDisengage()
                         time.sleep(10000)
                 print "I failed again."
                 self.close_cage()
@@ -215,7 +221,7 @@ class Robot_manager:
                     self.move_the_fucking_robot_to_goal()
 
                     #check one time only after 1 move
-                    if i%3 == 0:
+                    if i%2 == 0:
                         print "check again"
                         move_y,move_x = self.found_box_from_tsiai()
                         if move_y != -999:
@@ -223,11 +229,13 @@ class Robot_manager:
                             if move_y != 0:
                                 self.turn_for_box(move_y)
                                 self.move_the_fucking_robot_to_goal_less_turn()
+                                self.IO.setMotors(0, 0)
 
                     if self.box_inside():
                         print "BOX GRABBED!!!"
-                        self.close_cage()
                         self.IO.setMotors(0, 0)
+                        self.close_cage()
+                        self.IO.servoDisengage()
                         time.sleep(10000)
                 print "I failed, sorry"
                 self.close_cage()
@@ -237,24 +245,10 @@ class Robot_manager:
 
 
     def observe_the_room(self):
-        my_steps = 0
+
         checkEvery = 4
         while(True):
-            my_steps+=1
-            ###############################
-            ##close if u grab a box
-            ##!! should be in another function that runs aftair we found the item
-            ##while(1)
-            ##next_code
-            ##self.set_tranjectory_straight()
-            ##self.move_the_fucking_robot_to_goal()
 
-          #  if self.box_inside():
-          #      self.close_cage() #Open the cage first!!!!!!!!!!!
-          #      print "Box grabbed!"
-          #      time.sleep(4)
-
-            ###############################
             if self.observe_left:
                 print "Left check Starting!"
             else:
@@ -262,9 +256,24 @@ class Robot_manager:
             first_catch = False
             second_catch = False
             if self.finished_left_wall_following:
+                my_steps = 0
                 while (1):
                     #Check here 1
-                    if my_steps%checkEvery == 0:
+                    #check at the start custom
+                    if my_steps == 0 and self.ariskots == True:
+                        for j in range(10):
+                            self.set_tranjectory_left()
+                            self.move_the_fucking_robot_to_goal_less_turn()
+                            self.IO.setMotors(0, 0)
+                            check = self.aris_algorithm()
+                            if check == False:
+                                self.i_found_a_collision = False
+                                self.observe_left = True
+                                self.distance_sensors.turn = 1
+                                self.finished_left_wall_following = True
+                                return
+                        print "out"
+                    if my_steps%1 == 0:
                         check = self.aris_algorithm()
                         if check == False:
                             self.i_found_a_collision = False
@@ -282,10 +291,26 @@ class Robot_manager:
                         first_catch = False
                     self.set_tranjectory_left()
                     self.move_the_fucking_robot_to_goal()
+                    my_steps+=1
             else:
+                my_steps = 0
                 while (1):
                     #check here 2
-                    if my_steps%checkEvery == 0:
+                    #check at the start custom
+                    if my_steps == 0 and self.ariskots == True:
+                        for j in range(10):
+                            self.set_tranjectory_right()
+                            self.move_the_fucking_robot_to_goal_less_turn()
+                            self.IO.setMotors(0, 0)
+                            check = self.aris_algorithm()
+                            if check == False:
+                                self.i_found_a_collision = False
+                                self.observe_left = True
+                                self.distance_sensors.turn = 1
+                                self.finished_left_wall_following = True
+                                return
+                        print "out"
+                    if my_steps%1 == 0:
                         check = self.aris_algorithm()
                         if check == False:
                             self.i_found_a_collision = False
@@ -303,9 +328,12 @@ class Robot_manager:
                         first_catch = False
                     self.set_tranjectory_right()
                     self.move_the_fucking_robot_to_goal()
+                    my_steps+=1
+            self.ariskots = True
             # it found a wall in a room
             print "Wall Found!"
             self.i_found_a_collision = False
+            my_steps = 0
             while (1):
                 #check here 3
                 if my_steps%checkEvery == 0:
@@ -321,12 +349,13 @@ class Robot_manager:
                     break
                 self.set_tranjectory_straight()
                 self.move_the_fucking_robot_to_goal()
+                my_steps+=1
 
             if self.observe_left:
                 print "RIGHT IR LOCKED!"
             else:
                 print "LEFT IR LOCKED!"
-
+            my_steps = 0
             while (1):
                 #check here 4
                 if my_steps%checkEvery == 0:
@@ -349,6 +378,7 @@ class Robot_manager:
                 self.set_tranjectory_straight()
                 self.move_the_fucking_robot_to_goal()
                 self.i_found_a_collision = False
+            my_steps+=1
             print "ouups Sorry! I go back again now! :/"
             if self.observe_left:
                 self.observe_left = False
@@ -360,7 +390,7 @@ class Robot_manager:
                 self.finished_left_wall_following = False
 
             self.IO.setMotors(0, 0)
-            time.sleep(4)
+            #time.sleep(4)
 
     ###############3
     def start_and_stay_until_find_room(self):
@@ -911,11 +941,18 @@ class Robot_manager:
 
         while self.vision.find_the_box_tsiai:
             self.IO.setMotors(0,0)
+
         time2 = time.time()
+
         print "TIME: ", time2 - time1
+        print
+
+
         if self.vision.tsiai_found_box:
-            move_x = self.vision.box_far_away_coord_tsiai[0]/100
-            move_y = self.vision.box_far_away_coord_tsiai[1]/100
+            print "distance on image x " , self.vision.box_far_away_coord_tsiai[0]
+            print "distance on image y " , self.vision.box_far_away_coord_tsiai[1]
+            move_x = int(self.vision.box_far_away_coord_tsiai[0]/150.0)
+            move_y = int(self.vision.box_far_away_coord_tsiai[1]/150.0)
 
             return move_x,move_y
         return -999,-999
@@ -1266,13 +1303,13 @@ class Robot_manager:
             traj = [[0, -0.001, 1]]
             self.robot.set_desired_trajectory(traj)
         elif move_y <= -2:
-            traj = [[0, -0.001, 1]]
+            traj = [[0, -0.001, 1],[0, -0.001, 1]]
             self.robot.set_desired_trajectory(traj)
         elif move_y == 1:
             traj = [[0, 0.001, 1]]
             self.robot.set_desired_trajectory(traj)
         elif move_y >= 2:
-            traj = [[0, 0.001, 1]]
+            traj = [[0, 0.001, 1],[0, 0.001, 1]]
             self.robot.set_desired_trajectory(traj)
 
     def walk_for_box(self,move_x):
@@ -1372,20 +1409,22 @@ class Robot_manager:
 
 #change open/close and light number
     def close_cage(self):
-        self.IO.servoEngage()
-        self.IO.servoSet(75)
-        self.IO.servoDisengage()
+        #self.IO.servoEngage()
+        self.IO.servoSet(0)
+        time.sleep(3)
+        #self.IO.servoDisengage()
 
     def open_cage(self):
-        self.IO.servoEngage()
+        #self.IO.servoEngage()
         self.IO.servoSet(180)
-        self.IO.servoDisengage()
+        time.sleep(3)
+        #self.IO.servoDisengage()
 
     def box_inside(self):
         light1 = self.IO.getSensors()[1]
         light2 = self.IO.getSensors()[2]
         light3 = self.IO.getSensors()[3]
-        if light1 < 80 or light2 < 80 or light3 < 80:
+        if light1 < 55 or light2 < 55 or light3 < 55:
             return True
         return False
 
