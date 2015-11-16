@@ -239,6 +239,11 @@ class Robot_manager:
                         time.sleep(10000)
                 print "I failed, sorry"
                 self.close_cage()
+                if self.box_inside():
+                    print "BOX GRABBED!!!"
+                    self.IO.setMotors(0, 0)
+                    self.IO.servoDisengage()
+                    time.sleep(10000)
                 return False
         # if is True it just continue the observe_the_room algorithm
         return True
