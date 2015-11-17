@@ -52,7 +52,8 @@ class Toddler:
         # time.sleep(0.1)
 
         while (1):
-           # print self.IO.getSensors()[5]
+            # x = 1
+            #print self.IO.getSensors()[5]
             self.robot_manager.run_robot()
 
     # This is a callback that will be called repeatedly.
@@ -66,7 +67,9 @@ class Toddler:
         while (OK):
             image = self.RobotVision.ImgObtain()
             self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
-            #self.RobotVision.detect_resources(image)
+            #start = time.time()
+            #self.RobotVision.detect_resources_new_version(image)
+            #print "TIME IS " , time.time() - start
             #Find Mario
             #self.RobotVision.show_template(self.RobotVision.Watching[0])
 

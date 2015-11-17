@@ -686,6 +686,69 @@ class robot_vision:
         return distance < circle1.r + circle2.r
 
 
+    def detect_resources_new_version(self,img):
+
+        # assuming no colorful object is detected in the scene
+        obstacle_circle = circle(0,0,0.1)
+
+        # Increase intensity such that
+        # dark pixels become much brighter,
+        # bright pixels become slightly bright
+        #maxIntensity = 255.0 # depends on dtype of image data
+        #phi = 1
+        #theta = 1
+        #img = (maxIntensity/phi)*(img/(maxIntensity/theta))**0.5
+        #img = numpy.array(img)
+
+        cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
+
+        kernel = numpy.ones((5,5),numpy.uint8)
+
+        tophat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
+
+
+        # Apply Gaussian blur to the image
+        scene_blur = cv2.GaussianBlur(tophat,  # input image
+                                      (3,3),    # kernel size
+                                      0)          # automatically calculate the standard
+
+        # deviation from the kernel size
+        # Detect the edges
+        scene_edges = cv2.Canny(scene_blur,  # input image
+                                100,         # low threshold for the hysteresis procedure
+                                200)         # high threshold for the hysteresis procedure
+
+        closing = cv2.morphologyEx(scene_edges, cv2.MORPH_CLOSE, kernel)
+
+        im2, contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+        print "Number of contours " , len(contours)
+
+
+        for i in contours:
+            (x,y),radius = cv2.minEnclosingCircle(i)
+            p_i = circle(int(x),int(y),int(radius))
+            #if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10 and int(y) > 40:
+            if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10: #  and int(y) > 40:
+                print " len of points " , len(i)
+                x,y,w,h = cv2.boundingRect(i)
+                cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+
+                #area = cv2.contourArea(i)
+                #hull = cv2.convexHull(i)
+                #hull_area = cv2.contourArea(hull)
+                #if hull_area != 0:
+                    #solidity = float(area)/hull_area
+                    #print "solidity " , solidity , x
+
+            #mask = np.zeros(imgray.shape,np.uint8)
+            #mean_val = cv2.mean(im,mask = mask)
+
+
+        self.IO.imshow('img',img)
+
+
+
 class circle:
 
     def __init__(self,x,y,r):
