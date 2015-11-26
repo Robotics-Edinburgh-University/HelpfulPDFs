@@ -702,7 +702,7 @@ class robot_vision:
 
         cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
 
-        kernel = numpy.ones((5,5),numpy.uint8)
+        kernel = numpy.ones((7,7),numpy.uint8)
 
         tophat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
 
@@ -722,29 +722,46 @@ class robot_vision:
 
         im2, contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
-        print "Number of contours " , len(contours)
+        #print "Number of contours " , len(contours)
 
-
+        image_center = numpy.array( [80 , 100] )
+        img_sz = tuple(img.shape[0:2])
+        distance_boxes = [1000]
+        box_goals = [(0.0,0.0)]
+        box_far_away_coord = [0.0, 0.0]
         for i in contours:
             (x,y),radius = cv2.minEnclosingCircle(i)
             p_i = circle(int(x),int(y),int(radius))
             #if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10 and int(y) > 40:
-            if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10: #  and int(y) > 40:
-                print " len of points " , len(i)
-                x,y,w,h = cv2.boundingRect(i)
-                cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
-
-                #area = cv2.contourArea(i)
-                #hull = cv2.convexHull(i)
-                #hull_area = cv2.contourArea(hull)
-                #if hull_area != 0:
-                    #solidity = float(area)/hull_area
-                    #print "solidity " , solidity , x
-
-            #mask = np.zeros(imgray.shape,np.uint8)
-            #mean_val = cv2.mean(im,mask = mask)
+            #if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10: #  and int(y) > 40:
+            if  len(i) > 10  and int(y) > 30:
+                #print " len of points " , len(i)
+                #x,y,w,h = cv2.boundingRect(i)
+                #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+                (x,y),radius = cv2.minEnclosingCircle(i)
+                center = (int(x),int(y))
+                radius = int(2*int(radius))
 
 
+                #create a mask
+                mask_circle = numpy.zeros(img_sz,dtype = numpy.uint8)
+                cv2.circle(mask_circle,center,radius,(255,255,255),-1,8,0)
+                cut = cv2.bitwise_and(img,img,mask = mask_circle)
+                #to hsv
+                hsv_cut = cv2.cvtColor(cut,cv2.COLOR_BGR2HSV)
+                blue_mask = cv2.inRange(hsv_cut,self.lower_blue, self.upper_blue)
+                blue_flag = sum(sum(blue_mask))/255
+                print "number of blue pixels " , blue_flag
+                if blue_flag >1  and blue_flag < 18:
+                    #img = cv2.circle(img,center,radius,(0,255,0),2)
+                    distance_boxes.append(image_center[1] - center[1])
+                    box_goals.append(center)
+
+        ind = distance_boxes.index(min(distance_boxes))
+        box_far_away_coord = box_goals[ind]
+        img = cv2.circle(img,box_far_away_coord,10,(0,255,0),2)
+
+        print box_far_away_coord
         self.IO.imshow('img',img)
 
 
