@@ -65,12 +65,22 @@ class Toddler:
         #self.RobotVision.Set_Resolution('high')
         self.RobotVision.Set_Resolution('low')
         while (OK):
+
             image = self.RobotVision.ImgObtain()
 
-            self.RobotVision.Lock_Cubes(self.RobotVision.Mario,self.RobotVision.Mario_thre)
-            #self.RobotVision.detect_resources(image)
+            #self.RobotVision.Lock_Cubes(self.RobotVision.Mario,self.RobotVision.Mario_thre)
+            self.RobotVision.detect_resources(image)
+            #
+            # self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
+            #
+            # #image = self.RobotVision.ImgObtain()
+            # time1 = time.time()
+            # #self.RobotVision.Check_Object('Mario')
+            # self.RobotVision.Blue_filter()
+            # time2 = time.time()
+            # print "time used",time2-time1
+            #self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
 
-            self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
             #start = time.time()
             #self.RobotVision.detect_resources_new_version(image)
             #print "TIME IS " , time.time() - start
