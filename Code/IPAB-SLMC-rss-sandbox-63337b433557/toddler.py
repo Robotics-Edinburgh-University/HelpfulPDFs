@@ -68,8 +68,8 @@ class Toddler:
 
             image = self.RobotVision.ImgObtain()
 
-            #self.RobotVision.Lock_Cubes(self.RobotVision.Mario,self.RobotVision.Mario_thre)
-            self.RobotVision.detect_resources(image)
+            self.RobotVision.Lock_Cubes(self.RobotVision.Mario,self.RobotVision.Mario_thre)
+            self.RobotVision.detect_resources_new_version(image)
             #
             # self.RobotVision.Lock_Cubes(self.RobotVision.Zoidberg,self.RobotVision.Zoidberg_thre)
             #

@@ -29,7 +29,7 @@ from Distance_sensors import Distance_sensors
 
 # import mapping modules
 sys.path.insert(0, CURRENT_PATH + '/environment')
-from map_representaion import map_representationoo
+from map_representaion import map_representation
 from FindRoom import *
 
 # import calibration modules
@@ -154,12 +154,14 @@ class Robot_manager:
         for i in range(distance):
             move_y,move_x = self.foundBoxFromTheo()
             # if we found a box far away walk on it to recognize it
+            print "Y =",move_y
+            print "X=",move_x
             if move_y != -999:
                 # if move_x < 30 use only Tsiai algortithm
                 if move_x<30:
-                    for i in range(22):
+                    for j in range(22):
                         # With step 2 check with the tsiai algorithm
-                        if i%2 == 0:
+                        if j%2 == 0:
                             print "Checking from Tsiai..."
                             move_y,move_x = self.found_box_from_tsiai()
                             if move_y != -999:
@@ -169,7 +171,7 @@ class Robot_manager:
                                     self.move_the_fucking_robot_to_goal_less_turn()
                                     self.IO.setMotors(0, 0)
                                 self.open_cage()
-
+                        print ":D"
                         if self.box_inside():
                             print "BOX GRABBED!!!"
                             self.IO.setMotors(0, 0)
@@ -187,7 +189,7 @@ class Robot_manager:
                         time.sleep(10000)
 
             # else run again Theo algorithm
-            if move_y != 0:
+            if move_y != 0 and move_y != -999:
                 self.turn_for_box(move_y)
                 self.move_the_fucking_robot_to_goal_less_turn()
                 self.IO.setMotors(0, 0)
@@ -1016,7 +1018,7 @@ class Robot_manager:
         time1 = time.time()
 
         while self.vision.find_the_box_theo:
-            self.IO.setMotors(0,0)
+            pass
 
         time2 = time.time()
 
@@ -1025,11 +1027,14 @@ class Robot_manager:
 
 
         if self.vision.theo_found_box:
-            print "distance on image x " , self.vision.box_far_away_coord_theo[0]
-            print "distance on image y " , self.vision.box_far_away_coord_theo[1]
+         #   print "distance on image x " , self.vision.box_far_away_coord_theo[0]
+         #   print "distance on image y " , self.vision.box_far_away_coord_theo[1]
             move_x = int(self.vision.box_far_away_coord_theo[0]/35.0)
-            move_y = int(self.vision.box_far_away_coord_theo[1]/35.0)
-
+            move_y = int(self.vision.box_far_away_coord_theo[1])
+            if move_x >=2:
+                move_x = 1
+            if move_x <= -2:
+                move_x = -1
             return move_x,move_y
         return -999,-999
     # Is the robot at the goal
