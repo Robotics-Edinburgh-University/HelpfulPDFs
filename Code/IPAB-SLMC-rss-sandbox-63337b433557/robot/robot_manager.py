@@ -105,21 +105,9 @@ class Robot_manager:
             #     self.execute_path("EXIT_" + room, 'E')
             #     room = self.start_and_stay_until_find_room()
 
-            self.set_tranjectory_left()
-            self.move_the_fucking_robot_to_goal()
 
-            self.set_tranjectory_left()
-            self.move_the_fucking_robot_to_goal()
-
-            self.set_tranjectory_left()
-            self.move_the_fucking_robot_to_goal()
-
-            self.IO.setMotors(0,0)
-            for i in range(24):
-                self.set_tranjectory_straight()
-                self.move_the_fucking_robot_to_goal()
-            self.IO.setMotors(0,0)
-            self.observe_the_room()
+            self.checkForBoxTheo(60)
+#            self.observe_the_room() # ITS FOR THE  MILESTONE 2
         #print "Over I arrived!\n",room
         #time.sleep(120)
         # print "Starting Path"
@@ -162,6 +150,52 @@ class Robot_manager:
     def counterwise_follow_wall_in_room_stop_at_right_edge(self):
         self.start_and_stay_in_the_room()
 
+    def checkForBoxTheo(self,distance):
+        for i in range(distance):
+            move_y,move_x = self.foundBoxFromTheo()
+            # if we found a box far away walk on it to recognize it
+            if move_y != -999:
+                # if move_x < 30 use only Tsiai algortithm
+                if move_x<30:
+                    for i in range(22):
+                        # With step 2 check with the tsiai algorithm
+                        if i%2 == 0:
+                            print "Checking from Tsiai..."
+                            move_y,move_x = self.found_box_from_tsiai()
+                            if move_y != -999:
+                                print "Lets open the CAGE!"
+                                if move_y != 0:
+                                    self.turn_for_box(move_y)
+                                    self.move_the_fucking_robot_to_goal_less_turn()
+                                    self.IO.setMotors(0, 0)
+                                self.open_cage()
+
+                        if self.box_inside():
+                            print "BOX GRABBED!!!"
+                            self.IO.setMotors(0, 0)
+                            self.close_cage()
+                            self.IO.servoDisengage()
+                            time.sleep(10000)
+                        self.set_tranjectory_straight()
+                        self.move_the_fucking_robot_to_goal()
+
+                    self.close_cage()
+                    if self.box_inside():
+                        print "BOX GRABBED!!!"
+                        self.IO.setMotors(0, 0)
+                        self.IO.servoDisengage()
+                        time.sleep(10000)
+
+            # else run again Theo algorithm
+            if move_y != 0:
+                self.turn_for_box(move_y)
+                self.move_the_fucking_robot_to_goal_less_turn()
+                self.IO.setMotors(0, 0)
+            # Move again a bit
+            self.set_tranjectory_straight()
+            self.move_the_fucking_robot_to_goal()
+        print "Failed and try again!! :( :(( :( :( "
+
     def aris_algorithm(self):
         move_y,move_x = self.found_box_from_tsiai()
         if move_y != -999:
@@ -192,7 +226,7 @@ class Robot_manager:
                         print "one more check"
                         move_y,move_x = self.found_box_from_tsiai()
                         if move_y != -999:
-                            "box found again"
+                            print "box found again"
                             if move_y != 0:
                                 self.turn_for_box(move_y)
                                 self.move_the_fucking_robot_to_goal_less_turn()
@@ -977,6 +1011,27 @@ class Robot_manager:
             return move_x,move_y
         return -999,-999
 
+    def foundBoxFromTheo(self):
+        self.vision.find_the_box_theo = True
+        time1 = time.time()
+
+        while self.vision.find_the_box_theo:
+            self.IO.setMotors(0,0)
+
+        time2 = time.time()
+
+        print "TIME: ", time2 - time1
+        print
+
+
+        if self.vision.theo_found_box:
+            print "distance on image x " , self.vision.box_far_away_coord_theo[0]
+            print "distance on image y " , self.vision.box_far_away_coord_theo[1]
+            move_x = int(self.vision.box_far_away_coord_theo[0]/35.0)
+            move_y = int(self.vision.box_far_away_coord_theo[1]/35.0)
+
+            return move_x,move_y
+        return -999,-999
     # Is the robot at the goal
     def Goal_reached1(self, goal):  # ,general_vec_orient):
 
