@@ -53,7 +53,11 @@ class robot_vision:
         self.box_far_away_found = False
         self.box_far_away_coord = [0,0]
         self.find_the_box_tsiai = False
+        self.find_the_box_theo = False
+
         self.tsiai_found_box = False
+        self.theo_found_box = False
+
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
         #self.color_list = ['red']
         #self.object_detected_list = [0]
@@ -138,6 +142,8 @@ class robot_vision:
 
         self.box_from_close_algorithm = False
 
+        self.Mario_origin = cv2.imread('./vision/mario.png',0)
+        self.Mario_feature_pts = cv2.imread('./vision/mario_feature_points.png')
         self.Mario_template_close = cv2.imread('./vision/mario_close.png',0)
         self.Mario_template_mid = cv2.imread('./vision/mario_mid.png',0)
         self.Mario_template_far = cv2.imread('./vision/mario_resize_60.png',0)
@@ -145,6 +151,8 @@ class robot_vision:
         #self.Mario_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
         self.Mario_thre = [0.5,0.5,0.5]
 
+        self.Wario_origin = cv2.imread('./vision/wario.png',0)
+        self.Wario_feature_pts = cv2.imread('./vision/wario_feature_points.png')
         self.Wario_template_close = cv2.imread('./vision/wario_close.png',0)
         self.Wario_template_mid = cv2.imread('./vision/wario_mid.png',0)
         self.Wario_template_far = cv2.imread('./vision/wario_resize_60.png',0)
@@ -152,6 +160,8 @@ class robot_vision:
         #self.Wario_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
         self.Wario_thre = [0.5,0.5,0.5]
 
+        self.Zoidberg_origin = cv2.imread('./vision/zoidberg.png',0)
+        self.Zoidberg_feature_pts = cv2.imread('./vision/zoidberg_feature_points.png')
         self.Zoidberg_template_close = cv2.imread('./vision/zoidberg_close.png',0)
         self.Zoidberg_template_mid = cv2.imread('./vision/zoidberg_mid.png',0)
         self.Zoidberg_template_far = cv2.imread('./vision/zoidberg_resize_60.png',0)
@@ -159,6 +169,8 @@ class robot_vision:
         #self.Zoidberg_thre = [0.55,0.55,0.59]#far threshold higher in case of wrong detection of walls
         self.Zoidberg_thre = [0.5,0.5,0.5]
 
+        self.Watching_origin = cv2.imread('./vision/watching.png',0)
+        self.Watching_feature_pts = cv2.imread('./vision/watching_feature_points.png')
         self.Watching_template_close = cv2.imread('./vision/watching_close.png',0)
         self.Watching_template_mid = cv2.imread('./vision/watching_mid.png',0)
         self.Watching_template_far = cv2.imread('./vision/watching_resize_60.png',0)
@@ -166,6 +178,9 @@ class robot_vision:
         #self.Watching_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
         self.Watching_thre = [0.5,0.515,0.51]
 
+        self.template_names = ['Mario','Wario','Zoidberg','Watching']
+        self.feature_pts_template = [self.Mario_feature_pts,self.Wario_feature_pts,self.Zoidberg_feature_pts,self.Watching_feature_pts]
+        self.template_origins = [self.Mario_origin,self.Wario_origin,self.Zoidberg_origin,self.Watching_origin]
         self.distance = ['close','mid','far']
         self.distance_range = [[481,554],[353,461],[249,328]]
 
@@ -493,6 +508,128 @@ class robot_vision:
             #self.IO.imshow('img',origin_img)
             self.Set_Resolution('low')
 
+    def Blue_filter(self):
+        self.Set_Resolution('high')
+        origin_img = self.ImgObtain()
+        hsv_image = self.HSV_Conversion(origin_img)
+        lower_blue_segmentation = numpy.array([85,100,50])
+        upper_blue_segmentation = numpy.array([130,255,255])
+        mask_blue = cv2.inRange(hsv_image, lower_blue_segmentation, upper_blue_segmentation)
+        im2,contours, hierachy = cv2.findContours(mask_blue,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+
+        for cnts in contours:
+            x,y,w,h = cv2.boundingRect(cnts)
+            cv2.rectangle(origin_img,(x,y),(x+w,y+h),(0,255,0),2)
+        self.IO.imshow('img',origin_img)
+        self.Set_Resolution('low')
+
+
+
+
+    def Check_Object(self,temp_name):
+
+        MIN_MATCH_COUNT = 10
+
+        index = self.template_names.index(temp_name)
+        template = self.feature_pts_template[index]
+        self.Set_Resolution('high')
+        origin_img = self.ImgObtain()
+        img = self.Blur(origin_img,kernel_sz= 3)
+        #img = origin_img
+        #create ORB detector
+        orb = cv2.ORB_create(nfeatures = 1000)
+        # Create a brute force matcher object.
+        bf = cv2.BFMatcher(cv2.NORM_HAMMING, # Tells the matcher how to compare descriptors.
+                                     # We have set it to use the hamming distance between
+                                     # descriptors as ORB provides binary descriptors.
+                        crossCheck=True)  # Enable cross check. This means that the matcher
+                                     # will return a matching pair [A, B] iff A is the
+                                     # closest point to B and B is the closest to A.
+        # Detect the feature points in the object and the scene images
+        template_kp, template_des = orb.detectAndCompute(template, None)
+        img_kp, img_des = orb.detectAndCompute(img, None)
+
+        # Find the matching points using brute force
+        matches = bf.match(img_des, template_des)
+
+        # Sort the matches in the order of the distance between the
+        # matched descriptors. Shorter distance means better match.
+        matches = sorted(matches, key = lambda m: m.distance)
+
+        #find good matches:
+        good = []
+        for m,n in matches:
+            if m.distance < 0.7*n.distance:
+                good.append(m)
+
+        if len(good)>MIN_MATCH_COUNT:
+            src_pts = numpy.float32([ template_kp[m.queryIdx].pt for m in good ]).reshape(-1,1,2)
+            dst_pts = np.float32([ kp2[m.trainIdx].pt for m in good ]).reshape(-1,1,2)
+        else:
+            print "Not enough matches are found - %d/%d" % (len(good),MIN_MATCH_COUNT)
+            matchesMask = None
+
+
+        # Use only the best 1/10th of matchess
+        matches = matches[:len(matches)/10]
+
+        # Visualise the detected matching pairs
+        match_vis = cv2.drawMatches(img,       # First processed image
+                                    img_kp,    # Keypoints in the first image
+                                    template,         # Second processed image
+                                    template_kp,      # Keypoints in the second image
+                                    matches,     # Detected matches
+                                    None)        # Optional output image
+
+        # Create numpy arrays with the feature points in order to
+        # estimate the homography between the two images.
+        img_pts = numpy.float32([img_kp[m.queryIdx].pt for m in matches])
+        template_pts = numpy.float32([template_kp[m.trainIdx].pt for m in matches])
+
+        # Calculate the homography between the two images. The function works
+        # by optimising the projection error between the two sets of points.
+        H, masked_pts = cv2.findHomography(template_pts,    # Source image
+                                           img_pts,  # Destination image
+                                           cv2.RANSAC) # Use RANSAC because it is very likely to have wrong matches
+
+        #calculate the inlier ratio
+        m_pts = [float(item) for sublist in masked_pts for item in sublist]
+        inlier_ratio = sum(m_pts)/len(m_pts)
+
+        print "Feature points in the bounding box", inlier_ratio
+
+        # Get the size of the object image
+        h, w = template.shape[:2]
+        # Create an array with points at the 4 corners of the image
+        bounds = numpy.float32([[[0, 0], [w, 0], [w, h], [0, h]]])
+
+        # Project the object image corners in the scene image
+        # in order to find the object
+        bounds = cv2.perspectiveTransform(bounds, H).reshape(-1, 2)
+
+        #  Highlight the detected object
+        for i in range(4):
+            # Draw the sides of the box by connecting consecutive points
+            # The line point index is i. Get the index of the second point
+            j = (i + 1) % 4
+            cv2.line(match_vis,                    # Image where to draw
+                    (bounds[i][0], bounds[i][1]), # First point of the line
+                    (bounds[j][0], bounds[j][1]), # Second point of the line
+                    (255, 255, 255),              # Colour (B, G, R)
+                    3)                            # Line width in pixels
+
+        # Draw a circle at each projected corner
+        match_vis = cv2.circle(match_vis, (bounds[0][0], bounds[0][1]), 10, (255, 0, 0), -1)
+        match_vis = cv2.circle(match_vis, (bounds[1][0], bounds[1][1]), 10, (0, 255, 0), -1)
+        match_vis = cv2.circle(match_vis, (bounds[2][0], bounds[2][1]), 10, (0, 0, 255), -1)
+        match_vis = cv2.circle(match_vis, (bounds[3][0], bounds[3][1]), 10, (0, 255, 255), -1)
+
+        # Show the object detection
+        self.IO.imshow('img',match_vis)
+
+        self.Set_Resolution('low')
+
+
 
     def Cube_Detection(self,origin_img):
         time1 = time.time()
@@ -688,80 +825,68 @@ class robot_vision:
 
     def detect_resources_new_version(self,img):
 
-        # assuming no colorful object is detected in the scene
-        obstacle_circle = circle(0,0,0.1)
+        if self.find_the_box_theo:
+            found = 0
 
-        # Increase intensity such that
-        # dark pixels become much brighter,
-        # bright pixels become slightly bright
-        #maxIntensity = 255.0 # depends on dtype of image data
-        #phi = 1
-        #theta = 1
-        #img = (maxIntensity/phi)*(img/(maxIntensity/theta))**0.5
-        #img = numpy.array(img)
+            cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
 
-        cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
+            kernel = numpy.ones((7,7),numpy.uint8)
 
-        kernel = numpy.ones((7,7),numpy.uint8)
+            tophat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
 
-        tophat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
+            # Apply Gaussian blur to the image
+            scene_blur = cv2.GaussianBlur(tophat,  # input image
+                                          (3,3),    # kernel size
+                                          0)          # automatically calculate the standard
+
+            # deviation from the kernel size
+            # Detect the edges
+            scene_edges = cv2.Canny(scene_blur,  # input image
+                                    100,         # low threshold for the hysteresis procedure
+                                    200)         # high threshold for the hysteresis procedure
+
+            closing = cv2.morphologyEx(scene_edges, cv2.MORPH_CLOSE, kernel)
+
+            im2, contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 
-        # Apply Gaussian blur to the image
-        scene_blur = cv2.GaussianBlur(tophat,  # input image
-                                      (3,3),    # kernel size
-                                      0)          # automatically calculate the standard
+            image_center = numpy.array( [80 , 100] )
+            img_sz = tuple(img.shape[0:2])
+            distance_boxes = [1000]
+            box_goals = [(0.0,0.0)]
 
-        # deviation from the kernel size
-        # Detect the edges
-        scene_edges = cv2.Canny(scene_blur,  # input image
-                                100,         # low threshold for the hysteresis procedure
-                                200)         # high threshold for the hysteresis procedure
-
-        closing = cv2.morphologyEx(scene_edges, cv2.MORPH_CLOSE, kernel)
-
-        im2, contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
-
-        #print "Number of contours " , len(contours)
-
-        image_center = numpy.array( [80 , 100] )
-        img_sz = tuple(img.shape[0:2])
-        distance_boxes = [1000]
-        box_goals = [(0.0,0.0)]
-        box_far_away_coord = [0.0, 0.0]
-        for i in contours:
-            (x,y),radius = cv2.minEnclosingCircle(i)
-            p_i = circle(int(x),int(y),int(radius))
-            #if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10 and int(y) > 40:
-            #if self.is_overlap(obstacle_circle,p_i) == False and len(i) > 10: #  and int(y) > 40:
-            if  len(i) > 10  and int(y) > 30:
-                #print " len of points " , len(i)
-                #x,y,w,h = cv2.boundingRect(i)
-                #cv2.rectangle(img,(x,y),(x+w,y+h),(0,255,0),2)
+            for i in contours:
                 (x,y),radius = cv2.minEnclosingCircle(i)
-                center = (int(x),int(y))
-                radius = int(2*int(radius))
+                p_i = circle(int(x),int(y),int(radius))
+                if  len(i) > 10  and int(y) > 30:
+                    (x,y),radius = cv2.minEnclosingCircle(i)
+                    center = (int(x),int(y))
+                    radius = int(2*int(radius))
 
+                    #create a mask
+                    mask_circle = numpy.zeros(img_sz,dtype = numpy.uint8)
+                    cv2.circle(mask_circle,center,radius,(255,255,255),-1,8,0)
+                    cut = cv2.bitwise_and(img,img,mask = mask_circle)
+                    #to hsv
+                    hsv_cut = cv2.cvtColor(cut,cv2.COLOR_BGR2HSV)
+                    blue_mask = cv2.inRange(hsv_cut,self.lower_blue, self.upper_blue)
+                    blue_flag = sum(sum(blue_mask))/255
+                    #print "number of blue pixels " , blue_flag
+                    if blue_flag >1  and blue_flag < 18:
+                        distance_boxes.append(image_center[1] - center[1])
+                        box_goals.append(center)
+                        found = 1
 
-                #create a mask
-                mask_circle = numpy.zeros(img_sz,dtype = numpy.uint8)
-                cv2.circle(mask_circle,center,radius,(255,255,255),-1,8,0)
-                cut = cv2.bitwise_and(img,img,mask = mask_circle)
-                #to hsv
-                hsv_cut = cv2.cvtColor(cut,cv2.COLOR_BGR2HSV)
-                blue_mask = cv2.inRange(hsv_cut,self.lower_blue, self.upper_blue)
-                blue_flag = sum(sum(blue_mask))/255
-                print "number of blue pixels " , blue_flag
-                if blue_flag >1  and blue_flag < 18:
-                    #img = cv2.circle(img,center,radius,(0,255,0),2)
-                    distance_boxes.append(image_center[1] - center[1])
-                    box_goals.append(center)
+            if found:
+                self.find_the_box_theo = True
+                ind = distance_boxes.index(min(distance_boxes))
+                self.box_far_away_coord_theo = box_goals[ind]
+                img = cv2.circle(img,self.box_far_away_coord_theo,10,(0,255,0),2)
+            else:
+                self.theo_found_box = False
+                self.box_far_away_coord_theo = numpy.array([0,0])
 
-        ind = distance_boxes.index(min(distance_boxes))
-        box_far_away_coord = box_goals[ind]
-        img = cv2.circle(img,box_far_away_coord,10,(0,255,0),2)
-
-        print box_far_away_coord
+        self.find_the_box_theo = False
         self.IO.imshow('img',img)
 
 
