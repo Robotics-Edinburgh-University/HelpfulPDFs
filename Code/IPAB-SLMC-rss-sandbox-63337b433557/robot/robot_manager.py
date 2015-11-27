@@ -29,7 +29,7 @@ from Distance_sensors import Distance_sensors
 
 # import mapping modules
 sys.path.insert(0, CURRENT_PATH + '/environment')
-from map_representaion import map_representation
+from map_representaion import map_representationoo
 from FindRoom import *
 
 # import calibration modules
@@ -104,6 +104,21 @@ class Robot_manager:
             #     print "Starting Path"
             #     self.execute_path("EXIT_" + room, 'E')
             #     room = self.start_and_stay_until_find_room()
+
+            self.set_tranjectory_left()
+            self.move_the_fucking_robot_to_goal()
+
+            self.set_tranjectory_left()
+            self.move_the_fucking_robot_to_goal()
+
+            self.set_tranjectory_left()
+            self.move_the_fucking_robot_to_goal()
+
+            self.IO.setMotors(0,0)
+            for i in range(24):
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+            self.IO.setMotors(0,0)
             self.observe_the_room()
         #print "Over I arrived!\n",room
         #time.sleep(120)

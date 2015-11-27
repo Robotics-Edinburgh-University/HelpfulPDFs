@@ -490,7 +490,7 @@ class robot_vision:
                     self.tsiai_found_box = False
                     self.box_far_away_coord_tsiai = numpy.array([0,0])
             self.find_the_box_tsiai = False
-            self.IO.imshow('img',origin_img)
+            #self.IO.imshow('img',origin_img)
             self.Set_Resolution('low')
 
 
