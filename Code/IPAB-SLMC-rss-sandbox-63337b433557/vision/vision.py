@@ -54,9 +54,14 @@ class robot_vision:
         self.box_far_away_coord = [0,0]
         self.find_the_box_tsiai = False
         self.find_the_box_theo = False
+        self.find_the_box_theo_close = False
+        self.find_the_box_tsiai_super = False
 
         self.tsiai_found_box = False
+        self.tsiai_found_box_super = False
         self.theo_found_box = False
+        self.theo_found_box_close = False
+
 
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
         #self.color_list = ['red']
@@ -198,9 +203,9 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
-        self.IO.imshow('image',image)
-        time.sleep(1)
+        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        #self.IO.imshow('image',image)
+        #time.sleep(1)
         return image
         #self.img = self.IO.cameraRead()
 
@@ -630,44 +635,139 @@ class robot_vision:
         self.Set_Resolution('low')
 
 
+    def handler_for_tsiai_super(self):
 
-    def Cube_Detection(self,origin_img):
-        time1 = time.time()
-        origin_gray = cv2.cvtColor(origin_img,cv2.COLOR_BGR2GRAY)
+        if self.find_the_box_tsiai_super:
+            center = numpy.array([400,500])
+
+            obj_names, tp_ROIs,br_ROIs = self.Lock_resources()
+            centers_ROIs = ((numpy.array(tp_ROIs) + numpy.array(br_ROIs))/2)
+
+            print "TARGETS " ,obj_names
+
+            targets = []
+            if len(obj_names) > 0:
+                print " inside "
+                for index,obj in enumerate(obj_names):
+                    if obj == 'Mario' or obj == 'Wario':
+                        targets.append(centers_ROIs[index])
+                        print "found "
+
+            if len(targets) > 0:
+                print "last inside !!!"
+                self.box_far_away_coord_tsiai_super = center - numpy.array(targets[0])
+                self.tsiai_found_box_super = True
+            else:
+                self.tsiai_found_box_super = False
+                self.box_far_away_coord_tsiai_super = numpy.array([0,0])
+
+            self.Set_Resolution('low')
+        self.find_the_box_tsiai_super = False
+
+
+    def Lock_resources(self):
+
+
+        self.Set_Resolution('high')
+        origin_img = self.ImgObtain()
+        origin_gray = cv2.cvtColor(origin_img.copy(),cv2.COLOR_BGR2GRAY)
         gray_gaussian = cv2.GaussianBlur(origin_gray,(7,7),0)
         canny_edge = cv2.Canny(gray_gaussian,120,250)
         #self.IO.imshow('img',canny_edge)
         #construct and apply a closing kernel to 'close' gaps between 'white' pixels
-        kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(15,15))
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
         closed =cv2.morphologyEx(canny_edge,cv2.MORPH_CLOSE,kernel)
 
-        self.IO.imshow('img',closed)
 
-        im2,cnts,hierarchky = cv2.findContours(closed.copy(),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+        im2,cnts,hierarchky = cv2.findContours(closed.copy(),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
         #im2,cnts,hierarchky = cv2.findContours(canny_edge.copy(),cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-        total = 0
+
+        methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                          'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+
+        method = eval('cv2.TM_CCOEFF_NORMED')
+        ROIs = []
+        #top left and bottom right
+        tp_list_ROIs = []
+        br_list_ROIs =[]
+        length_list_ROIs = []
+
+        lower_blue_segmentation = numpy.array([85,100,50])
+        upper_blue_segmentation = numpy.array([130,255,255])
 
         for c in cnts:
-            if cv2.contourArea(c)>150 and cv2.contourArea(c)<10000 :
-                #x,y,w,h = cv2.boundingRect(c)
-                #if  w*h > 2000  and w*h < 6000:
-                peri = cv2.arcLength(c,True)
-                approx = cv2.approxPolyDP(c,0.02*peri,True)
-                x,y,w,h = cv2.boundingRect(approx)
-                if len(approx) > 3 and len(approx)<11:
-                    if w*h<10000:
-                        cv2.drawContours(origin_img,[approx],-1,(0,255,0),4)
-                        total += 1
-                        print "number of convex",len(approx)
-                        print "original controu area", cv2.contourArea(c)
-                #print "contour area", w*h
+            if cv2.contourArea(c)>400:
+                x,y,w,h = cv2.boundingRect(c)
+                if float(w)/h>0.7 and float(w)/h<2.3:
+                    ROI = origin_img[y:y+h,x:x+w]
+                    hsv_ROI = self.HSV_Conversion(ROI)
+                    mask_blue = cv2.inRange(hsv_ROI, lower_blue_segmentation, upper_blue_segmentation)
+                    im2,contours, hierachy = cv2.findContours(mask_blue,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+                    #print "contours " , len(contours)
+                    if len(contours)>4:
+                        ROIs.append(ROI)
+                        tp_list_ROIs.append((x,y))
+                        br_list_ROIs.append((x+w,y+h))
+                        length_list_ROIs.append(min(w,h))
+
+        ROI_obj_names = []
+        for ROI in ROIs:
+
+            ROI_width,ROI_height,_ = ROI.shape
+            length = min(ROI_width,ROI_height)
+
+            max_list_inROI = []
+            tp_list_inROI = []
+            br_list_inROI = []
+            best_match_val_each_temp = []
+            length_list_in_ROI = []
+
+            for template in self.template_origins:
+                counter = 0
+                #for l_reduce in xrange(length/3):
+                stepping = int((length/2)/10)
+                for l_reduce in xrange(0,length/2,stepping):
+                    l = length - l_reduce
+                    resize_template = cv2.resize(template,(l,l),interpolation = cv2.INTER_LINEAR)
+                    res = cv2.matchTemplate(ROI,resize_template,method)
+                    min_val,max_val,min_loc,max_loc = cv2.minMaxLoc(res)
+                    top_left = max_loc
+                    bottom_right = (top_left[0]+l,top_left[1]+l)
+                    max_list_inROI.append(max_val)
+                    tp_list_inROI.append(top_left)
+                    br_list_inROI.append(bottom_right)
+                    length_list_in_ROI.append(l)
+                    counter += 1
+                #print "LOOOPIINNNGGG " , counter
+                max_point = max(max_list_inROI)
+                index = max_list_inROI.index(max_point)
+                tp = tp_list_inROI[index]
+                br = br_list_inROI[index]
+                best_match_val_each_temp.append(max_point)
+                #print "length of best match ",len(best_match_val_each_temp)
+            best_template_val = max(best_match_val_each_temp)
+            index_max_template = best_match_val_each_temp.index(best_template_val)
+            ROI_obj_names.append(self.template_names[index_max_template])
+
+            ROI_index = ROIs.index(ROI)
+            tp = tp_list_ROIs[ROI_index]
+            br = br_list_ROIs[ROI_index]
+            #cv2.rectangle(origin_img,tp,br,(255,0,0),2)
+            cv2.rectangle(canny_edge,tp,br,(255,0,0),2)
+
+        #print ROI_obj_names
 
 
-        time2 = time.time()
-        print "time_diff", time2 - time1
-        print "------------------------"
-        self.IO.imshow('img',origin_img)
 
+        #    ROI_index = ROIs.index(ROI)
+        #    tp = tp_list_ROIs[ROI_index]
+        #    br = br_list_ROIs[ROI_index]
+        #    cv2.rectangle(origin_img,tp,br,(255,0,0),2)
+
+        #self.IO.imshow('img',origin_img)
+        #self.IO.imshow('img',canny_edge)
+
+        return ROI_obj_names, tp_list_ROIs,br_list_ROIs
 
 
 
@@ -887,7 +987,266 @@ class robot_vision:
                 self.box_far_away_coord_theo = numpy.array([0,0])
 
         self.find_the_box_theo = False
-        self.IO.imshow('img',img)
+        #self.IO.imshow('img',img)
+
+    def identify_resource_figure(self,template):
+
+        #self.find_the_box_theo_close = True
+        if self.find_the_box_theo_close:
+            print "VISIOOOO"
+            mario_param = 3.5
+            found = 0
+
+            self.Set_Resolution('high')
+            img2 = self.ImgObtain()
+
+            # Convert image to Hsv
+            hsv2 = cv2.cvtColor(img2,cv2.COLOR_BGR2HSV)
+
+            lower_blue_segmentation = numpy.array([75,100,50])
+            upper_blue_segmentation = numpy.array([130,255,255])
+            mask_blue2 = cv2.inRange(hsv2, lower_blue_segmentation, upper_blue_segmentation)
+
+            im4, contours2, hierarchy2 = cv2.findContours(mask_blue2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+            #cv2.rectangle(img2,(x_b,y_b),(x_b+w,y_b+h),(0,0,255),2)
+            new_contours = []
+            for i in contours2:
+                if len(i)>10:
+                   new_contours.append(i)
+
+            if len(new_contours)>0:
+                c2 = [item for sublist in new_contours for item in sublist]
+
+                x_b,y_b,w,h = cv2.boundingRect(numpy.array(c2))
+
+                points = []
+                radi = []
+                for j in new_contours:
+                    (x,y),radius = cv2.minEnclosingCircle(j)
+                    center = (int(x),int(y))
+                    radius = int(1*radius)
+                    points.append(center)
+                    radi.append(radius)
+                    #img = cv2.circle(img2,center,radius,(0,255,0),2)
+
+                # convert to np.float32
+                Z = numpy.float32(points)
+
+                # define criteria and apply kmeans()
+                criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+                ret,label,center = cv2.kmeans(Z,2,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+
+                #for k in center:
+                    #img = cv2.circle(img2,tuple(k),2,(0,0,255),2)
+
+
+                center = numpy.array([400,500])
+
+                if numpy.linalg.norm(numpy.array(center[0]) - numpy.array(center[1])) > mario_param*max(radi):
+                    print "TWOOOOO"
+                    double_flag = 1
+
+                    ball_box1 = img2[int(y_b):int(y_b+h), int(x_b):int(x_b+w/2)]
+                    template1 = cv2.resize(template, (w/2,h))
+
+                    ball_box2 = img2[int(y_b):int(y_b+h), int(x_b+w/2):int(x_b+w)]
+                    template2 = cv2.resize(template, (w/2,h))
+
+                else:
+                    double_flag = 0
+                    print "ONEEEEE"
+                    ball_box1 = img2[int(y_b):int(y_b+h), int(x_b):int(x_b+w)]
+                    template1 = cv2.resize(template, (w,h))
+                #w, h = template.shape[0:2]
+
+                # All the 6 methods for comparison in a list
+                methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                          'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+
+                method = eval('cv2.TM_CCOEFF_NORMED')
+
+
+
+                # Apply template Matching
+                res1 = cv2.matchTemplate(ball_box1,template1,method)
+                min_val1, max_val1, min_loc1, max_loc1 = cv2.minMaxLoc(res1)
+                if  double_flag:
+                    res2 = cv2.matchTemplate(ball_box2,template2,method)
+                    min_val2, max_val2, min_loc2, max_loc2 = cv2.minMaxLoc(res2)
+                    max_val1 = (max_val1 + max_val2)/2
+                    #max_val1 = max(max_val1,max_val2)
+                    #min_val1 = max(min_val1,min_val2)
+
+            else:
+                max_val1 = 0
+                min_val1 = 0
+
+            print "ratio value ", max_val1
+
+            if max_val1 > 0.15:
+                found = 1
+                print "In"
+                cv2.rectangle(img2,(x_b,y_b),(x_b+w,y_b+h),(0,255,0),2)
+                self.box_far_away_coord_theo_close= center - numpy.array([x_b+w/2,y_b+h/2])
+
+            if found:
+                self.theo_found_box_close = True
+                self.find_the_box_theo_close = False
+            else:
+                self.theo_found_box_close = False
+                self.box_far_away_coord_theo_close = numpy.array([0,0])
+
+            self.find_the_box_theo_close = False
+            self.Set_Resolution('low')
+
+            self.IO.imshow('img',img2)
+
+
+
+    def identify_resource_figure2(self):
+
+        self.find_the_box_theo_close = True
+        if self.find_the_box_theo_close:
+            print "VISIOOOO"
+            mario_param = 3.5
+            found = 0
+
+            self.Set_Resolution('high')
+            img2 = self.ImgObtain()
+
+            # Convert image to Hsv
+            hsv2 = cv2.cvtColor(img2,cv2.COLOR_BGR2HSV)
+
+            lower_blue_segmentation = numpy.array([75,100,50])
+            upper_blue_segmentation = numpy.array([130,255,255])
+            mask_blue2 = cv2.inRange(hsv2, lower_blue_segmentation, upper_blue_segmentation)
+
+            im4, contours2, hierarchy2 = cv2.findContours(mask_blue2,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+            #cv2.rectangle(img2,(x_b,y_b),(x_b+w,y_b+h),(0,0,255),2)
+
+            if len(contours2)>0:
+                c2 = [item for sublist in contours2 for item in sublist]
+
+                x_b,y_b,w,h = cv2.boundingRect(numpy.array(c2))
+
+                points = []
+                radi = []
+                for j in contours2:
+                    (x,y),radius = cv2.minEnclosingCircle(j)
+                    center = (int(x),int(y))
+                    radius = int(1*radius)
+                    points.append(center)
+                    radi.append(radius)
+                    #img = cv2.circle(img2,center,radius,(0,255,0),2)
+
+                # convert to np.float32
+                Z = numpy.float32(points)
+
+                # define criteria and apply kmeans()
+                criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 10, 1.0)
+                ret,label,center = cv2.kmeans(Z,2,None,criteria,10,cv2.KMEANS_RANDOM_CENTERS)
+
+                #for k in center:
+                    #img = cv2.circle(img2,tuple(k),2,(0,0,255),2)
+
+                center = numpy.array([400,500])
+
+                if numpy.linalg.norm(numpy.array(center[0]) - numpy.array(center[1])) > 3*max(radi):
+                    print "TWOOOOO"
+                    double_flag = 1
+
+                    if (center - numpy.array([x_b+w/2,y_b+h/2]))[0] > 100:
+                        print "left"
+                        ball_box1 = img2[int(y_b):int(y_b+h), int(x_b+w/4):int(x_b+w)]
+                        template1 = (3*w/4,h)
+
+                        ball_box2 = img2[int(y_b):int(y_b+h), int(x_b+w/2):int(x_b+w)]
+                        template2 = (w/2,h)
+
+                    elif (center - numpy.array([x_b+w/2,y_b+h/2]))[0] < -100:
+                        print "right"
+                        ball_box1 = img2[int(y_b):int(y_b+h), int(x_b):int(x_b+(3*w/4))]
+                        template1 = (3*w/4,h)
+
+                        ball_box2 = img2[int(y_b):int(y_b+h), int(x_b+w/2):int(x_b+w)]
+                        template2 = (w/2,h)
+                    else:
+                        print "center"
+                        ball_box1 = img2[int(y_b):int(y_b+h), int(x_b):int(x_b+(w/2))]
+                        template1 = (w/2,h)
+
+                        ball_box2 = img2[int(y_b):int(y_b+h), int(x_b+w/2):int(x_b+w)]
+                        template2 = (w/2,h)
+                else:
+                    double_flag = 0
+                    print "ONEEEEE"
+                    ball_box1 = img2[int(y_b):int(y_b+h), int(x_b):int(x_b+w)]
+                    template1 = (w,h)
+
+                #w, h = template.shape[0:2]
+
+                # All the 6 methods for comparison in a list
+                methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                          'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+
+                method = eval('cv2.TM_CCOEFF_NORMED')
+
+
+                # Apply template Matching
+                one_list = []
+                if  double_flag == 0 :
+                    for t in self.template_origins:
+                        tt = cv2.resize(t, template1)
+                        res1 = cv2.matchTemplate(ball_box1,tt,method)
+                        min_val1, max_val1, min_loc1, max_loc1 = cv2.minMaxLoc(res1)
+                        one_list.append(max_val1)
+
+                two_list = []
+                if  double_flag == 1:
+                    for t in self.template_origins:
+                        tt = cv2.resize(t, template1)
+                        res1 = cv2.matchTemplate(ball_box1,tt,method)
+                        min_val1, max_val1, min_loc1, max_loc1 = cv2.minMaxLoc(res1)
+
+                        ttt = cv2.resize(t, template2)
+                        res2 = cv2.matchTemplate(ball_box2,ttt,method)
+                        min_val2, max_val2, min_loc2, max_loc2 = cv2.minMaxLoc(res2)
+                        max_val = (max_val1 + max_val2)/2
+                        #max_val =  max(max_val1,max_val2)
+                        two_list.append(max_val)
+
+                if  one_list != []:
+                    print "Maximum value ONE " ,max(one_list) , " name " , self.template_names[one_list.index(max(one_list))]
+                if  two_list != []:
+                    print "Maximum value TWO " ,max(two_list) , " name " , self.template_names[two_list.index(max(two_list))]
+
+                cv2.rectangle(img2,(x_b,y_b),(x_b+w,y_b+h),(0,255,0),2)
+
+            else:
+                max_val1 = 0
+                min_val1 = 0
+
+                print "Nothing "
+
+
+
+            '''
+            self.box_far_away_coord_theo_close= center - numpy.array([x_b+w/2,y_b+h/2])
+
+            if found:
+                self.theo_found_box_close = True
+                self.find_the_box_theo_close = False
+            else:
+                self.theo_found_box_close = False
+                self.box_far_away_coord_theo_close = numpy.array([0,0])
+
+            self.find_the_box_theo_close = False
+            self.Set_Resolution('low')
+            '''
+            self.IO.imshow('img',img2)
+
 
 
     def Check_by_template(self,template_name):

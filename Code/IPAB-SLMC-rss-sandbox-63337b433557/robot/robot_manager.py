@@ -73,9 +73,15 @@ class Robot_manager:
         self.distance_sensors.turn = 1
         self.finished_left_wall_following = True
         self.ariskots = False
+
+
     def run_robot(self):
 
-        #self.execute_path('EXIT_D','I')
+        #self.execute_path_with_hack('L','Z')
+        self.pass_the_center()
+        print "OVER"
+        time.sleep(100)
+
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
         #self.calibrate_turning_rate()
@@ -84,8 +90,8 @@ class Robot_manager:
         #self.perform_90_degrees_turn_right()
         #time.sleep(1)
         #self.perform_90_degrees_turn_left()
-        self.close_cage()
-        while(1):
+        #self.close_cage()
+        #while(1):
             #ADVANCED!
             #room = self.start_and_stay_until_find_room()
             #print "Starting Path"
@@ -106,7 +112,7 @@ class Robot_manager:
             #     room = self.start_and_stay_until_find_room()
 
 
-            self.checkForBoxTheo(60)
+            #self.checkForBoxTheo(60)
 #            self.observe_the_room() # ITS FOR THE  MILESTONE 2
         #print "Over I arrived!\n",room
         #time.sleep(120)
@@ -117,7 +123,17 @@ class Robot_manager:
         # print " over \n"
 
 
-
+    def pass_the_center(self):
+        self.perform_90_degrees_turn_right()
+        for i in xrange(5):
+            self.walk_for_box(2)
+            self.move_the_fucking_robot_to_goal()
+            self.IO.setMotors(0,0)
+        self.perform_90_degrees_turn_left()
+        for i in xrange(20):
+            self.set_tranjectory_straight_6_steps()
+            self.move_the_fucking_robot_to_goal()
+            self.IO.setMotors(0,0)
 
 
     # excute the provided path
@@ -127,6 +143,15 @@ class Robot_manager:
         #pprint.pprint(self.robot.goal_trajectory)
         #raw_input("Ssss")
         self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0,0)
+
+     # excute the provided path
+    def execute_path_with_hack(self,start,end):
+
+        self.compute_traj_to_goal(start,end)
+        #pprint.pprint(self.robot.goal_trajectory)
+        #raw_input("Ssss")
+        self.move_the_fucking_robot_to_goal_less_turn()
         self.IO.setMotors(0,0)
 
 
@@ -158,12 +183,15 @@ class Robot_manager:
             print "X=",move_x
             if move_y != -999:
                 # if move_x < 30 use only Tsiai algortithm
-                if move_x<30:
+                if move_x<60:
                     for j in range(22):
                         # With step 2 check with the tsiai algorithm
                         if j%2 == 0:
                             print "Checking from Tsiai..."
-                            move_y,move_x = self.found_box_from_tsiai()
+                            #move_y,move_x = self.found_box_from_tsiai()
+                            #move_y,move_x = self.found_box_from_theo_close()
+                            time.sleep(1)
+                            move_y,move_x = self.found_box_from_tsiai_super()
                             if move_y != -999:
                                 print "Lets open the CAGE!"
                                 if move_y != 0:
@@ -1013,6 +1041,51 @@ class Robot_manager:
             return move_x,move_y
         return -999,-999
 
+    def found_box_from_theo_close(self):
+        self.vision.find_the_box_theo_close = True
+        time1 = time.time()
+
+        while self.vision.find_the_box_theo_close:
+            self.IO.setMotors(0,0)
+
+        time2 = time.time()
+
+        print "TIME: ", time2 - time1
+        print
+
+
+        if self.vision.theo_found_box_close:
+            print "distance on image x " , self.vision.box_far_away_coord_theo_close[0]
+            print "distance on image y " , self.vision.box_far_away_coord_theo_close[1]
+            move_x = int(self.vision.box_far_away_coord_theo_close[0]/150.0)
+            move_y = int(self.vision.box_far_away_coord_theo_close[1]/150.0)
+
+            return move_x,move_y
+        return -999,-999
+
+    def found_box_from_tsiai_super(self):
+        self.vision.find_the_box_tsiai_super = True
+        time1 = time.time()
+
+        while self.vision.find_the_box_tsiai_super:
+            self.IO.setMotors(0,0)
+
+        time2 = time.time()
+
+        print "TIME: ", time2 - time1
+        print
+
+
+        if self.vision.tsiai_found_box_super:
+            print "distance on image x " , self.vision.box_far_away_coord_tsiai_super[0]
+            print "distance on image y " , self.vision.box_far_away_coord_tsiai_super[1]
+            move_x = int(self.vision.box_far_away_coord_tsiai_super[0]/150.0)
+            move_y = int(self.vision.box_far_away_coord_tsiai_super[1]/150.0)
+
+            return move_x,move_y
+        return -999,-999
+
+
     def foundBoxFromTheo(self):
         self.vision.find_the_box_theo = True
         time1 = time.time()
@@ -1197,6 +1270,7 @@ class Robot_manager:
         longer_relative_trajectory = self.clear_180_turns(longer_relative_trajectory)
 
         final_relative_trajectory = self.duplicate_turns(longer_relative_trajectory)
+        final_relative_trajectory = self.duplicate_turns(final_relative_trajectory)
 
         self.set_the_desired_trajectory(final_relative_trajectory)
 
@@ -1377,6 +1451,7 @@ class Robot_manager:
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1]]
+
 
     def turn_for_box(self,move_y):
         if move_y == -1:

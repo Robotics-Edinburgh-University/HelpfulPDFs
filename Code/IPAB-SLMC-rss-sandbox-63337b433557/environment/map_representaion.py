@@ -56,7 +56,7 @@ class map_representation:
             if priority != 'z':
                priority_info_path.append(priority)
             else:
-                if index < len(path):
+                if index < len(path)-1:            ##### Unkwown repair!!!!
                     next_node = path[index+1]
                     next_point_id = (self.robot_map.waypoints_as_graph.get_vertex(next_node)).id
                     next_point = (filter(lambda waypoint: waypoint['name'] == next_point_id, self.robot_map.waypoints))[0]
