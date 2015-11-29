@@ -505,7 +505,7 @@ class robot_vision:
                     self.tsiai_found_box = False
                     self.box_far_away_coord_tsiai = numpy.array([0,0])
             self.find_the_box_tsiai = False
-            self.IO.imshow('img',origin_img)
+            #self.IO.imshow('img',origin_img)
             self.Set_Resolution('low')
 
     def Blue_filter(self):
@@ -850,10 +850,10 @@ class robot_vision:
             im2, contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
 
 
-            image_center = numpy.array( [80 , 100] )
+            image_center = numpy.array([80,100])
             img_sz = tuple(img.shape[0:2])
             distance_boxes = [1000]
-            box_goals = [(0.0,0.0)]
+            box_goals = [[0.0,0.0]]
 
             for i in contours:
                 (x,y),radius = cv2.minEnclosingCircle(i)
@@ -874,14 +874,14 @@ class robot_vision:
                     #print "number of blue pixels " , blue_flag
                     if blue_flag >1  and blue_flag < 18:
                         distance_boxes.append(image_center[1] - center[1])
-                        box_goals.append(center)
+                        box_goals.append(list(center))
                         found = 1
 
             if found:
-                self.find_the_box_theo = True
+                self.theo_found_box = True
                 ind = distance_boxes.index(min(distance_boxes))
-                self.box_far_away_coord_theo = box_goals[ind]
-                img = cv2.circle(img,self.box_far_away_coord_theo,10,(0,255,0),2)
+                self.box_far_away_coord_theo = image_center - numpy.array(box_goals[ind])
+                img = cv2.circle(img,tuple(box_goals[ind]),10,(0,255,0),2)
             else:
                 self.theo_found_box = False
                 self.box_far_away_coord_theo = numpy.array([0,0])
