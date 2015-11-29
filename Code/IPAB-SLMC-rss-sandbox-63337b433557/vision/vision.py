@@ -142,7 +142,7 @@ class robot_vision:
 
         self.box_from_close_algorithm = False
 
-        self.Mario_origin = cv2.imread('./vision/mario.png',0)
+        self.Mario_origin = cv2.imread('./vision/mario.png')
         self.Mario_feature_pts = cv2.imread('./vision/mario_feature_points.png')
         self.Mario_template_close = cv2.imread('./vision/mario_close.png',0)
         self.Mario_template_mid = cv2.imread('./vision/mario_mid.png',0)
@@ -151,7 +151,7 @@ class robot_vision:
         #self.Mario_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
         self.Mario_thre = [0.5,0.5,0.5]
 
-        self.Wario_origin = cv2.imread('./vision/wario.png',0)
+        self.Wario_origin = cv2.imread('./vision/wario.png')
         self.Wario_feature_pts = cv2.imread('./vision/wario_feature_points.png')
         self.Wario_template_close = cv2.imread('./vision/wario_close.png',0)
         self.Wario_template_mid = cv2.imread('./vision/wario_mid.png',0)
@@ -160,7 +160,7 @@ class robot_vision:
         #self.Wario_thre = [0.55,0.55,0.57]#far threshold higher in case of wrong detection of walls
         self.Wario_thre = [0.5,0.5,0.5]
 
-        self.Zoidberg_origin = cv2.imread('./vision/zoidberg.png',0)
+        self.Zoidberg_origin = cv2.imread('./vision/zoidberg.png')
         self.Zoidberg_feature_pts = cv2.imread('./vision/zoidberg_feature_points.png')
         self.Zoidberg_template_close = cv2.imread('./vision/zoidberg_close.png',0)
         self.Zoidberg_template_mid = cv2.imread('./vision/zoidberg_mid.png',0)
@@ -169,7 +169,7 @@ class robot_vision:
         #self.Zoidberg_thre = [0.55,0.55,0.59]#far threshold higher in case of wrong detection of walls
         self.Zoidberg_thre = [0.5,0.5,0.5]
 
-        self.Watching_origin = cv2.imread('./vision/watching.png',0)
+        self.Watching_origin = cv2.imread('./vision/watching.png')
         self.Watching_feature_pts = cv2.imread('./vision/watching_feature_points.png')
         self.Watching_template_close = cv2.imread('./vision/watching_close.png',0)
         self.Watching_template_mid = cv2.imread('./vision/watching_mid.png',0)
@@ -198,9 +198,9 @@ class robot_vision:
         #for cleaning the buffer in case of resolution changes
         self.IO.cameraGrab()
         image = self.IO.cameraRead()
-        #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
-        #self.IO.imshow('image',image)
-        #time.sleep(1)
+        cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'.png',image)
+        self.IO.imshow('image',image)
+        time.sleep(1)
         return image
         #self.img = self.IO.cameraRead()
 
@@ -888,6 +888,44 @@ class robot_vision:
 
         self.find_the_box_theo = False
         self.IO.imshow('img',img)
+
+
+    def Check_by_template(self,template_name):
+        self.Set_Resolution('high')
+        origin_img = self.ImgObtain()
+        hsv_image = self.HSV_Conversion(origin_img)
+        lower_blue_segmentation = numpy.array([85,100,50])
+        upper_blue_segmentation = numpy.array([130,255,255])
+        mask_blue = cv2.inRange(hsv_image, lower_blue_segmentation, upper_blue_segmentation)
+        im2,contours, hierachy = cv2.findContours(mask_blue,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+
+        c2 = [item for sublist in contours for item in sublist]
+        x,y,w,h = cv2.boundingRect(numpy.array(c2))
+        cv2.rectangle(origin_img,(x,y),(x+w,y+h),(0,255,0),2)
+
+        ball_box = origin_img[y:y+h,x:x+w]
+
+        temp_index = self.template_names.index(template_name)
+        template = self.template_origins[temp_index]
+
+        template_resize = cv2.resize(template,(w,h))
+        methods = ['cv2.TM_CCOEFF', 'cv2.TM_CCOEFF_NORMED', 'cv2.TM_CCORR',
+                        'cv2.TM_CCORR_NORMED', 'cv2.TM_SQDIFF', 'cv2.TM_SQDIFF_NORMED']
+        method = eval('cv2.TM_CCOEFF_NORMED')
+
+        res = cv2.matchTemplate(ball_box,template_resize,method)
+        min_val,max_val,min_loc,max_loc = cv2.minMaxLoc(res)
+
+        print "matching ratio", max_val
+
+        top_left = max_loc
+        bottom_right = (top_left[0]+w,top_left[1]+h)
+
+        self.IO.imshow('img',origin_img)
+
+
+        self.Set_Resolution('low')
+
 
 
 
