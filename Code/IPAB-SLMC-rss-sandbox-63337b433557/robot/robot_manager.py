@@ -80,7 +80,7 @@ class Robot_manager:
         self.close_cage()
         #self.pass_the_center()
         #self.from_D_to_C_and_search()
-        self.execute_path_with_hack('EXIT_E','K')
+        self.from_F_base_to_E()
 
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
@@ -121,6 +121,21 @@ class Robot_manager:
         # print "I ARRIVED second!"
         # room = self.start_and_stay_until_find_room()
         # print " over \n"
+
+    def from_F_base_to_E(self):
+        self.perform_11_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        self.perform_45_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        for i in xrange(7):
+            self.set_tranjectory_straight_6_steps()
+            self.move_the_fucking_robot_to_goal()
+            self.IO.setMotors(0,0)
+        self.execute_path_with_hack('EXIT_F','J')
+        print "OVER"
+
+
 
     def from_D_to_C_and_search(self):
         self.execute_path_with_hack('EXIT_D','Z')
