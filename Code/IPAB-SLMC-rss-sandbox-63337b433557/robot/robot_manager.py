@@ -77,10 +77,10 @@ class Robot_manager:
 
     def run_robot(self):
 
-        #self.execute_path_with_hack('L','Z')
-        self.pass_the_center()
-        print "OVER"
-        time.sleep(100)
+        self.close_cage()
+        #self.pass_the_center()
+        #self.from_D_to_C_and_search()
+        self.execute_path_with_hack('EXIT_E','K')
 
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
@@ -122,15 +122,20 @@ class Robot_manager:
         # room = self.start_and_stay_until_find_room()
         # print " over \n"
 
-
-    def pass_the_center(self):
-        self.perform_90_degrees_turn_right()
-        for i in xrange(5):
-            self.walk_for_box(2)
+    def from_D_to_C_and_search(self):
+        self.execute_path_with_hack('EXIT_D','Z')
+        for i in xrange(3):
+            self.set_tranjectory_straight_6_steps()
             self.move_the_fucking_robot_to_goal()
             self.IO.setMotors(0,0)
-        self.perform_90_degrees_turn_left()
-        for i in xrange(20):
+        print "OVER"
+        self.checkForBoxTheo(60)
+
+    def pass_the_center(self):
+        self.perform_11_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        for i in xrange(15):
             self.set_tranjectory_straight_6_steps()
             self.move_the_fucking_robot_to_goal()
             self.IO.setMotors(0,0)
@@ -151,7 +156,7 @@ class Robot_manager:
         self.compute_traj_to_goal(start,end)
         #pprint.pprint(self.robot.goal_trajectory)
         #raw_input("Ssss")
-        self.move_the_fucking_robot_to_goal_less_turn()
+        self.move_the_fucking_robot_to_goal_medium_turn()
         self.IO.setMotors(0,0)
 
 
@@ -917,6 +922,170 @@ class Robot_manager:
   #          visionCounter += 1
 
         self.IO.setStatus('flash')
+
+    def move_the_fucking_robot_to_goal_medium_turn(self):
+
+        sensors_interuption = (0, 0)
+        subpoint_counter = -1
+        collision_loop = []
+        visionCounter = 0
+        step_limit_22_medium = self.calibration.turn_360_steps/16
+        for subpoint in self.robot.goal_trajectory:
+            self.robot.reset_current_state()
+            steps = 0
+            subpoint_counter += 1
+
+            # Inner while loop that that move the robot for every subpoint
+            # ___LOOP_BEGIN_________________________________________________________
+            distance_to_goal = self.Goal_reached1(subpoint)
+            while (distance_to_goal == False):
+                if(steps >=step_limit_22_medium):
+                    break
+                # Collision While
+                if len(collision_loop) > 0:
+
+                    if subpoint[0] != 0 and steps >= 7:  # if collision in x (moving)
+                        #print "COLLISION IN X(COLLISION LOOP)"
+                        sensors_interuption = self.overall_sensors_direction()
+                        # print "sensors : " , sensors_interuption
+                        if sensors_interuption != (0, 0):
+                            # collision_loop.append(1)			#if we have collision append
+                            x = sensors_interuption[0]
+                            y = sensors_interuption[1]
+                            # if x != 0:
+                            # collision_loop.append(1)
+                            # self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+                            if y != 0:
+                            #    print "X_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
+                            # FOR LEFT AS THE PREVIOUS IMPLEMENTATION
+                                if self.observe_left:
+                                    if y == 1:
+                                        if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            # FOR RIGHT A BIT DIFFERENT
+                                else:
+                                    if y == -1:
+                                        if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    # self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            if y == 0 and x == -1:
+                                collision_loop.append(1)
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
+
+                        collision_loop.pop()
+                        break  # break the loop and continue
+
+                    elif subpoint[1] != 0 and steps >= 20:  # if collision in y (rotating)
+                        #print "COLLISION IN Y(COLLISION LOOP)"
+                        sensors_interuption = self.overall_sensors_direction()
+                        # print "sensors : " , sensors_interuption
+                        if sensors_interuption != (0, 0):
+                            # collision_loop.append(1)			#if we have collision append
+                            x = sensors_interuption[0]
+                            y = sensors_interuption[1]
+                            # if x != 0:
+                            #    collision_loop.append(1)
+                            #   self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+                            if y != 0:
+                             #   print "Y_COLLISION_LOOP:",self.distance_sensors.analogs_sensors[7]
+                                if self.observe_left:
+                                    if y==1:
+                                        if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                                else:
+                                    if y==-1:
+                                        if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                            self.i_found_a_collision = True
+                                    collision_loop.append(1)
+                                    # if x!=0:
+                                    #    self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                    # else:
+                                    self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            if y == 0 and x == -1:
+                                collision_loop.append(1)
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
+
+                        collision_loop.pop()
+                        break  # break the loop and continue
+
+                    else:
+                        #print "Entered Collision LOOP No Next Collision"
+                        step_point = subpoint[0:2]
+                    # Normal While
+                else:
+                    sensors_interuption = self.overall_sensors_direction()
+                    # print "sensors : " , sensors_interuption
+                    if sensors_interuption != (0, 0):
+                        #print "COLLISION FROM NORMAL LOOP"
+                        # collision_loop.append(1)			#if we have collision append
+                        x = sensors_interuption[0]
+                        y = sensors_interuption[1]
+                        # if x != 0:
+                        #    collision_loop.append(1)
+                        #    self.robot.goal_trajectory.insert(subpoint_counter+1,[x * 5 ,0,1])
+                        if y != 0:
+                            #print "NORMAL_LOOP:",self.distance_sensors.analogs_sensors[7]
+                            if self.observe_left:
+                                if y==1:
+                                    if self.distance_sensors.analogs_sensors[7] >= self.distance_sensors.right_IR_limit - 214:
+                                        self.i_found_a_collision = True
+                                collision_loop.append(1)
+                                #   if x!=0:
+                                #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                #   else:
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+                            else:
+                                if y==-1:
+                                    if self.distance_sensors.analogs_sensors[0] >= self.distance_sensors.left_IR_limit - 214:
+                                        self.i_found_a_collision = True
+                                collision_loop.append(1)
+                                #   if x!=0:
+                                #       self.robot.goal_trajectory.insert(subpoint_counter+2,[0, y * 0.001,1])
+                                #   else:
+                                self.robot.goal_trajectory.insert(subpoint_counter + 1, [0, y * 0.001, 1])
+
+                        if y == 0 and x == -1:
+                            collision_loop.append(1)
+                            self.robot.goal_trajectory.insert(subpoint_counter + 1, [x * 5, 0, 1])
+                        break  # break the loop and continue
+                    else:
+                        step_point = subpoint[0:2]
+                    # ___LOOP_END_________________________________________________________
+
+                distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
+                steps += 1
+
+  #          if visionCounter % 2 == 0:
+  #              if len(self.retrieve_image()) > 0:
+  #                  # To engage the servo motor
+  #                  self.IO.servoEngage()
+  #                  self.IO.setMotors(0,0)
+  #                  self.IO.servoSet(0)
+  #                  time.sleep(1)
+  #                  self.IO.servoSet(90)
+  #                  time.sleep(1)
+  #                  self.IO.servoSet(0)
+  #                  time.sleep(1)
+  #          visionCounter += 1
+
+        self.IO.setStatus('flash')
+
+
+
     def snapShot(self):
 
         latestRoomsFromColor = self.findRoom.returnRoom(self.retrieve_image())
@@ -1519,6 +1688,24 @@ class Robot_manager:
                 distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
                 steps += 1
 
+    # turn robot 90 degrees after calibration
+    def turn_robot_45_degrees(self,subpoint):
+        steps = 0
+        step_limit_90 = self.calibration.turn_360_steps/8
+        while (steps < step_limit_90):
+                step_point = subpoint[0:2]
+                distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
+                steps += 1
+
+    # turn robot 90 degrees after calibration
+    def turn_robot_11_degrees(self,subpoint):
+        steps = 0
+        step_limit_90 = self.calibration.turn_360_steps/32
+        while (steps < step_limit_90):
+                step_point = subpoint[0:2]
+                distance_to_goal = self.dynamics_control_motors(step_point, subpoint)
+                steps += 1
+
     # calibration function
     def calibrate_turning_rate(self):
 
@@ -1548,6 +1735,33 @@ class Robot_manager:
         self.set_tranjectory_left()
         self.turn_robot_90_degrees(self.robot.goal_trajectory[0])
         self.IO.setMotors(0,0)
+
+    # turn exactly 90 degrees right
+    def perform_45_degrees_turn_right(self):
+        self.set_tranjectory_right()
+        self.turn_robot_45_degrees(self.robot.goal_trajectory[0])
+        self.IO.setMotors(0,0)
+
+    # turn exactly 90 degrees left
+    def perform_45_degrees_turn_left(self):
+        self.set_tranjectory_left()
+        self.turn_robot_45_degrees(self.robot.goal_trajectory[0])
+        self.IO.setMotors(0,0)
+
+     # turn exactly 90 degrees right
+    def perform_11_degrees_turn_right(self):
+        self.set_tranjectory_right()
+        self.turn_robot_11_degrees(self.robot.goal_trajectory[0])
+        self.IO.setMotors(0,0)
+
+    # turn exactly 90 degrees left
+    def perform_11_degrees_turn_left(self):
+        self.set_tranjectory_left()
+        self.turn_robot_11_degrees(self.robot.goal_trajectory[0])
+        self.IO.setMotors(0,0)
+
+
+
 
     # Function for the
     def cage_object(self):

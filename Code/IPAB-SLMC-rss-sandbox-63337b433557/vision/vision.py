@@ -1247,7 +1247,29 @@ class robot_vision:
             '''
             self.IO.imshow('img',img2)
 
+    def Check_Black_Patch(self):
+        self.Set_Resolution('low')
+        origin_img = self.ImgObtain()
+        kernel = numpy.ones((5,5),numpy.uint8)
+        erosion = cv2.erode(origin_img,kernel,iterations = 1)
 
+        lower_black = numpy.array([0,0,0])
+        upper_black = numpy.array([100,100,100])
+
+        mask_black = cv2.inRange(erosion,lower_black,upper_black)
+        im2,contours,hierarchy = cv2.findContours(mask_black,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+
+        print "one frame"
+        for c in contours:
+            x,y,w,h = cv2.boundingRect(c)
+            if (w*h)> 400.0:
+                print "area", cv2.contourArea(c)
+                cv2.drawContours(origin_img,c,-1,(255,255,255),2)
+        print "-------------------"
+
+        #cv2.drawContours(origin_img,contours,-1,(255,255,255),2)
+
+        self.IO.imshow('img',origin_img)
 
     def Check_by_template(self,template_name):
         self.Set_Resolution('high')
