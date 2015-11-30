@@ -397,13 +397,13 @@ class robot_vision:
         return len(interested_contours)
 
 
-    def find_objects_Mophology(self):
+    def find_objects_Mophology(self,img):
 
         # if controller commands to detect objects detect
         self.detect_object = True
         if self.detect_object:
-            self.Set_Resolution('low')
-            img = self.ImgObtain()
+            #self.Set_Resolution('low')
+            #img = self.ImgObtain()
             objects_num_list = []
             blur_image = self.Blur(img,5)
             #white_object = self.White_Filter_BGR(img,blur_image)
@@ -422,6 +422,59 @@ class robot_vision:
             self.object_detected_list = objects_num_list
             self.detect_object = False
 
+    def ColorFilter_pix_num(self,color,origin_image,hsv_image):
+
+
+        interested_contour_areas = []
+        interested_contours = []
+        final_contours = []
+        boundry = self.boundry_list[self.color_list.index(color)]
+        #hsv_image = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv_image, boundry[0], boundry[1])
+
+        num_color_pix = sum(sum(mask))
+
+        #self.IO.imshow('image',origin_image)
+
+        if num_color_pix>250.0:
+            print num_color_pix, 'of ',color,'pixel found'
+            return 1
+        else:
+            return 0
+
+
+
+    def find_objects_pix_num(self,img):
+
+        # if controller commands to detect objects detect
+        self.detect_object = True
+        if self.detect_object:
+            #self.Set_Resolution('low')
+            #img = self.ImgObtain()
+            objects_num_list = []
+            #time1 = time.time()
+            blur_image = self.Blur(img,5)
+            #white_object = self.White_Filter_BGR(img,blur_image)
+            hsv_image = self.HSV_Conversion(blur_image)
+            #hsv_image = self.HSV_Conversion(img)
+            #time2 = time.time()
+            #print 'time BLUR ', time2-time1
+
+            for color in self.color_list:
+                #print "color"
+                #time1 = time.time()
+                object_num = self.ColorFilter_pix_num(color,img,hsv_image)
+                #time2 = time.time()
+                #print 'time per color filer', time2-time1
+                if object_num == 0:
+                    objects_num_list.append(0)
+                else:
+                    objects_num_list.append(object_num)
+            #objects_num_list.append(white_object)
+
+            #@self.Black_filter()
+            self.object_detected_list = objects_num_list
+            self.detect_object = False
 
 
 
