@@ -86,7 +86,7 @@ class robot_vision:
         self.upper_black = numpy.array([255,255,40])
         self.boundry_black = [self.lower_black,self.upper_black]
         '''
-        self.lower_yellow = numpy.array([20,120,120])
+        self.lower_yellow = numpy.array([20,130,120])
         self.upper_yellow = numpy.array([35,255,255])
         self.boundry_yellow = [self.lower_yellow,self.upper_yellow]
 
@@ -103,7 +103,8 @@ class robot_vision:
         self.upper_blue = numpy.array([130,255,255])
         self.boundry_blue = [self.lower_blue,self.upper_blue]
 
-        self.lower_orange = numpy.array([10,130,130])
+        #self.lower_orange = numpy.array([10,130,130])
+        self.lower_orange = numpy.array([10,150,150])
         self.upper_orange = numpy.array([20,255,255])
         self.boundry_orange = [self.lower_orange,self.upper_orange]
 
@@ -340,6 +341,92 @@ class robot_vision:
 
 
 
+    def ColorFilter_Mophology(self,color,origin_image,hsv_image):
+
+        interested_contour_areas = []
+        interested_contours = []
+        final_contours = []
+        boundry = self.boundry_list[self.color_list.index(color)]
+        #hsv_image = cv2.cvtColor(self.img, cv2.COLOR_BGR2HSV)
+        mask = cv2.inRange(hsv_image, boundry[0], boundry[1])
+        kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(7,7))
+        closed = cv2.morphologyEx(mask,cv2.MORPH_CLOSE,kernel)
+
+        im2,contours, hierachy = cv2.findContours(closed,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+
+        for contour in contours:
+            if cv2.contourArea(contour)>250.0:
+                print 'Area',cv2.contourArea(contour)
+                interested_contour_areas.append(cv2.contourArea(contour))
+                interested_contours.append(contour)
+                #cv2.drawContours(origin_image,contour,-1,(255,0,0),2)
+        cv2.drawContours(origin_image, interested_contours, -1, (0,255,0), 2)
+
+        if len(interested_contours)>0:
+            #print "------------------------"
+            #print color, 'object detected'
+            #print "------------------------"
+            #print "find objects"
+            #for contour in interested_contours:
+
+                #cv2.drawContours(self.img, contour, -1, (0,255,0), 2)
+                #hull = cv2.convexHull(contour,returnPoints = False)
+                #print 'contour ', interested_contours.index(contour), 'hull is', len(hull)
+                #defects = cv2.convexityDefects(contour,hull)
+                #total_distance = 0
+                #for i in range(defects.shape[0]):
+                #    s,e,f,d = defects[i,0]
+                #    distance = d/256.0
+                #    total_distance = total_distance+distance
+                #print "Total distance of the hull"
+                #print total_distance
+                #ratio_distances_volumn = total_distance/cv2.contourArea(contour)
+                #print "distances/Volumn"
+                #print ratio_distances_volumn
+                #if ratio_distances_volumn < 0.0025:
+                #    final_contours.append(contour)
+                #    print '========================================='
+                #    print "Total distance of the hull of the object"
+                #    print total_distance
+                #    print "Corresponding distances/Volumn"
+                #    print ratio_distances_volumn
+            print '=================================================='
+            print 'number of ', color, 'objects : ', len(interested_contours)
+
+        self.IO.imshow('image',origin_image)
+        return len(interested_contours)
+
+
+    def find_objects_Mophology(self):
+
+        # if controller commands to detect objects detect
+        self.detect_object = True
+        if self.detect_object:
+            self.Set_Resolution('low')
+            img = self.ImgObtain()
+            objects_num_list = []
+            blur_image = self.Blur(img,5)
+            #white_object = self.White_Filter_BGR(img,blur_image)
+            hsv_image = self.HSV_Conversion(blur_image)
+            #hsv_image = self.HSV_Conversion(img)
+            for color in self.color_list:
+                #print "color"
+                object_num = self.ColorFilter_Mophology(color,img,hsv_image)
+                if object_num == 0:
+                    objects_num_list.append(0)
+                else:
+                    objects_num_list.append(object_num)
+            #objects_num_list.append(white_object)
+
+            #@self.Black_filter()
+            self.object_detected_list = objects_num_list
+            self.detect_object = False
+
+
+
+
+
+
         #print 'object list', object_list
 
         #return object_list
@@ -420,6 +507,7 @@ class robot_vision:
         #cv2.imwrite('camera-'+datetime.datetime.now().isoformat()+'white_filter'+'.png',origin_image)
         #return max_contour
 
+        '''
         if len(interested_contours)>0:
             print "------------------------"
             print color, 'object detected'
@@ -427,7 +515,7 @@ class robot_vision:
             print "find objects"
             print "number of ", color, "objetcs fonnd: "
             print len(interested_contours)
-
+        '''
         return len(interested_contours)
 
 
@@ -453,6 +541,7 @@ class robot_vision:
 
             #@self.Black_filter()
             self.object_detected_list = objects_num_list
+            print self.object_detected_list
             self.detect_object = False
             #time2 = time.time()
             #print "time interval", time2-time1
