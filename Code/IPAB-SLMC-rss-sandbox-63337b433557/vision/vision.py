@@ -56,11 +56,13 @@ class robot_vision:
         self.find_the_box_theo = False
         self.find_the_box_theo_close = False
         self.find_the_box_tsiai_super = False
+        self.find_the_balck_patch_tsiai = False
 
         self.tsiai_found_box = False
         self.tsiai_found_box_super = False
         self.theo_found_box = False
         self.theo_found_box_close = False
+        self.tsiai_found_balck_patch = False
 
 
         self.color_list = ['red','green','blue','yellow','orange']#,'white']
@@ -1248,28 +1250,55 @@ class robot_vision:
             self.IO.imshow('img',img2)
 
     def Check_Black_Patch(self):
-        self.Set_Resolution('low')
-        origin_img = self.ImgObtain()
-        kernel = numpy.ones((5,5),numpy.uint8)
-        erosion = cv2.erode(origin_img,kernel,iterations = 1)
 
-        lower_black = numpy.array([0,0,0])
-        upper_black = numpy.array([100,100,100])
 
-        mask_black = cv2.inRange(erosion,lower_black,upper_black)
-        im2,contours,hierarchy = cv2.findContours(mask_black,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+        self.find_the_balck_patch_tsiai = True
 
-        print "one frame"
-        for c in contours:
-            x,y,w,h = cv2.boundingRect(c)
-            if (w*h)> 400.0:
-                print "area", cv2.contourArea(c)
-                cv2.drawContours(origin_img,c,-1,(255,255,255),2)
-        print "-------------------"
+        if self.find_the_balck_patch_tsiai:
+            found = 0
 
-        #cv2.drawContours(origin_img,contours,-1,(255,255,255),2)
+            self.Set_Resolution('low')
+            origin_img = self.ImgObtain()
+            kernel = numpy.ones((5,5),numpy.uint8)
+            erosion = cv2.erode(origin_img,kernel,iterations = 1)
 
-        self.IO.imshow('img',origin_img)
+            lower_black = numpy.array([0,0,0])
+            upper_black = numpy.array([100,100,100])
+
+            mask_black = cv2.inRange(erosion,lower_black,upper_black)
+            im2,contours,hierarchy = cv2.findContours(mask_black,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+
+            image_center = numpy.array([80,100])
+
+            black_patches = []
+            black_patches_pos = []
+            #print "one frame"
+            for c in contours:
+                x,y,w,h = cv2.boundingRect(c)
+                if (w*h)> 500.0:
+                    if y>2:
+                        center = (x+w/2,y+2/h)
+                        #print "width",w
+                        #print "height",h
+                        black_patches.append(c)
+                        black_patches_pos.append(center)
+                        #cv2.drawContours(origin_img,c,-1,(255,255,255),2)
+
+            if len(black_patches) == 1:
+                found = 1
+
+            if found == 1:
+                self.tsiai_find_balck_patch = True
+                self.balck_patch_position = image_center - numpy.array(black_patches_pos)
+                cv2.circle(origin_img,(black_patches_pos[0]), 3, (0,0,255), 2)
+            else:
+                self.tsiai_find_balck_patch = False
+                self.balck_patch_position = numpy.array([0,0])
+
+            self.IO.imshow('img',origin_img)
+
+        self.find_the_balck_patch_tsiai = False
+
 
     def Check_by_template(self,template_name):
         self.Set_Resolution('high')
