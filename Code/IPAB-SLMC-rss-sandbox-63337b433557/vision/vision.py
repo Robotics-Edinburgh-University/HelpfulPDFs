@@ -844,7 +844,7 @@ class robot_vision:
                 x,y,w,h = cv2.boundingRect(c)
                 #print 'mid Y position ', y+h/2
                 #print 'width height ratio', float(w)/h
-                if float(w)/h>0.7 and float(w)/h<2.0 and (y+h/2)<450:
+                if float(w)/h>0.7 and float(w)/h<1.5 and (y+h/2)<450 and w*h< 27000:
                     ROI = origin_img[y:y+h,x:x+w]
                     hsv_ROI = self.HSV_Conversion(ROI)
                     mask_blue = cv2.inRange(hsv_ROI, lower_blue_segmentation, upper_blue_segmentation)
@@ -892,6 +892,7 @@ class robot_vision:
                 best_match_val_each_temp.append(max_point)
                 #print "length of best match ",len(best_match_val_each_temp)
             best_template_val = max(best_match_val_each_temp)
+            #print 'template matching value',best_template_val
             index_max_template = best_match_val_each_temp.index(best_template_val)
             ROI_obj_names.append(self.template_names[index_max_template])
 
@@ -900,7 +901,9 @@ class robot_vision:
             br = br_list_ROIs[ROI_index]
             #print 'mid Y position ', tp[1]+(br[1]-tp[1])/2
             #cv2.rectangle(origin_img,tp,br,(255,0,0),2)
-            #cv2.rectangle(canny_edge,tp,br,(255,0,0),2)
+            cv2.rectangle(canny_edge,tp,br,(255,0,0),2)
+            #print "ROI area ", (br[0]-tp[0])*(br[1]-tp[1])
+            #print 'width height ratio: ', float(br[0]-tp[0])/(br[1]-tp[1])
 
         #print ROI_obj_names
 
@@ -1070,6 +1073,65 @@ class robot_vision:
         return distance < circle1.r + circle2.r
 
 
+    def detect_white_landmarks(self,img):
+
+        found = 0
+        print "INNN"
+        cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
+
+        kernel = numpy.ones((5,5),numpy.uint8)
+
+        tophat = cv2.morphologyEx(img, cv2.MORPH_TOPHAT, kernel)
+
+        # Apply Gaussian blur to the image
+        scene_blur = cv2.GaussianBlur(tophat,  # input image
+                                      (3,3),    # kernel size
+                                      0)          # automatically calculate the standard
+
+        # deviation from the kernel size
+        # Detect the edges
+        scene_edges = cv2.Canny(scene_blur,  # input image
+                                100,         # low threshold for the hysteresis procedure
+                                200)         # high threshold for the hysteresis procedure
+
+        closing = cv2.morphologyEx(scene_edges, cv2.MORPH_CLOSE, kernel)
+
+        im2, contours, hierarchy = cv2.findContours(closing,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+
+        lower_white = numpy.array([200,200,200])
+        upper_white = numpy.array([255,255,255])
+
+        img_sz = tuple(img.shape[0:2])
+
+        for i in contours:
+            (x,y),radius = cv2.minEnclosingCircle(i)
+            if  len(i) > 10  and int(y) > 30:
+                (x,y),radius = cv2.minEnclosingCircle(i)
+                center = (int(x),int(y))
+                radius = int(2*int(radius))
+
+                #create a mask
+                mask_circle = numpy.zeros(img_sz,dtype = numpy.uint8)
+                cv2.circle(mask_circle,center,radius,(255,255,255),-1,8,0)
+                cut = cv2.bitwise_and(img,img,mask = mask_circle)
+                white_mask = cv2.inRange(cut,lower_white,upper_white)
+                white_flag = sum(sum(white_mask))/255
+                #to hsv
+                hsv_cut = cv2.cvtColor(cut,cv2.COLOR_BGR2HSV)
+                blue_mask = cv2.inRange(hsv_cut,self.lower_blue, self.upper_blue)
+                blue_flag = sum(sum(blue_mask))/255
+                #print "number of blue pixels " , blue_flag
+                if blue_flag == 0 and white_flag > 10:
+                    print "WHITE DETECTED!!!!!!!"
+                    img = cv2.circle(img,center,10,(0,255,0),2)
+
+                    #return  1
+
+        self.IO.imshow('img',img)
+
+        #return 0
+
+
     def detect_resources_new_version(self,img):
 
         if self.find_the_box_theo:
@@ -1102,6 +1164,13 @@ class robot_vision:
             distance_boxes = [1000]
             box_goals = [[0.0,0.0]]
 
+            lower_blue = numpy.array([90,100,100])
+            upper_blue = numpy.array([130,255,255])
+
+            lower_gray = numpy.array([0,0,0])
+            upper_gray = numpy.array([100,100,100])
+
+
             for i in contours:
                 (x,y),radius = cv2.minEnclosingCircle(i)
                 p_i = circle(int(x),int(y),int(radius))
@@ -1116,25 +1185,33 @@ class robot_vision:
                     cut = cv2.bitwise_and(img,img,mask = mask_circle)
                     #to hsv
                     hsv_cut = cv2.cvtColor(cut,cv2.COLOR_BGR2HSV)
-                    blue_mask = cv2.inRange(hsv_cut,self.lower_blue, self.upper_blue)
+                    blue_mask = cv2.inRange(hsv_cut,lower_blue, upper_blue)
+                    gray_mask = cv2.inRange(hsv_cut, lower_gray, upper_gray)
                     blue_flag = sum(sum(blue_mask))/255
-                    #print "number of blue pixels " , blue_flag
-                    if blue_flag >1  and blue_flag < 18:
+                    gray_flag = sum(sum(gray_mask))/255
+                    if blue_flag >1 and blue_flag < 18 and gray_flag < 105:
                         distance_boxes.append(image_center[1] - center[1])
                         box_goals.append(list(center))
                         found = 1
+                        #print "---------------------------------"
+                        #print " contour size " , len(i)
+                        #print 'number of yellow pixels ', gray_flag
+                        #print "number of blue pixels " , blue_flag
+
 
             if found:
                 self.theo_found_box = True
                 ind = distance_boxes.index(min(distance_boxes))
                 self.box_far_away_coord_theo = image_center - numpy.array(box_goals[ind])
-                img = cv2.circle(img,tuple(box_goals[ind]),10,(0,255,0),2)
+                #img = cv2.circle(img,tuple(box_goals[ind]),10,(0,255,0),2)
+                #img = cv2.circle(cut,tuple(box_goals[ind]),10,(255,255,255),2)
             else:
                 self.theo_found_box = False
                 self.box_far_away_coord_theo = numpy.array([0,0])
 
         self.find_the_box_theo = False
         #self.IO.imshow('img',img)
+        #self.IO.imshow('img',cut)
 
     def identify_resource_figure(self,template):
 
