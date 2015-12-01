@@ -815,8 +815,8 @@ class robot_vision:
         self.Set_Resolution('high')
         origin_img = self.ImgObtain()
         origin_gray = cv2.cvtColor(origin_img.copy(),cv2.COLOR_BGR2GRAY)
-        gray_gaussian = cv2.GaussianBlur(origin_gray,(7,7),0)
-        canny_edge = cv2.Canny(gray_gaussian,120,250)
+        gray_gaussian = cv2.GaussianBlur(origin_gray,(5,5),0)
+        canny_edge = cv2.Canny(gray_gaussian,100,250)
         #self.IO.imshow('img',canny_edge)
         #construct and apply a closing kernel to 'close' gaps between 'white' pixels
         kernel = cv2.getStructuringElement(cv2.MORPH_RECT,(5,5))
@@ -842,7 +842,9 @@ class robot_vision:
         for c in cnts:
             if cv2.contourArea(c)>400:
                 x,y,w,h = cv2.boundingRect(c)
-                if float(w)/h>0.7 and float(w)/h<2.3:
+                #print 'mid Y position ', y+h/2
+                #print 'width height ratio', float(w)/h
+                if float(w)/h>0.7 and float(w)/h<2.0 and (y+h/2)<450:
                     ROI = origin_img[y:y+h,x:x+w]
                     hsv_ROI = self.HSV_Conversion(ROI)
                     mask_blue = cv2.inRange(hsv_ROI, lower_blue_segmentation, upper_blue_segmentation)
@@ -896,8 +898,9 @@ class robot_vision:
             ROI_index = ROIs.index(ROI)
             tp = tp_list_ROIs[ROI_index]
             br = br_list_ROIs[ROI_index]
+            #print 'mid Y position ', tp[1]+(br[1]-tp[1])/2
             #cv2.rectangle(origin_img,tp,br,(255,0,0),2)
-            cv2.rectangle(canny_edge,tp,br,(255,0,0),2)
+            #cv2.rectangle(canny_edge,tp,br,(255,0,0),2)
 
         #print ROI_obj_names
 

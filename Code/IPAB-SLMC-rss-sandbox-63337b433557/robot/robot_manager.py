@@ -80,7 +80,7 @@ class Robot_manager:
         self.close_cage()
         #self.pass_the_center()
         #self.from_D_to_C_and_search()
-        self.from_F_base_to_E()
+        #self.from_F_base_to_E()
 
         #self.straight_robot_motion()
         #self.start_and_stay_in_the_room()
@@ -90,8 +90,8 @@ class Robot_manager:
         #self.perform_90_degrees_turn_right()
         #time.sleep(1)
         #self.perform_90_degrees_turn_left()
-        #self.close_cage()
-        #while(1):
+       # self.close_cage()
+        while(1):
             #ADVANCED!
             #room = self.start_and_stay_until_find_room()
             #print "Starting Path"
@@ -111,8 +111,10 @@ class Robot_manager:
             #     self.execute_path("EXIT_" + room, 'E')
             #     room = self.start_and_stay_until_find_room()
 
-
-            #self.checkForBoxTheo(60)
+            self.move_F_to_E_getBox_goBack()
+         #   self.checkForBoxTheo(1)
+         #   self.set_tranjectory_straight()
+         #   self.move_the_fucking_robot_to_goal()
 #            self.observe_the_room() # ITS FOR THE  MILESTONE 2
         #print "Over I arrived!\n",room
         #time.sleep(120)
@@ -121,6 +123,20 @@ class Robot_manager:
         # print "I ARRIVED second!"
         # room = self.start_and_stay_until_find_room()
         # print " over \n"
+
+    #ARIS OVERPOWERD
+    def move_F_to_E_getBox_goBack(self):
+        room = self.go_to_the_exit_spot("F")
+        self.execute_path_with_hack("EXIT_" + room, 'J')
+        while(1):
+            result = self.observe_the_room_final()
+            if result == 1:
+                print;print "GOT IT! <-------------------------";print
+                break
+            print "OBSERVE AGAIN!!!!!!!!!!!!!!!!!!!!!"
+
+        room = self.go_to_the_exit_spot("E")
+        time.sleep(1000)
 
     def from_F_base_to_E(self):
         self.perform_11_degrees_turn_right()
@@ -196,55 +212,88 @@ class Robot_manager:
         self.start_and_stay_in_the_room()
 
     def checkForBoxTheo(self,distance):
+        tsiaFoundObject = False
+        tsiaiCounter = 0
+        enteredTheo = False
         for i in range(distance):
             move_y,move_x = self.foundBoxFromTheo()
             # if we found a box far away walk on it to recognize it
-            print "Y =",move_y
-            print "X=",move_x
+          #  print "Y =",move_y
+          #  print "X=",move_x
             if move_y != -999:
+                enteredTheo = True
                 # if move_x < 30 use only Tsiai algortithm
-                if move_x<60:
-                    for j in range(22):
+                if move_x<40:
+                    # Just to calibrate again
+                    if move_y != 0 and move_y != -999:
+                        self.turn_for_box(move_y)
+                        self.move_the_fucking_robot_to_goal_less_turn()
+                        self.IO.setMotors(0, 0)
+                    for j in range(20):
                         # With step 2 check with the tsiai algorithm
-                        if j%2 == 0:
-                            print "Checking from Tsiai..."
+                        if j%1 == 0:
+                            if j==4:
+                                if tsiaFoundObject == False:
+                                    # Start again observation
+                                    return 0
                             #move_y,move_x = self.found_box_from_tsiai()
-                            #move_y,move_x = self.found_box_from_theo_close()
-                            time.sleep(1)
-                            move_y,move_x = self.found_box_from_tsiai_super()
+                            if tsiaFoundObject == True and tsiaiCounter >=3:
+                                print "Checking from Theo..."
+                                move_y,move_x = self.foundBoxFromTheo()
+                            else:
+                                print "Checking from Tsiai..."
+                                move_y,move_x = self.found_box_from_tsiai_super()
+
                             if move_y != -999:
-                                print "Lets open the CAGE!"
                                 if move_y != 0:
                                     self.turn_for_box(move_y)
                                     self.move_the_fucking_robot_to_goal_less_turn()
                                     self.IO.setMotors(0, 0)
-                                self.open_cage()
+                                if tsiaFoundObject == False:
+                                    tsiaFoundObject = True
+                                    print "Lets open the CAGE!"
+                                    self.open_cage()
+                            # now start counting
+                            if tsiaFoundObject == True:
+                                tsiaiCounter += 1
+
                         print ":D"
-                        if self.box_inside():
-                            print "BOX GRABBED!!!"
+                        if self.box_inside() and tsiaFoundObject == True:
+                            tsiaFoundObject = False
+                            tsiaiCounter = 0
+                            print "BOX GRABBED :) !!!"
                             self.IO.setMotors(0, 0)
                             self.close_cage()
                             self.IO.servoDisengage()
-                            time.sleep(10000)
+                            return 1
+                           # time.sleep(10000)
                         self.set_tranjectory_straight()
                         self.move_the_fucking_robot_to_goal()
 
+                    self.IO.setMotors(0, 0)
                     self.close_cage()
-                    if self.box_inside():
+                    if self.box_inside() and tsiaFoundObject == True:
                         print "BOX GRABBED!!!"
                         self.IO.setMotors(0, 0)
                         self.IO.servoDisengage()
-                        time.sleep(10000)
-
+                        return 1
+                      #  time.sleep(10000)
+                    tsiaFoundObject = False
+                    tsiaiCounter = 0
+                    # Start again obersvatioN!
+                    return 0
             # else run again Theo algorithm
             if move_y != 0 and move_y != -999:
                 self.turn_for_box(move_y)
                 self.move_the_fucking_robot_to_goal_less_turn()
                 self.IO.setMotors(0, 0)
+            # Continue Observation
+            if enteredTheo == False:
+                return -1
             # Move again a bit
             self.set_tranjectory_straight()
             self.move_the_fucking_robot_to_goal()
-        print "Failed and try again!! :( :(( :( :( "
+      ###  print "Failed and try again!! :( :(( :( :( "
 
     def aris_algorithm(self):
         move_y,move_x = self.found_box_from_tsiai()
@@ -346,6 +395,151 @@ class Robot_manager:
                 return False
         # if is True it just continue the observe_the_room algorithm
         return True
+
+    def observe_the_room_final(self):
+
+        checkEvery = 1
+        while(True):
+
+            if self.observe_left:
+                print "Left check Starting!"
+            else:
+                print "Right check Starting!"
+            first_catch = False
+            second_catch = False
+            if self.finished_left_wall_following:
+                my_steps = 0
+                while (1):
+                    if my_steps%1 == 0:
+                        check = self.checkForBoxTheo(60)
+                        if check == 0:
+                            self.i_found_a_collision = False
+                            #self.observe_left = True
+                            #self.distance_sensors.turn = 1
+                            #self.finished_left_wall_following = True
+                            # start again observation
+                            return 0
+                        if check == 1:
+                            #BOX FOUND AND GRABBED
+                            return 1
+
+                    sonar = self.IO.getSensors()[6]
+                    if sonar < 60:
+                        if first_catch:
+                            first_catch = False
+                            break
+                        first_catch = True
+                    else:
+                        first_catch = False
+                    self.set_tranjectory_left()
+                    self.move_the_fucking_robot_to_goal()
+                    my_steps+=1
+            else:
+                my_steps = 0
+                while (1):
+                    #check here 2
+                    #check at the start custom
+
+                    if my_steps%1 == 0:
+                        check = self.checkForBoxTheo(60)
+                        if check == 0:
+                            self.i_found_a_collision = False
+                            #self.observe_left = True
+                            #self.distance_sensors.turn = 1
+                            #self.finished_left_wall_following = True
+                            return 0
+                        if check == 1:
+                            #BOX FOUND AND GRABBED
+                            return 1
+
+                    sonar = self.IO.getSensors()[6]
+                    if sonar < 60:
+                        if first_catch:
+                            first_catch = False
+                            break
+                        first_catch = True
+                    else:
+                        first_catch = False
+                    self.set_tranjectory_right()
+                    self.move_the_fucking_robot_to_goal()
+                    my_steps+=1
+            # it found a wall in a room
+            print "Wall Found!"
+            self.i_found_a_collision = False
+            my_steps = 0
+            while (1):
+                #check here 3
+                if my_steps%checkEvery == 0:
+                    check = self.checkForBoxTheo(60)
+                    if check == 0:
+                        self.i_found_a_collision = False
+                        #self.observe_left = True
+                        #self.distance_sensors.turn = 1
+                        #self.finished_left_wall_following = True
+                        return 0
+                    if check == 1:
+                        #BOX FOUND AND GRABBED
+                        return 1
+
+                if self.i_found_a_collision == True:
+                    self.i_found_a_collision = False
+                    break
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                my_steps+=1
+
+            if self.observe_left:
+                print "RIGHT IR LOCKED!"
+            else:
+                print "LEFT IR LOCKED!"
+            my_steps = 0
+            while (1):
+                #check here 4
+                if my_steps%checkEvery == 0:
+                    check = self.checkForBoxTheo(60)
+                    if check == 0:
+                        self.i_found_a_collision = False
+                        #self.observe_left = True
+                        #self.distance_sensors.turn = 1
+                        #self.finished_left_wall_following = True
+                        return 0
+                    if check == 1:
+                        #BOX FOUND AND GRABBED
+                        return 1
+
+                IR_right = self.IO.getSensors()[7]
+                IR_left = self.IO.getSensors()[0]
+               # print "IR right:", IR_right
+                if self.observe_left:
+                    if IR_right < 100:
+                        break
+                else:
+                    if IR_left < 100:
+                        break
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.i_found_a_collision = False
+                my_steps+=1
+            print "ouups Sorry! I go back again now! :/"
+            if self.observe_left:
+                self.observe_left = False
+                self.distance_sensors.turn = -1
+                self.finished_left_wall_following = True
+            else:
+                self.observe_left = True
+                self.distance_sensors.turn = 1
+                self.finished_left_wall_following = False
+
+            self.IO.setMotors(0, 0)
+            #time.sleep(4)
+
+
+
+
+
+
+
+
 
 
     def observe_the_room(self):
@@ -628,7 +822,6 @@ class Robot_manager:
             self.set_tranjectory_straight_6_steps()
             self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0, 0)
-        time.sleep(5)
         return myroom
 
     def move_the_fucking_robot_to_goal(self):
@@ -1215,7 +1408,6 @@ class Robot_manager:
         print "TIME: ", time2 - time1
         print
 
-
         if self.vision.tsiai_found_box:
             print "distance on image x " , self.vision.box_far_away_coord_tsiai[0]
             print "distance on image y " , self.vision.box_far_away_coord_tsiai[1]
@@ -1256,13 +1448,13 @@ class Robot_manager:
 
         time2 = time.time()
 
-        print "TIME: ", time2 - time1
-        print
+       # print "TIME: ", time2 - time1
+       # print
 
 
         if self.vision.tsiai_found_box_super:
-            print "distance on image x " , self.vision.box_far_away_coord_tsiai_super[0]
-            print "distance on image y " , self.vision.box_far_away_coord_tsiai_super[1]
+           # print "distance on image x " , self.vision.box_far_away_coord_tsiai_super[0]
+           # print "distance on image y " , self.vision.box_far_away_coord_tsiai_super[1]
             move_x = int(self.vision.box_far_away_coord_tsiai_super[0]/150.0)
             move_y = int(self.vision.box_far_away_coord_tsiai_super[1]/150.0)
 
@@ -1279,8 +1471,8 @@ class Robot_manager:
 
         time2 = time.time()
 
-        print "TIME: ", time2 - time1
-        print
+      #  print "TIME: ", time2 - time1
+      #  print
 
 
         if self.vision.theo_found_box:
@@ -1474,7 +1666,8 @@ class Robot_manager:
 
         # extend the lists appropriately * 0.3
         for line in straight_commands:
-            additional_straight = int(len(line)*0.35)
+            #additional_straight = int(len(line)*0.35)
+            additional_straight = int(len(line)*0.15)
             line += [numpy.array([ 5.,  0.])]*additional_straight
 
         # merge the staight line lists with the turns

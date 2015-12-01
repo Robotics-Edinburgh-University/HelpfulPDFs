@@ -66,16 +66,22 @@ class Toddler:
         self.RobotVision.Set_Resolution('low')
         while (OK):
             image = self.RobotVision.ImgObtain()
+
+            self.RobotVision.detect_resources_new_version(image)
+            self.RobotVision.handler_for_tsiai_super()
+
+            #########################################################################
+            #image = self.RobotVision.ImgObtain()
             #self.RobotVision.Check_Black_Patch()
-            time1 = time.time()
-            self.RobotVision.find_objects_Mophology(image)
+            #time1 = time.time()
+            #self.RobotVision.find_objects_Mophology(image)
             #self.RobotVision.find_objects_pix_num(image)
             #self.RobotVision.detect_resources_new_version(image)
             #self.RobotVision.identify_resource_figure(self.RobotVision.Mario_origin)
             #self.RobotVision.handler_for_tsiai_super()
             #self.RobotVision.find_objects_segmentation(image)
-            time2 = time.time()
-            print "time used",time2-time1
+            #time2 = time.time()
+            #print "time used",time2-time1
             #print "time used",time2-time1
             #time1 = time.time()
             #self.RobotVision.Check_Object('Mario')
