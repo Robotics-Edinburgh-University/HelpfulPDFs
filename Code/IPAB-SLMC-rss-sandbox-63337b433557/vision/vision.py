@@ -1522,6 +1522,66 @@ class robot_vision:
 
         self.find_the_balck_patch_tsiai = False
 
+    def Check_Black_Patch_tsiai(self,origin_img):
+
+
+        #self.find_the_balck_patch_tsiai = True
+
+        if self.find_the_balck_patch_tsiai:
+            found = 0
+            center = [0,0]
+
+            lower_black = numpy.array([0,0,0])
+            upper_black = numpy.array([110,110,110])
+            img=self.Blur(origin_img,11)
+            mask_black = cv2.inRange(img,lower_black,upper_black)
+            im2,contours,hierarchy = cv2.findContours(mask_black,cv2.RETR_TREE,cv2.CHAIN_APPROX_NONE)
+            #print 'contours',len(contours)
+            cv2.drawContours(origin_img,contours,-1,(0,0,255),2)
+
+            for c in contours:
+                if cv2.contourArea(c) > 275:
+                    cv2.drawContours(origin_img,c,-1,(0,255,0),2)
+                    x,y,w,h = cv2.boundingRect(c)
+                    #cv2.rectangle(origin_img,(x,y),(x+w,y+h),(0,0,255),2)
+
+                    rect = cv2.minAreaRect(c)
+                    #box = cv2.boxPoints(rect)
+                    #box1 = numpy.int0(box)
+
+                    #print "box coordinate ",rect[1] ,type(rect[1])
+                    if (rect[1])[1] != 0:
+                        wh_ratio = (rect[1])[0]/(rect[1])[1]
+                        print "w/h ratio!!! " , wh_ratio
+
+                        if wh_ratio< 5.5:
+                            #black_patch.append()
+                            #cv2.drawContours(origin_img,[box1],0,(0,0,255),2)
+                            if y > 10:
+                                center = (x+w/2,y+h/2)
+                                found = 1
+                                cv2.drawContours(origin_img,c,-1,(255,255,255),2)
+                        print "contour size", cv2.contourArea(c)
+
+
+
+            image_center = numpy.array([80,100])
+
+            if found == 1:
+                self.tsiai_find_balck_patch = True
+                self.balck_patch_position = image_center - numpy.array(center)
+              #  print "Black !!! " , self.balck_patch_position
+          #      cv2.circle(origin_img,(black_patches_pos[0]), 3, (0,0,255), 2)
+            else:
+                self.tsiai_find_balck_patch = False
+                self.balck_patch_position = numpy.array([0,0])
+
+            #self.IO.imshow('img',origin_img)
+
+            self.find_the_balck_patch_tsiai = False
+
+
+
 
     def Check_by_template(self,template_name):
         self.Set_Resolution('high')

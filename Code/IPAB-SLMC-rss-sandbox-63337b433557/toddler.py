@@ -70,9 +70,10 @@ class Toddler:
             self.RobotVision.detect_resources_new_version(image)
             self.RobotVision.handler_for_tsiai_super()
             #self.RobotVision.detect_white_landmarks(image)
+            #self.RobotVision.Check_Black_Patch(image)
             #########################################################################
             #image = self.RobotVision.ImgObtain()
-            self.RobotVision.Check_Black_Patch(image)
+            self.RobotVision.Check_Black_Patch_tsiai(image)
             #time1 = time.time()
             #self.RobotVision.find_objects_Mophology(image)
             #self.RobotVision.find_objects_pix_num(image)

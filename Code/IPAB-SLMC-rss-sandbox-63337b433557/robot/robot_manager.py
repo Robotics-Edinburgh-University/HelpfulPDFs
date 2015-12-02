@@ -126,11 +126,11 @@ class Robot_manager:
 
     #ARIS OVERPOWERD
     def move_F_to_E_getBox_goBack(self):
+
         self.set_tranjectory_straight_2()
         self.move_the_fucking_robot_to_goal()
         room = self.go_to_the_exit_spot("F")
         self.execute_path_with_hack("EXIT_" + room, 'H')
-
 
         self.perform_45_degrees_turn_right()
         self.perform_11_degrees_turn_right()
@@ -153,16 +153,25 @@ class Robot_manager:
 
         room = self.go_to_the_exit_spot_F_FROM_E("E")
 
+        #self.perform_11_degrees_turn_right()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
 
-        self.perform_11_degrees_turn_right()
+        #-------------- new lines ------
+        self.perform_11_degrees_turn_left()
+
+        self.perform_11_degrees_turn_left()
+        self.perform_11_degrees_turn_left()
         self.set_tranjectory_straight_6_steps()
         self.move_the_fucking_robot_to_goal()
-        self.set_tranjectory_straight_6_steps()
-        self.move_the_fucking_robot_to_goal()
-        self.set_tranjectory_straight_6_steps()
-        self.move_the_fucking_robot_to_goal()
-        self.set_tranjectory_straight_6_steps()
-        self.move_the_fucking_robot_to_goal()
+        #-------------- new lines ------
+
         self.IO.setMotors(0, 0)
 
         #
@@ -1028,7 +1037,7 @@ class Robot_manager:
         if myroom == "B" or myroom == "E":
             #self.set_tranjectory_straight_6_steps()
 
-            for i in range(3):
+            for i in range(3): #3
                 self.perform_11_degrees_turn_right()
                 self.set_tranjectory_straight()
                 self.move_the_fucking_robot_to_goal()
