@@ -52,9 +52,9 @@ class Toddler:
         # time.sleep(0.1)
 
         while (1):
-            x = 1
+            #x = 1
             #print self.IO.getSensors()[5]
-            #self.robot_manager.run_robot()
+            self.robot_manager.run_robot()
 
     # This is a callback that will be called repeatedly.
     # It has its dedicated thread so you can keep block it.
@@ -67,12 +67,12 @@ class Toddler:
         while (OK):
             image = self.RobotVision.ImgObtain()
 
-            #self.RobotVision.detect_resources_new_version(image)
-            #self.RobotVision.handler_for_tsiai_super()
-            self.RobotVision.detect_white_landmarks(image)
+            self.RobotVision.detect_resources_new_version(image)
+            self.RobotVision.handler_for_tsiai_super()
+            #self.RobotVision.detect_white_landmarks(image)
             #########################################################################
             #image = self.RobotVision.ImgObtain()
-            #self.RobotVision.Check_Black_Patch()
+            self.RobotVision.Check_Black_Patch(image)
             #time1 = time.time()
             #self.RobotVision.find_objects_Mophology(image)
             #self.RobotVision.find_objects_pix_num(image)

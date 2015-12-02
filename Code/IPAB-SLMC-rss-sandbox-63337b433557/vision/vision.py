@@ -1123,13 +1123,13 @@ class robot_vision:
                 #print "number of blue pixels " , blue_flag
                 if blue_flag == 0 and white_flag > 10:
                     print "WHITE DETECTED!!!!!!!"
-                    img = cv2.circle(img,center,10,(0,255,0),2)
+                    #img = cv2.circle(img,center,10,(0,255,0),2)
 
-                    #return  1
+                    return  1
 
-        self.IO.imshow('img',img)
+        #self.IO.imshow('img',img)
 
-        #return 0
+        return 0
 
 
     def detect_resources_new_version(self,img):
@@ -1471,16 +1471,16 @@ class robot_vision:
             '''
             self.IO.imshow('img',img2)
 
-    def Check_Black_Patch(self):
+    def Check_Black_Patch(self,origin_img):
 
 
-        self.find_the_balck_patch_tsiai = True
+        #self.find_the_balck_patch_tsiai = True
 
         if self.find_the_balck_patch_tsiai:
             found = 0
 
-            self.Set_Resolution('low')
-            origin_img = self.ImgObtain()
+         #   self.Set_Resolution('low')
+         #   origin_img = self.ImgObtain()
             kernel = numpy.ones((5,5),numpy.uint8)
             erosion = cv2.erode(origin_img,kernel,iterations = 1)
 
@@ -1504,15 +1504,16 @@ class robot_vision:
                         #print "height",h
                         black_patches.append(c)
                         black_patches_pos.append(center)
-                        #cv2.drawContours(origin_img,c,-1,(255,255,255),2)
+                        cv2.drawContours(origin_img,c,-1,(255,255,255),2)
 
             if len(black_patches) == 1:
                 found = 1
 
             if found == 1:
                 self.tsiai_find_balck_patch = True
-                self.balck_patch_position = image_center - numpy.array(black_patches_pos)
-                cv2.circle(origin_img,(black_patches_pos[0]), 3, (0,0,255), 2)
+                self.balck_patch_position = image_center - numpy.array(black_patches_pos[0])
+              #  print "Black !!! " , self.balck_patch_position
+          #      cv2.circle(origin_img,(black_patches_pos[0]), 3, (0,0,255), 2)
             else:
                 self.tsiai_find_balck_patch = False
                 self.balck_patch_position = numpy.array([0,0])

@@ -126,17 +126,76 @@ class Robot_manager:
 
     #ARIS OVERPOWERD
     def move_F_to_E_getBox_goBack(self):
+        self.set_tranjectory_straight_2()
+        self.move_the_fucking_robot_to_goal()
         room = self.go_to_the_exit_spot("F")
-        self.execute_path_with_hack("EXIT_" + room, 'J')
-        while(1):
+        self.execute_path_with_hack("EXIT_" + room, 'H')
+
+
+        self.perform_45_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        self.perform_11_degrees_turn_right()
+        self.IO.setMotors(0,0)
+        print "go straight 10"
+        result = self.checkForBoxTheo2(22)
+        print "now start obersvation"
+        self.IO.setMotors(0,0)
+        #go right 90 degrees and check simultaniusly
+        enter = True
+        if result == 1:
+            enter = False
+        while(enter):
             result = self.observe_the_room_final()
             if result == 1:
                 print;print "GOT IT! <-------------------------";print
                 break
             print "OBSERVE AGAIN!!!!!!!!!!!!!!!!!!!!!"
 
-        room = self.go_to_the_exit_spot("E")
-        time.sleep(1000)
+        room = self.go_to_the_exit_spot_F_FROM_E("E")
+
+
+        self.perform_11_degrees_turn_right()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_straight_6_steps()
+        self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0, 0)
+
+        #
+        #
+        # time.sleep(5)
+        # time.sleep(2)
+        print "GO HOME!"
+        self.findAndGoToBase()
+        print "we arrived!"
+        self.set_tranjectory_back_from_base()
+        self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0, 0)
+        self.open_cage()
+        self.set_tranjectory_back_from_base()
+        self.move_the_fucking_robot_to_goal()
+        self.set_tranjectory_back_from_base()
+        self.move_the_fucking_robot_to_goal()
+        self.IO.setMotors(0, 0)
+        self.close_cage()
+        time.sleep(100)
+
+    def findAndGoToBase(self):
+        result = 0
+        while (result == 0):
+            result = self.checkForBlackpatchTheo(150)
+            if result == 0:
+                self.set_tranjectory_left()
+                self.move_the_fucking_robot_to_goal_less_turn()
+                self.IO.setMotors(0, 0)
+        #Here we know we are on base with the box!
+        self.IO.setMotors(0, 0)
+
+
 
     def from_F_base_to_E(self):
         self.perform_11_degrees_turn_right()
@@ -264,7 +323,7 @@ class Robot_manager:
                             print "BOX GRABBED :) !!!"
                             self.IO.setMotors(0, 0)
                             self.close_cage()
-                            self.IO.servoDisengage()
+                            ###self.IO.servoDisengage()
                             return 1
                            # time.sleep(10000)
                         self.set_tranjectory_straight()
@@ -275,7 +334,7 @@ class Robot_manager:
                     if self.box_inside() and tsiaFoundObject == True:
                         print "BOX GRABBED!!!"
                         self.IO.setMotors(0, 0)
-                        self.IO.servoDisengage()
+                        ###self.IO.servoDisengage()
                         return 1
                       #  time.sleep(10000)
                     tsiaFoundObject = False
@@ -294,6 +353,110 @@ class Robot_manager:
             self.set_tranjectory_straight()
             self.move_the_fucking_robot_to_goal()
       ###  print "Failed and try again!! :( :(( :( :( "
+
+    def checkForBoxTheo2(self,distance):
+        tsiaFoundObject = False
+        tsiaiCounter = 0
+        enteredTheo = False
+        for i in range(distance):
+            move_y,move_x = self.foundBoxFromTheo()
+            # if we found a box far away walk on it to recognize it
+          #  print "Y =",move_y
+          #  print "X=",move_x
+            if move_y != -999:
+                enteredTheo = True
+                # if move_x < 30 use only Tsiai algortithm
+                if move_x<40:
+                    # Just to calibrate again
+                    if move_y != 0 and move_y != -999:
+                        self.turn_for_box(move_y)
+                        self.move_the_fucking_robot_to_goal_less_turn()
+                        self.IO.setMotors(0, 0)
+                    for j in range(20):
+                        # With step 2 check with the tsiai algorithm
+                        if j%1 == 0:
+                            if j==4:
+                                if tsiaFoundObject == False:
+                                    # Start again observation
+                                    return 0
+                            #move_y,move_x = self.found_box_from_tsiai()
+                            if tsiaFoundObject == True and tsiaiCounter >=3:
+                                print "Checking from Theo..."
+                                move_y,move_x = self.foundBoxFromTheo()
+                            else:
+                                print "Checking from Tsiai..."
+                                move_y,move_x = self.found_box_from_tsiai_super()
+
+                            if move_y != -999:
+                                if move_y != 0:
+                                    self.turn_for_box(move_y)
+                                    self.move_the_fucking_robot_to_goal_less_turn()
+                                    self.IO.setMotors(0, 0)
+                                if tsiaFoundObject == False:
+                                    tsiaFoundObject = True
+                                    print "Lets open the CAGE!"
+                                    self.open_cage()
+                            # now start counting
+                            if tsiaFoundObject == True:
+                                tsiaiCounter += 1
+
+                        print ":D"
+                        if self.box_inside() and tsiaFoundObject == True:
+                            tsiaFoundObject = False
+                            tsiaiCounter = 0
+                            print "BOX GRABBED :) !!!"
+                            self.IO.setMotors(0, 0)
+                            self.close_cage()
+                            ###self.IO.servoDisengage()
+                            return 1
+                           # time.sleep(10000)
+                        self.set_tranjectory_straight()
+                        self.move_the_fucking_robot_to_goal()
+
+                    self.IO.setMotors(0, 0)
+                    self.close_cage()
+                    if self.box_inside() and tsiaFoundObject == True:
+                        print "BOX GRABBED!!!"
+                        self.IO.setMotors(0, 0)
+                        ###self.IO.servoDisengage()
+                        return 1
+                      #  time.sleep(10000)
+                    tsiaFoundObject = False
+                    tsiaiCounter = 0
+                    # Start again obersvatioN!
+                    return 0
+            # else run again Theo algorithm
+            if move_y != 0 and move_y != -999:
+                self.turn_for_box(move_y)
+                self.move_the_fucking_robot_to_goal_less_turn()
+                self.IO.setMotors(0, 0)
+            # Continue Observation
+            # Move again a bit
+            self.set_tranjectory_straight()
+            self.move_the_fucking_robot_to_goal()
+
+    def checkForBlackpatchTheo(self,distance):
+        tsiaFoundObject = False
+
+        for i in range(distance):
+            move_y,move_x = self.foundBoxFromBlackpatch()
+            light = self.IO.getSensors()[5]
+            print "--- light sensor -->",light
+            if light < self.floorLightMin:
+                return 1
+
+            if move_y != -999:
+
+                if move_y != 0 and move_y != -999:
+                    self.turn_for_box(move_y)
+                    self.move_the_fucking_robot_to_goal_less_turn()
+                    self.IO.setMotors(0, 0)
+
+            # Move again a bit
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+            else:
+                return 0
 
     def aris_algorithm(self):
         move_y,move_x = self.found_box_from_tsiai()
@@ -823,7 +986,66 @@ class Robot_manager:
             self.move_the_fucking_robot_to_goal()
         self.IO.setMotors(0, 0)
         return myroom
+    ############################################################################
+    ############################################################################
+    def go_to_the_exit_spot_F_FROM_E(self,myroom):
+        first_catch = False
+        second_catch = False
+        self.distance_sensors.turn = 1
+        while (1):
+            sonar = self.IO.getSensors()[6]
+            print "sonar:", sonar
+            if sonar < 60:
+                if first_catch:
+                    first_catch = False
+                    break
+                first_catch = True
+            else:
+                first_catch = False
+            self.set_tranjectory_right()
+            self.move_the_fucking_robot_to_goal()
+        # it found a wall in a room
+        print "Wall Found!"
+        self.i_found_a_collision = False
+        while (1):
+            print self.i_found_a_collision
+            if self.i_found_a_collision == True:
+                self.i_found_a_collision = False
+                break
+            self.set_tranjectory_straight()
+            self.move_the_fucking_robot_to_goal()
 
+        while (1):
+            IR_right = self.IO.getSensors()[7]
+           # print "IR right:", IR_right
+            if IR_right < 100:
+                break
+
+            self.set_tranjectory_straight()
+            self.move_the_fucking_robot_to_goal()
+            self.i_found_a_collision = False
+        print "I AM IN THE EXIT SPOT ",myroom
+        if myroom == "B" or myroom == "E":
+            #self.set_tranjectory_straight_6_steps()
+
+            for i in range(3):
+                self.perform_11_degrees_turn_right()
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.IO.setMotors(0, 0)
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.IO.setMotors(0, 0)
+                self.perform_11_degrees_turn_right()
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.IO.setMotors(0, 0)
+                self.set_tranjectory_straight()
+                self.move_the_fucking_robot_to_goal()
+                self.IO.setMotors(0, 0)
+
+        self.IO.setMotors(0, 0)
+        return myroom
     def move_the_fucking_robot_to_goal(self):
 
         sensors_interuption = (0, 0)
@@ -1486,6 +1708,24 @@ class Robot_manager:
                 move_x = -1
             return move_x,move_y
         return -999,-999
+
+    def foundBoxFromBlackpatch(self):
+        self.vision.find_the_balck_patch_tsiai = True
+
+        while self.vision.find_the_balck_patch_tsiai:
+            pass
+
+        if self.vision.tsiai_find_balck_patch:
+         #   print "distance on image x " , self.vision.box_far_away_coord_theo[0]
+         #   print "distance on image y " , self.vision.box_far_away_coord_theo[1]
+            move_x = int(self.vision.balck_patch_position[0]/35.0)
+            move_y = int(self.vision.balck_patch_position[1])
+            if move_x >=2:
+                move_x = 1
+            if move_x <= -2:
+                move_x = -1
+            return move_x,move_y
+        return -999,-999
     # Is the robot at the goal
     def Goal_reached1(self, goal):  # ,general_vec_orient):
 
@@ -1815,14 +2055,24 @@ class Robot_manager:
         traj = [[5, 0, 1]]
         self.robot.set_desired_trajectory(traj)
 
+    # Set the desired trajectory to turn right one time
+    def set_tranjectory_straight_2(self):
+        traj = [[5, 0, 1],[5, 0, 1]]
+        self.robot.set_desired_trajectory(traj)
+
     def set_tranjectory_straight_back(self):
         traj = [[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1],[-5, 0, 1]]
+        self.robot.set_desired_trajectory(traj)
+    def set_tranjectory_back_from_base(self):
+        traj = [[-5, 0, 1],[-5, 0, 1]]
         self.robot.set_desired_trajectory(traj)
     # Set the desired trajectory to turn right one time
     def set_tranjectory_straight_6_steps(self):
         traj = [[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1],[5, 0, 1]]
         self.robot.set_desired_trajectory(traj)
-
+    def set_tranjectory_straight_4_steps(self):
+        traj = [[5, 0, 1],[5, 0, 1],[5, 0, 1]]
+        self.robot.set_desired_trajectory(traj)
     def straight_traj(self):
         traj = [[5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
                 [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1], [5, 0, 1],
